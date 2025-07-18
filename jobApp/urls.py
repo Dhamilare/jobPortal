@@ -1,0 +1,47 @@
+# job_portal_app/urls.py
+from django.urls import path
+from django.shortcuts import render
+from . import views
+
+urlpatterns = [
+    # -------------------- Public Pages --------------------
+    path('', views.home_view, name='home'),
+    path('about/', views.about_view, name='about'),
+    path('accounts/register/', views.applicant_register, name='register'),
+    path('verify-email/<uuid:token>/', views.email_verification_confirm, name='email_verification_confirm'),
+    path('accounts/login/', views.user_login, name='login'),
+    path('logout/', views.user_logout, name='logout'),
+
+    # -------------------- Job Listings --------------------
+    path('jobs/', views.job_list_view, name='job_list'),  # All jobs
+    path('jobs/<int:job_id>/', views.job_detail_view, name='job_detail'),  # Job details
+    path('jobs/<int:job_id>/apply-redirect/', views.job_apply_link_redirect, name='job_apply_redirect'),  # External redirect with tracking
+
+    # -------------------- Applicant Module --------------------
+    path('applicant/dashboard/', views.applicant_dashboard, name='applicant_dashboard'),
+    path('applicant/profile/update/', views.applicant_profile_update, name='applicant_profile_update'),
+    path('applicant/password/change/', views.applicant_password_change, name='applicant_password_change'),
+    path('applicant/email/change/', views.applicant_email_change, name='applicant_email_change'),
+
+    # -------------------- Moderator Module --------------------
+    path('moderator/dashboard/', views.moderator_dashboard, name='moderator_dashboard'),
+    path('moderator/jobs/', views.job_list_create, name='job_list_create'),  # View + Create
+    path('moderator/jobs/<int:job_id>/', views.job_update_delete, name='job_update_delete'),  # Edit/Delete
+    path('moderator/reports/', views.moderator_report_view, name='moderator_reports'),
+    path('moderator/jobs/bulk-upload/', views.job_bulk_upload_csv, name='job_bulk_upload_csv'),
+    path('moderator/jobs/bulk-upload/sample/', views.job_bulk_upload_csv_sample, name='job_bulk_upload_csv_sample'), # New URL
+
+    # Category Management URLs
+    path('moderator/categories/', views.manage_categories, name='manage_categories'),
+    path('moderator/categories/<int:category_id>/edit-delete/', views.category_update_delete, name='category_update_delete'),
+
+    # -------------------- Staff Only --------------------
+    path('staff/create-moderator/', views.is_staff_create_moderator, name='is_staff_create_moderator'),
+    path('staff/export-applicants/', views.is_staff_export_applicants_csv, name='is_staff_export_applicants_csv'),
+
+    # -------------------- Feedback Pages --------------------
+    path('register/success/', lambda request: render(request, 'registration_success.html'), name='registration_success'),
+    path('email-change/success/', lambda request: render(request, 'email_change_success.html'), name='email_change_success'),
+    path('email-verification/failed/', lambda request: render(request, 'email_verification_failed.html'), name='email_verification_failed'),
+    path('email-verification/success/', lambda request: render(request, 'email_verification_success.html'), name='email_verification_success'),
+]

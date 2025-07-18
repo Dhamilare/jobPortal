@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Activate Your Account</title>
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    h2 {
+      color: #2b6cb0;
+    }
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    a.button {
+      display: inline-block;
+      padding: 12px 24px;
+      margin-top: 20px;
+      background-color: #2b6cb0; /* Changed color to match eStore green */
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 13px;
+      color: #999;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>👋 Welcome, {{ user.first_name }}!</h2>
+    <p>Thanks for signing up for EStore! To activate your account, please click the button below:</p>
+
+    <p style="text-align:center;">
+      <a href="{{ protocol }}://{{ domain }}{% url 'activate' uidb64=uid token=token %}" class="button">Activate Account</a>
+    </p>
+
+    <p>If you didn’t request this, you can safely ignore this email.</p>
+
+    <div class="footer">
+      &copy; {{ now.year }} EStore. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

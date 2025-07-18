@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports - JobPortal{% endblock %}
+
+{% block extra_head %}
+    <!-- Chart.js & Luxon for time-based charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.x/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.x/dist/chartjs-adapter-luxon.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="py-12 px-4 md:px-8 lg:px-16 bg-gray-100 min-h-screen">
+    <div class="container mx-auto">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-10 text-center flex items-center justify-center">
+            <i class="fas fa-chart-pie text-blue-600 mr-3"></i> System Reports & Analytics
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+
+            <!-- Chart 1: Applicant Sign-ups -->
+            <div class="bg-white rounded-xl p-6 shadow-xl border border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-user-plus text-green-600 mr-2"></i> Applicant Sign-ups Over Time
+                    </h2>
+                    {# Pass signupsData directly to downloadCSV #}
+                    <button id="downloadSignupsCsv" class="text-sm text-blue-600 hover:underline inline-flex items-center transition-colors duration-200">
+                        <i class="fas fa-download mr-1"></i> Download CSV
+                    </button>
+                </div>
+                <div id="signupsChartContainer">
+                    <canvas id="signupsChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Jobs by Category -->
+            <div class="bg-white rounded-xl p-6 shadow-xl border border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-tags text-purple-600 mr-2"></i> Jobs by Category
+                    </h2>
+                    {# Pass jobsByCategoryData directly to downloadCSV #}
+                    <button id="downloadCategoriesCsv" class="text-sm text-blue-600 hover:underline inline-flex items-center transition-colors duration-200">
+                        <i class="fas fa-download mr-1"></i> Download CSV
+                    </button>
+                </div>
+                <div id="jobsByCategoryContainer">
+                    <canvas id="jobsByCategoryChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 3: Top Jobs -->
+            <div class="bg-white rounded-xl p-6 shadow-xl border border-gray-200 col-span-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-chart-bar text-red-600 mr-2"></i> Top Jobs by Application Clicks
+                    </h2>
+                    {# Pass topJobsAppliedData directly to downloadCSV #}
+                    <button id="downloadTopJobsCsv" class="text-sm text-blue-600 hover:underline inline-flex items-center transition-colors duration-200">
+                        <i class="fas fa-download mr-1"></i> Download CSV
+                    </button>
+                </div>
+                <div id="topJobsChartContainer">
+                    <canvas id="topJobsAppliedChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="{% url 'moderator_dashboard' %}" class="btn-secondary inline-flex items-center px-6 py-3 rounded-full text-base font-medium text-white bg-gray-700 hover:bg-gray-800 transition-colors duration-200 shadow-md hover:shadow-lg">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Retrieve data directly from Django context
+    const signupsData = {{ signups_data_json|default:"[]"|safe }};
+    const jobsByCategoryData = {{ jobs_by_category_json|default:"[]"|safe }};
+    const topJobsAppliedData = {{ top_jobs_applied_json|default:"[]"|safe }};
+
+    // Chart.js global defaults for better aesthetics
+    Chart.defaults.font.family = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+    Chart.defaults.color = '#475569'; // slate-600
+    Chart.defaults.borderColor = '#e2e8f0'; // gray-200
+
+    // Function to generate a consistent color palette
+    function generateChartColors(count) {
+        const colors = [
+            '#3B82F6', // blue-500
+            '#9333EA', // purple-600
+            '#F59E0B', // amber-500
+            '#10B981', // emerald-500
+            '#EF4444', // red-500
+            '#8B5CF6', // violet-500
+            '#EC4899', // pink-500
+            '#6366F1', // indigo-500
+            '#14B8A6', // teal-500
+            '#FACC15', // yellow-400
+            '#A855F7', // fuchsia-500
+            '#22C55E'  // green-500
+        ];
+        return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
+    }
+
+    // ---------- Chart 1: Applicant Sign-ups ----------
+    if (signupsData.length > 0) {
+        new Chart(document.getElementById('signupsChart'), {
+            type: 'line',
+            data: {
+                labels: signupsData.map(item => item.date),
+                datasets: [{
+                    label: 'New Applicants',
+                    data: signupsData.map(item => item.count),
+                    borderColor: '#3B82F6', // blue-500
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)', // blue-500 with transparency
+                    tension: 0.4, // Smoother curve
+                    fill: true,
+                    pointRadius: 4, // Make points visible
+                    pointBackgroundColor: '#3B82F6',
+                    pointBorderColor: '#ffffff',
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allow height to be controlled by CSS/HTML attribute
+                plugins: {
+                    title: { display: false }, // Title already in H2
+                    legend: { display: true, position: 'top', labels: { boxWidth: 10, padding: 15 } },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        padding: 10,
+                        bodyFont: { size: 14 },
+                        titleFont: { size: 14, weight: 'bold' },
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: { unit: 'day', tooltipFormat: 'MMM dd, yyyy' },
+                        title: { display: true, text: 'Date', font: { size: 14, weight: 'bold' } },
+                        grid: { display: false } // Hide vertical grid lines
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Sign-ups', font: { size: 14, weight: 'bold' } },
+                        grid: { color: '#e2e8f0' } // Light horizontal grid lines
+                    }
+                },
+                animation: {
+                    duration: 1000, // Smooth animation
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    } else {
+        document.getElementById('signupsChartContainer').innerHTML = "<p class='text-center text-gray-500 py-4'>No sign-up data available.</p>";
+    }
+
+    // ---------- Chart 2: Jobs by Category ----------
+    if (jobsByCategoryData.length > 0) {
+        const backgroundColors = generateChartColors(jobsByCategoryData.length);
+        new Chart(document.getElementById('jobsByCategoryChart'), {
+            type: 'pie',
+            data: {
+                labels: jobsByCategoryData.map(item => item.name),
+                datasets: [{
+                    data: jobsByCategoryData.map(item => item.job_count),
+                    backgroundColor: backgroundColors,
+                    borderColor: '#ffffff', // White border between slices
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right', // Position legend to the right
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15,
+                            font: { size: 14 }
+                        }
+                    },
+                    title: { display: false }, // Title already in H2
+                    tooltip: {
+                        padding: 10,
+                        bodyFont: { size: 14 },
+                        titleFont: { size: 14, weight: 'bold' },
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw;
+                                const total = context.dataset.data.reduce((sum, current) => sum + current, 0);
+                                const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                return `${label}: ${value} (${percentage})`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    } else {
+        document.getElementById('jobsByCategoryContainer').innerHTML = "<p class='text-center text-gray-500 py-4'>No job category data available.</p>";
+    }
+
+    // ---------- Chart 3: Top Jobs ----------
+    if (topJobsAppliedData.length > 0) {
+        new Chart(document.getElementById('topJobsAppliedChart'), {
+            type: 'bar',
+            data: {
+                labels: topJobsAppliedData.map(item => item.title),
+                datasets: [{
+                    label: 'Application Clicks',
+                    data: topJobsAppliedData.map(item => item.application_count),
+                    backgroundColor: '#60A5FA', // blue-400
+                    borderColor: '#3B82F6', // blue-500
+                    borderWidth: 1,
+                    borderRadius: 8, // Rounded bars
+                    barPercentage: 0.7, // Control bar width
+                    categoryPercentage: 0.8 // Control spacing between bars
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: false }, // Title already in H2
+                    legend: { display: false }, // Hide legend
+                    tooltip: {
+                        padding: 10,
+                        bodyFont: { size: 14 },
+                        titleFont: { size: 14, weight: 'bold' },
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Job Title', font: { size: 14, weight: 'bold' } },
+                        grid: { display: false }, // Hide vertical grid lines
+                        ticks: {
+                            autoSkip: false, // Prevent labels from being skipped
+                            maxRotation: 45, // Rotate labels if needed
+                            minRotation: 45
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Clicks', font: { size: 14, weight: 'bold' } },
+                        grid: { color: '#e2e8f0' } // Light horizontal grid lines
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    } else {
+        document.getElementById('topJobsChartContainer').innerHTML = "<p class='text-center text-gray-500 py-4'>No top job click data available.</p>";
+    }
+
+    // ---------- CSV Export Function ----------
+    window.downloadCSV = function (data, filename) {
+        if (!data || data.length === 0) {
+            console.warn('No data available for export: ' + filename);
+            return;
+        }
+
+        const headers = Object.keys(data[0]);
+        const rows = data.map(row => headers.map(field => {
+            let value = row[field];
+            return typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))
+                ? `"${value.replace(/"/g, '""')}"`
+                : value;
+        }).join(','));
+
+        const csvContent = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.display = 'none';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    // Attach click listeners to the buttons after data is loaded
+    document.getElementById('downloadSignupsCsv').addEventListener('click', () => {
+        window.downloadCSV(signupsData, 'signups.csv');
+    });
+
+    document.getElementById('downloadCategoriesCsv').addEventListener('click', () => {
+        window.downloadCSV(jobsByCategoryData, 'jobs_by_category.csv');
+    });
+
+    document.getElementById('downloadTopJobsCsv').addEventListener('click', () => {
+        window.downloadCSV(topJobsAppliedData, 'top_jobs_clicks.csv');
+    });
+});
+</script>
+{% endblock %}
