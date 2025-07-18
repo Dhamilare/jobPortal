@@ -16,12 +16,20 @@ urlpatterns = [
     path('jobs/', views.job_list_view, name='job_list'),  # All jobs
     path('jobs/<int:job_id>/', views.job_detail_view, name='job_detail'),  # Job details
     path('jobs/<int:job_id>/apply-redirect/', views.job_apply_link_redirect, name='job_apply_redirect'),  # External redirect with tracking
-
+    path('jobs/<int:job_id>/save/', views.save_job, name='save_job'),
+    path('jobs/<int:job_id>/unsave/', views.unsave_job, name='unsave_job'),
+    
+    
     # -------------------- Applicant Module --------------------
     path('applicant/dashboard/', views.applicant_dashboard, name='applicant_dashboard'),
     path('applicant/profile/update/', views.applicant_profile_update, name='applicant_profile_update'),
     path('applicant/password/change/', views.applicant_password_change, name='applicant_password_change'),
     path('applicant/email/change/', views.applicant_email_change, name='applicant_email_change'),
+    path('applicant/applications/', views.applicant_applications_list, name='applicant_applications_list'),
+    
+    # NEW: Job Alerts URLs
+    path('applicant/job-alerts/', views.manage_job_alerts, name='manage_job_alerts'),
+    path('applicant/job-alerts/<int:alert_id>/edit/', views.manage_job_alerts, name='edit_job_alert'),
 
     # -------------------- Moderator Module --------------------
     path('moderator/dashboard/', views.moderator_dashboard, name='moderator_dashboard'),

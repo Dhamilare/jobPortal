@@ -41,6 +41,12 @@ def staff_required(view):
 # ----------------------------
 def home_view(request):
     verified_jobs = Job.objects.filter(is_active=True).order_by('-date_posted')[:6]
+
+    now = timezone.now()
+    for job in verified_jobs:
+        time_since_posted = now - job.date_posted
+        job.is_hot_job = time_since_posted < timedelta(hours=24)
+
     return render(request, 'home.html', {'verified_jobs': verified_jobs})
 
 def about_view(request):
@@ -143,6 +149,11 @@ def job_list_view(request):
     if job_type:
         jobs = jobs.filter(job_type__iexact=job_type)
 
+    now = timezone.now()
+    for job in jobs:
+        time_since_posted = now - job.date_posted
+        job.is_hot_job = time_since_posted < timedelta(hours=24)
+
     context = {
         'jobs': jobs,
         'categories': Category.objects.all(),
@@ -156,10 +167,17 @@ def job_list_view(request):
 def job_detail_view(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     has_applied = False
+    is_saved = False
+
+    now = timezone.now()
+    time_since_posted = now - job.date_posted
+    job.is_hot_job = time_since_posted < timedelta(hours=24)
+
     if request.user.is_authenticated and request.user.is_applicant:
         has_applied = Application.objects.filter(applicant=request.user, job=job).exists()
+        is_saved = SavedJob.objects.filter(user=request.user, job=job).exists()
 
-    return render(request, 'job_detail.html', {'job': job, 'has_applied': has_applied})
+    return render(request, 'job_detail.html', {'job': job, 'has_applied': has_applied, 'is_saved': is_saved})
 
 @login_required
 @applicant_required
@@ -182,13 +200,28 @@ def job_apply_link_redirect(request, job_id):
 @applicant_required
 def applicant_dashboard(request):
     apps = Application.objects.filter(applicant=request.user)
+    # Fetch saved jobs for the current applicant
+    saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-saved_at') # Order by most recent saved job
+    
     context = {
         'total_applied': apps.count(),
-        'offers_received': apps.filter(status='Hired').count(),
-        'pending_applications': apps.exclude(status__in=['Hired', 'Rejected']).count(),
         'recent_applications': apps.order_by('-application_date')[:5],
+        'saved_jobs': saved_jobs,
     }
     return render(request, 'applicants/dashboard.html', context)
+
+@applicant_required
+def applicant_applications_list(request):
+    """
+    Displays a detailed list of all applications submitted by the current applicant.
+    """
+    all_applications = Application.objects.filter(applicant=request.user).select_related('job').order_by('-application_date')
+    
+    context = {
+        'all_applications': all_applications,
+    }
+    return render(request, 'applicants/applications_list.html', context)
+
 
 @applicant_required
 def applicant_profile_update(request):
@@ -575,3 +608,67 @@ def job_bulk_upload_csv_sample(request):
     ])
 
     return response
+
+
+@applicant_required
+def manage_job_alerts(request, alert_id=None):
+    alert = None
+    if alert_id:
+        alert = get_object_or_404(JobAlert, pk=alert_id, user=request.user)
+        form = JobAlertForm(request.POST or None, instance=alert)
+    else:
+        form = JobAlertForm(request.POST or None)
+
+    if request.method == 'POST':
+        if 'delete_alert' in request.POST and alert:
+            alert_name = alert.alert_name
+            alert.delete()
+            messages.success(request, f'Job alert "{alert_name}" deleted successfully.')
+            return redirect('manage_job_alerts')
+        elif form.is_valid():
+            try:
+                job_alert = form.save(commit=False)
+                job_alert.user = request.user
+                job_alert.save()
+                form.save_m2m() # Save ManyToMany relations (categories)
+                if alert_id:
+                    messages.success(request, f'Job alert "{job_alert.alert_name}" updated successfully!')
+                else:
+                    messages.success(request, f'Job alert "{job_alert.alert_name}" created successfully!')
+                return redirect('manage_job_alerts')
+            except IntegrityError:
+                messages.error(request, 'You already have an alert with this name.')
+            except Exception as e:
+                messages.error(request, f'An error occurred: {e}')
+    
+    job_alerts = JobAlert.objects.filter(user=request.user).order_by('-created_at')
+    context = {
+        'form': form,
+        'job_alerts': job_alerts,
+        'editing_alert': alert is not None,
+    }
+    return render(request, 'applicants/job_alerts.html', context)
+
+
+@login_required
+@applicant_required
+def save_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    try:
+        SavedJob.objects.create(user=request.user, job=job)
+        messages.success(request, f'Job "{job.title}" saved successfully!')
+    except IntegrityError:
+        messages.info(request, f'Job "{job.title}" is already in your saved list.')
+    return redirect('job_detail', job_id=job.id)
+
+@login_required
+@applicant_required
+def unsave_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    saved_job = SavedJob.objects.filter(user=request.user, job=job)
+    if saved_job.exists():
+        saved_job.delete()
+        messages.success(request, f'Job "{job.title}" removed from your saved list.')
+    else:
+        messages.info(request, f'Job "{job.title}" was not found in your saved list.')
+    return redirect('job_detail', job_id=job.id)

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}My Applications - JobPortal{% endblock %}
+
+{% block content %}
+<div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
+    <div class="container mx-auto max-w-5xl">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center flex items-center justify-center">
+            <i class="fas fa-clipboard-list text-blue-600 mr-3"></i> My Job Applications
+        </h1>
+
+        <div class="mb-6">
+            <a href="{% url 'applicant_dashboard' %}" class="text-blue-600 hover:underline inline-flex items-center font-medium">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+            </a>
+        </div>
+
+        {% if all_applications %}
+            <div class="bg-white rounded-lg p-8 card-shadow border border-gray-200 overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied On</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for app in all_applications %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ app.job.title }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-600">{{ app.job.company_name }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-600">{{ app.job.location }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-600">{{ app.application_date|date:"M d, Y" }}</div> {# Date only #}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        {% if app.status == 'Applied' %}bg-blue-100 text-blue-800
+                                        {% elif app.status == 'Under Review' %}bg-yellow-100 text-yellow-800
+                                        {% elif app.status == 'Interview' %}bg-purple-100 text-purple-800
+                                        {% elif app.status == 'Offer' %}bg-green-100 text-green-800
+                                        {% elif app.status == 'Rejected' %}bg-red-100 text-red-800
+                                        {% elif app.status == 'Hired' %}bg-indigo-100 text-indigo-800
+                                        {% endif %}">
+                                        {{ app.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                    <a href="{% url 'job_detail' app.job.id %}" class="text-blue-600 hover:text-blue-900 mr-3" title="View Job Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if app.job.external_application_url %}
+                                        <a href="{{ app.job.external_application_url }}" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-900" title="Go to External Application Site">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="text-gray-400 cursor-not-allowed" title="No external link">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="bg-white rounded-lg p-8 card-shadow text-center text-gray-600 border border-gray-200">
+                <i class="fas fa-info-circle text-5xl text-yellow-500 mb-4"></i>
+                <p class="text-xl font-semibold">You haven't applied for any jobs yet.</p>
+                <p class="mt-2">Start your job search by browsing our <a href="{% url 'job_list' %}" class="text-blue-600 hover:underline font-medium">job listings</a>!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

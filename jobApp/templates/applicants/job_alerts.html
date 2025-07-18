@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Job Alerts - JobPortal{% endblock %}
+
+{% block content %}
+<div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
+    <div class="container mx-auto max-w-3xl">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center flex items-center justify-center">
+            <i class="fas fa-bell text-yellow-600 mr-3"></i> Manage Job Alerts
+        </h1>
+
+        {# Django Messages Section #}
+        {% if messages %}
+            <div class="mb-6 space-y-3">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg flex items-center
+                        {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400{% endif %}
+                        {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400{% endif %}
+                        {% if message.tags == 'info' %}bg-blue-100 text-blue-700 border border-blue-400{% endif %}
+                        {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
+                    " role="alert">
+                        {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'error' %}<i class="fas fa-exclamation-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'info' %}<i class="fas fa-info-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'warning' %}<i class="fas fa-exclamation-triangle mr-3 text-lg"></i>{% endif %}
+                        <div>{{ message }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Create/Edit Job Alert Form -->
+        <section class="bg-white rounded-lg p-8 card-shadow mb-12 border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                {% if editing_alert %}
+                    <i class="fas fa-edit text-blue-600 mr-3"></i> Edit Job Alert
+                {% else %}
+                    <i class="fas fa-plus-circle text-green-600 mr-3"></i> Create New Job Alert
+                {% endif %}
+            </h2>
+            <form action="{% if editing_alert %}{% url 'edit_job_alert' alert_id=form.instance.id %}{% else %}{% url 'manage_job_alerts' %}{% endif %}" method="POST" class="space-y-6">
+                {% csrf_token %}
+                {% if form.errors %}
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Error!</strong>
+                        <span class="block sm:inline">Please correct the following issues:</span>
+                        <ul class="mt-2 list-disc list-inside text-sm">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div>
+                    <label for="{{ form.alert_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-tag mr-2 text-gray-500"></i>{{ form.alert_name.label }}
+                    </label>
+                    {{ form.alert_name }}
+                </div>
+                <div>
+                    <label for="{{ form.keywords.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-search mr-2 text-gray-500"></i>{{ form.keywords.label }}
+                    </label>
+                    {{ form.keywords }}
+                    {% if form.keywords.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.keywords.help_text }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-folder-open mr-2 text-gray-500"></i>{{ form.categories.label }}
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        {% for checkbox in form.categories %}
+                            <div class="flex items-center bg-gray-50 p-2 rounded-md border border-gray-200">
+                                {{ checkbox.tag }}
+                                <label for="{{ checkbox.id_for_label }}" class="ml-2 text-sm text-gray-700 cursor-pointer">{{ checkbox.choice_label }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if form.categories.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.categories.help_text }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.locations.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>{{ form.locations.label }}
+                    </label>
+                    {{ form.locations }}
+                    {% if form.locations.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.locations.help_text }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.job_types.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-briefcase mr-2 text-gray-500"></i>{{ form.job_types.label }}
+                    </label>
+                    {{ form.job_types }}
+                    {% if form.job_types.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.job_types.help_text }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.frequency.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-redo-alt mr-2 text-gray-500"></i>{{ form.frequency.label }}
+                    </label>
+                    {{ form.frequency }}
+                </div>
+                <div class="flex items-center">
+                    {{ form.is_active }}
+                    <label for="{{ form.is_active.id_for_label }}" class="ml-2 block text-sm font-medium text-gray-900">
+                        <i class="fas fa-toggle-on mr-2 text-gray-500"></i>{{ form.is_active.label }}
+                    </label>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button type="submit" class="btn-primary w-full sm:w-auto">
+                        {% if editing_alert %}
+                            <i class="fas fa-save mr-2"></i> Update Alert
+                        {% else %}
+                            <i class="fas fa-plus-circle mr-2"></i> Create Alert
+                        {% endif %}
+                    </button>
+                    {% if editing_alert %}
+                        <button type="submit" name="delete_alert" class="btn-secondary bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto" onclick="return confirm('Are you sure you want to delete this alert?');">
+                            <i class="fas fa-trash-alt mr-2"></i> Delete Alert
+                        </button>
+                        <a href="{% url 'manage_job_alerts' %}" class="btn-secondary bg-gray-200 text-gray-700 hover:bg-gray-300 w-full sm:w-auto flex items-center justify-center">
+                            <i class="fas fa-times mr-2"></i> Cancel Edit
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </section>
+
+        <!-- Existing Job Alerts List -->
+        <section class="bg-white rounded-lg p-8 card-shadow border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-list-alt text-blue-600 mr-3"></i> Your Active Job Alerts
+            </h2>
+            <div class="overflow-x-auto">
+                {% if job_alerts %}
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keywords</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categories</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frequency</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
+                                <th scope="col" class="relative px-6 py-3 text-center"><span class="sr-only">Actions</span>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for alert in job_alerts %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ alert.alert_name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ alert.keywords|default:"-" }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {% if alert.categories.all %}
+                                            {% for category in alert.categories.all %}
+                                                <span class="inline-block bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs mr-1 mb-1">{{ category.name }}</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ alert.frequency }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        {% if alert.is_active %}
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 items-center">
+                                                <i class="fas fa-check-circle mr-1"></i> Yes
+                                            </span>
+                                        {% else %}
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 items-center">
+                                                <i class="fas fa-times-circle mr-1"></i> No
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                        <a href="{% url 'edit_job_alert' alert_id=alert.id %}" class="text-blue-600 hover:text-blue-900 inline-flex items-center">
+                                            <i class="fas fa-edit mr-1"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-center text-gray-600 py-4 flex items-center justify-center">
+                        <i class="fas fa-info-circle mr-2"></i> No job alerts configured yet. Create one above!
+                    </p>
+                {% endif %}
+            </div>
+        </section>
+
+        <div class="text-center mt-8">
+            <a href="{% url 'applicant_dashboard' %}" class="btn-secondary inline-flex items-center px-6 py-3 rounded-full text-base font-medium text-white bg-gray-700 hover:bg-gray-800 transition-colors duration-200 shadow-md hover:shadow-lg">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

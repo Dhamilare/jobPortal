@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django import forms
-from .models import CustomUser, Job, Application, Category, EmailVerificationToken
+from .models import *
 
 
 # -----------------------
@@ -68,30 +68,37 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    """
-    Admin interface for Job model.
-    """
-    list_display = (
-        'title', 'company_name', 'location', 'category',
-        'job_type', 'external_application_url', 'posted_by',
-        'date_posted', 'is_active'
-    )
-    list_filter = ('job_type', 'category', 'is_active', 'date_posted')
-    search_fields = ('title', 'company_name', 'description', 'location')
+    list_display = ('title', 'company_name', 'location', 'job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date', 'posted_by') # Added job_expiry_date
+    list_filter = ('job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date') # Added job_expiry_date
+    search_fields = ('title', 'company_name', 'location', 'description')
+    raw_id_fields = ('category', 'posted_by')
     date_hierarchy = 'date_posted'
-    raw_id_fields = ('posted_by',)
+    actions = ['make_active', 'make_inactive']
+
     fieldsets = (
         (None, {
-            'fields': (
-                'title', 'description', 'company_name', 'location',
-                'job_type', 'category', 'is_active', 'external_application_url'
-            )
+            'fields': ('title', 'company_name', 'location', 'job_type', 'category', 'external_application_url', 'description', 'is_active', 'job_expiry_date') # Added job_expiry_date
         }),
-        ('Metadata', {
-            'fields': ('posted_by', 'date_posted'),
+        ('Dates', {
+            'fields': ('date_posted',),
+            'classes': ('collapse',),
+        }),
+        ('Posting Info', {
+            'fields': ('posted_by',),
             'classes': ('collapse',),
         }),
     )
+    readonly_fields = ('date_posted',) # date_posted should typically be auto_now_add
+
+    def make_active(self, request, queryset):
+        queryset.update(is_active=True)
+        self.message_user(request, f"{queryset.count()} jobs marked as active.")
+    make_active.short_description = "Mark selected jobs as active"
+
+    def make_inactive(self, request, queryset):
+        queryset.update(is_active=False)
+        self.message_user(request, f"{queryset.count()} jobs marked as inactive.")
+    make_inactive.short_description = "Mark selected jobs as inactive"
 
 
 # -----------------------
@@ -137,4 +144,35 @@ class EmailVerificationTokenAdmin(admin.ModelAdmin):
     list_filter = ('created_at', 'expires_at')
     search_fields = ('user__email', 'token')
     readonly_fields = ('token', 'created_at', 'expires_at')
+
+
+# NEW: Admin for SavedJob model
+@admin.register(SavedJob)
+class SavedJobAdmin(admin.ModelAdmin):
+    list_display = ('user', 'job', 'saved_at')
+    list_filter = ('saved_at',)
+    search_fields = ('user__username', 'job__title', 'job__company_name')
+    raw_id_fields = ('user', 'job') # Use raw_id_fields for FKs
+
+
+# NEW: Admin for JobAlert model
+@admin.register(JobAlert)
+class JobAlertAdmin(admin.ModelAdmin):
+    list_display = ('user', 'alert_name', 'keywords_display', 'locations', 'job_types_display', 'frequency', 'is_active', 'created_at', 'last_sent')
+    list_filter = ('frequency', 'is_active', 'created_at', 'last_sent')
+    search_fields = ('user__username', 'alert_name', 'keywords', 'locations', 'job_types')
+    raw_id_fields = ('user',) # Use raw_id_fields for FKs
+    filter_horizontal = ('categories',) # For ManyToMany field, provides a nice interface
+
+    # Custom method to display categories nicely in list_display
+    def keywords_display(self, obj):
+        return obj.keywords or '-'
+    keywords_display.short_description = 'Keywords'
+
+    # Custom method to display job types nicely in list_display
+    def job_types_display(self, obj):
+        return obj.job_types or '-'
+    job_types_display.short_description = 'Job Types'
+
+
 

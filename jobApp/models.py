@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils import timezone
 import uuid
+from django.conf import settings
 
 # -------------------------------
 # User Manager
@@ -81,6 +82,7 @@ class Job(models.Model):
     posted_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='posted_jobs')
     date_posted = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
+    job_expiry_date = models.DateTimeField(null=True, blank=True, help_text="Optional: Date when this job listing expires.")
     external_application_url = models.URLField(
         max_length=500,
         blank=True,
@@ -134,3 +136,45 @@ class EmailVerificationToken(models.Model):
 
     def __str__(self):
         return f"Token for {self.user.email}"
+    
+
+class SavedJob(models.Model):
+    """
+    Model to track jobs saved by applicants.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='saved_jobs')
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='saved_by')
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'job') # A user can save a job only once
+        ordering = ['-saved_at'] # Order by most recently saved
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.job.title}"
+    
+
+class JobAlert(models.Model):
+    FREQUENCY_CHOICES = [
+        ('Daily', 'Daily'),
+        ('Weekly', 'Weekly'),
+        ('Bi-Weekly', 'Bi-Weekly'),
+        ('Monthly', 'Monthly'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='job_alerts')
+    alert_name = models.CharField(max_length=255, help_text="A name for your alert (e.g., 'Remote Python Jobs')")
+    keywords = models.CharField(max_length=255, blank=True, null=True, help_text="Comma-separated keywords (e.g., 'Python, Django, API')")
+    categories = models.ManyToManyField(Category, blank=True, help_text="Select categories for the alert")
+    locations = models.CharField(max_length=255, blank=True, null=True, help_text="Comma-separated locations (e.g., 'London, Remote, New York')")
+    job_types = models.CharField(max_length=255, blank=True, null=True, help_text="Comma-separated job types (e.g., 'Full-time, Remote')")
+    frequency = models.CharField(max_length=50, choices=FREQUENCY_CHOICES, default='Weekly')
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_sent = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Alert: {self.alert_name} for {self.user.username}"
+
+    class Meta:
+        unique_together = ('user', 'alert_name') # A user can't have two alerts with the same name

@@ -98,23 +98,24 @@ class LoginForm(forms.Form):
 # ==============================
 class JobForm(forms.ModelForm):
     """
-    Form for creating and updating job listings.
+    Form for creating and updating Job listings.
     """
     class Meta:
         model = Job
         fields = [
-            'title', 'description', 'company_name', 'location',
-            'job_type', 'category', 'is_active', 'external_application_url'
+            'title', 'company_name', 'location', 'job_type',
+            'category', 'external_application_url', 'description', 'job_expiry_date', 'is_active'
         ]
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'input-field'}),
-            'description': forms.Textarea(attrs={'class': 'input-field', 'rows': 5}),
-            'company_name': forms.TextInput(attrs={'class': 'input-field'}),
-            'location': forms.TextInput(attrs={'class': 'input-field'}),
+            'title': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., Senior Software Engineer'}),
+            'company_name': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., Tech Solutions Inc.'}),
+            'location': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., Remote, New York, London'}),
             'job_type': forms.Select(attrs={'class': 'input-field'}),
             'category': forms.Select(attrs={'class': 'input-field'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'}),
-            'external_application_url': forms.URLInput(attrs={'class': 'input-field', 'placeholder': 'https://company.com/apply-here'}),
+            'external_application_url': forms.URLInput(attrs={'class': 'input-field', 'placeholder': 'https://example.com/apply'}),
+            'description': forms.Textarea(attrs={'class': 'input-field', 'rows': 6, 'placeholder': 'Detailed job description...'}),
+            'job_expiry_date': forms.DateTimeInput(attrs={'class': 'input-field', 'type': 'datetime-local'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -305,4 +306,40 @@ class JobCSVUploadForm(forms.Form):
             raise ValidationError(f"Invalid file type: {csv_file.content_type}. Please upload a valid CSV file.")
 
         return csv_file
+
+
+class JobAlertForm(forms.ModelForm):
+    """
+    Form for creating and updating JobAlerts.
+    """
+    # Override categories field to use CheckboxSelectMultiple for better UX
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-checkbox-group'}),
+        required=False,
+        label="Job Categories"
+    )
+
+    class Meta:
+        model = JobAlert
+        fields = ['alert_name', 'keywords', 'categories', 'locations', 'job_types', 'frequency', 'is_active']
+        widgets = {
+            'alert_name': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., Remote Python Jobs'}),
+            'keywords': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., Python, Django, API (comma-separated)'}),
+            'locations': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., London, Remote, New York (comma-separated)'}),
+            'job_types': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., Full-time, Remote (comma-separated)'}),
+            'frequency': forms.Select(attrs={'class': 'input-field'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'})
+        }
+        help_texts = {
+            'keywords': 'Comma-separated keywords (e.g., "Python, Django, API")',
+            'locations': 'Comma-separated locations (e.g., "London, Remote, New York")',
+            'job_types': 'Comma-separated job types (e.g., "Full-time, Remote"). Available types: Full-time, Part-time, Contract, Temporary, Internship, Remote.',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Dynamically set choices for job_types help text based on Job model
+        job_type_choices_str = ", ".join([choice[0] for choice in Job.JOB_TYPE_CHOICES])
+        self.fields['job_types'].help_text = f"Comma-separated job types (e.g., 'Full-time, Remote'). Available types: {job_type_choices_str}."
 
