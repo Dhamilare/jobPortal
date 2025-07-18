@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from datetime import datetime
 import json
+from django.core.mail import EmailMultiAlternatives
 
 from .forms import *
 from .models import *
@@ -58,27 +59,31 @@ def applicant_register(request):
             reverse('email_verification_confirm', args=[token.token])
         )
 
-        html_message = render_to_string('email_verification.html', {
+        # Render HTML email
+        subject = 'Verify your JobPortal account'
+        from_email = settings.DEFAULT_FROM_EMAIL
+        to_email = user.email
+
+        context = {
             'user': user,
             'verification_link': verification_link,
-            'current_year': datetime.now().year,
-        })
-        plain_message = strip_tags(html_message)
+        }
+        html_content = render_to_string('email_verification.html', context)
+        text_content = f'Hi {user.username},\n\nPlease verify your email using this link:\n{verification_link}'
 
-        send_mail(
-            subject='Verify your JobPortal account',
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            html_message=html_message,
-        )
+        # Send multipart email (HTML + plain text fallback)
+        email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
+        email.attach_alternative(html_content, "text/html")
+        email.send()
 
         messages.success(
             request,
             f'Registration successful! A verification link has been sent to {user.email}. '
             'Please check your inbox (and spam folder) to activate your account.'
         )
-        return redirect('login')
+
+        # Clear form after success to avoid resubmission
+        form = ApplicantRegistrationForm()
 
     return render(request, 'accounts/register.html', {'form': form})
 
