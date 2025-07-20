@@ -46,6 +46,10 @@ def home_view(request):
     for job in verified_jobs:
         time_since_posted = now - job.date_posted
         job.is_hot_job = time_since_posted < timedelta(hours=24)
+        
+        job.is_expired = False
+        if job.job_expiry_date and job.job_expiry_date < now:
+            job.is_expired = True
 
     return render(request, 'home.html', {'verified_jobs': verified_jobs})
 
