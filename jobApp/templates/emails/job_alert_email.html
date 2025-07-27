@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Job Alert: {{ alert_name }}</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; color: #333333; }
+        .email-container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        .header { background-color: #3b82f6; padding: 25px; text-align: center; color: #ffffff; }
+        .content { padding: 30px; }
+        .job-card { background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
+        .job-title { font-size: 1.25em; font-weight: bold; color: #3b82f6; margin-bottom: 8px; }
+        .job-company { font-size: 1em; color: #555555; margin-bottom: 5px; }
+        .job-location { font-size: 0.9em; color: #777777; margin-bottom: 10px; }
+        .job-description { font-size: 0.9em; line-height: 1.6; color: #666666; margin-bottom: 15px; }
+        .view-button { display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 0.9em; }
+        .footer { background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 0.8em; color: #777777; border-top: 1px solid #e0e0e0; }
+        .footer a { color: #3b82f6; text-decoration: none; }
+        .no-jobs { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>New Job Opportunities!</h1>
+            <p style="margin: 0; font-size: 1.1em;">Your personalized alert: {{ alert_name }}</p>
+        </div>
+        <div class="content">
+            <p>Hi {{ user.username }},</p>
+            <p>Here are the latest job postings matching your alert criteria:</p>
+
+            {% if new_jobs %}
+                {% for job in new_jobs %}
+                    <div class="job-card">
+                        <div class="job-title">{{ job.title }}</div>
+                        <div class="job-company">{{ job.company_name }} - {{ job.job_type }}</div>
+                        <div class="job-location">{{ job.location }}</div>
+                        <p class="job-description">{{ job.description|striptags|truncatechars:200 }}</p>
+                        {# Construct absolute URL using BASE_URL from settings #}
+                        <a href="{{ settings.BASE_URL }}{% url 'job_detail' job.id %}" class="view-button">View Details & Apply</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-jobs">
+                    <p>No new jobs matched your criteria this time. We'll keep looking!</p>
+                </div>
+            {% endif %}
+
+            <p style="margin-top: 30px;">You can manage your job alerts and update your preferences at any time:</p>
+            <p style="text-align: center;">
+                {# Construct absolute URL using BASE_URL from settings #}
+                <a href="{{ settings.BASE_URL }}{% url 'manage_job_alerts' %}" class="view-button">Manage Your Alerts</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ "now"|date:"Y" }} {{ portal_name }}. All rights reserved.</p>
+            <p>You received this email because you subscribed to job alerts. To unsubscribe or change your preferences, please visit <a href="{{ settings.BASE_URL }}{% url 'manage_job_alerts' %}">your job alerts page</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

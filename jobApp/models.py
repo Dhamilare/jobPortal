@@ -174,7 +174,7 @@ class JobAlert(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"Alert: {self.alert_name} for {self.user.username}"
+        return f"{self.user.username}'s {self.alert_name} ({self.frequency})"
 
     class Meta:
-        unique_together = ('user', 'alert_name') # A user can't have two alerts with the same name
+        unique_together = ('user', 'alert_name')

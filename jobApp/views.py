@@ -633,6 +633,10 @@ def manage_job_alerts(request, alert_id=None):
             try:
                 job_alert = form.save(commit=False)
                 job_alert.user = request.user
+
+                if not alert_id:
+                    job_alert.last_sent = timezone.now()
+
                 job_alert.save()
                 form.save_m2m() # Save ManyToMany relations (categories)
                 if alert_id:
