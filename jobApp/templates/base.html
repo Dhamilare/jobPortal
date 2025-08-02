@@ -9,7 +9,6 @@
     <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
 
     <!-- Open Graph Tags: For rich social media previews -->
-    <!-- These blocks are now separate and correct. -->
     <meta property="og:title" content="{% block og_title %}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{% endblock %}">
     <meta property="og:type" content="website">
@@ -19,319 +18,316 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for social media icons and general icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Lucide Icons (for dashboard icons) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Custom Styles for Jaw-Dropping UI/UX (Inlined as requested) -->
+    <!-- Custom Styles -->
      <style>
-        /* Base styles: Apply Inter font and a subtle light background */
-        body {
-            font-family: 'Inter', sans-serif;
-            /* Tailwind classes for background and text color, slightly adjusted for vibrancy */
-            background: linear-gradient(to bottom right, #F0F9FF, #F8F4FF); /* Soft, subtle gradient background */
-            color: #374151; /* Dark gray for text */
-            line-height: 1.6; /* Improved readability */
-            min-height: 100vh; /* Ensure body takes full viewport height */
-            display: flex;
-            flex-direction: column;
-        }
+         /* Base styles: Apply Inter font and a subtle light background */
+         body {
+             font-family: 'Inter', sans-serif;
+             background: linear-gradient(to bottom right, #F0F9FF, #F8F4FF);
+             color: #374151;
+             line-height: 1.6;
+             min-height: 100vh;
+             display: flex;
+             flex-direction: column;
+         }
 
-        /* General Link Styling */
-        a {
-            color: #2563EB; /* Blue-600 */
-            transition: color 0.2s ease-in-out;
-            text-decoration: none; /* Ensure no underline by default */
-        }
-        a:hover {
-            color: #1D4ED8; /* Blue-700 */
-            /* text-decoration: underline; -- REMOVED THIS LINE */
-        }
+         /* General Link Styling */
+         a {
+             color: #2563EB;
+             transition: color 0.2s ease-in-out;
+             text-decoration: none;
+         }
+         a:hover {
+             color: #1D4ED8;
+         }
 
-        /* Card Shadows: Enhanced for depth and modern Material Design feel */
-        .card-shadow {
-            /* Multiple shadows for a more realistic, layered depth effect */
-            box-shadow: 10px 15px -3px rgba(0, 0, 0, 0.1), /* Larger, softer shadow */
-                        0 4px 6px -2px rgba(0, 0, 0, 0.05),  /* Smaller, sharper shadow */
-                        0 1px 3px 0 rgba(0, 0, 0, 0.02);     /* Very subtle base shadow */
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-        }
+         /* Card Shadows: Enhanced for depth and modern Material Design feel */
+         .card-shadow {
+             box-shadow: 10px 15px -3px rgba(0, 0, 0, 0.1),
+                         0 4px 6px -2px rgba(0, 0, 0, 0.05),
+                         0 1px 3px 0 rgba(0, 0, 0, 0.02);
+             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+         }
+         .card-shadow:hover {
+             transform: translateY(-5px);
+             box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.15),
+                         0 6px 8px -3px rgba(0, 0, 0, 0.08);
+         }
 
-        .card-shadow:hover {
-            /* Slight lift and stronger shadow on hover for interactivity */
-            transform: translateY(-5px);
-            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.15),
-                        0 6px 8px -3px rgba(0, 0, 0, 0.08);
-        }
+         /* Input Fields: Clean, well-defined, and responsive focus states */
+         .input-field {
+             width: 100%;
+             padding: 0.75rem 1rem;
+             border-radius: 0.5rem;
+             border: 1px solid #D1D5DB;
+             color: #1F2937;
+             background-color: #FFFFFF;
+             transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+         }
+         .input-field::placeholder {
+             color: #9CA3AF;
+         }
+         .input-field:focus {
+             outline: none;
+             border-color: #3B82F6;
+             box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+         }
 
-        /* Input Fields: Clean, well-defined, and responsive focus states */
-        .input-field {
-            width: 100%;
-            padding: 0.75rem 1rem; /* py-3 px-4 */
-            border-radius: 0.5rem; /* rounded-lg */
-            border: 1px solid #D1D5DB; /* border-gray-300 */
-            color: #1F2937; /* text-gray-900 */
-            background-color: #FFFFFF; /* bg-white */
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle inner shadow for depth */
-        }
+         /* Primary Button: Bold, gradient, with interactive press effect */
+         .btn-primary {
+             width: 100%;
+             padding: 0.75rem 1.5rem;
+             font-weight: 600;
+             border-radius: 0.5rem;
+             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+             background: linear-gradient(to right, #4F46E5, #6366F1);
+             color: white;
+             border: none;
+             cursor: pointer;
+             transition: all 0.3s ease-in-out;
+             transform: translateY(0);
+             display: inline-flex;
+             align-items: center;
+             justify-content: center;
+             gap: 0.5rem;
+         }
+         .btn-primary:hover {
+             background: linear-gradient(to right, #4338CA, #4F46E5);
+             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+             transform: translateY(-2px);
+         }
+         .btn-primary:active {
+             background: linear-gradient(to right, #3730A3, #4338CA);
+             transform: translateY(1px);
+             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+         }
 
-        .input-field::placeholder {
-            color: #9CA3AF; /* placeholder-gray-400 */
-        }
+         /* Secondary Button: Clean, subtle, with a gentle hover effect */
+         .btn-secondary {
+             width: 100%;
+             padding: 0.75rem 1.5rem;
+             font-weight: 600;
+             border-radius: 0.5rem;
+             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+             background-color: #E5E7EB;
+             color: #374151;
+             border: 1px solid #D1D5DB;
+             cursor: pointer;
+             transition: all 0.3s ease-in-out;
+             display: inline-flex;
+             align-items: center;
+             justify-content: center;
+             gap: 0.5rem;
+         }
+         .btn-secondary:hover {
+             background-color: #D1D5DB;
+             color: #1F2937;
+             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+         }
+         .btn-secondary:active {
+             background-color: #9CA3AF;
+             transform: translateY(1px);
+             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+         }
 
-        .input-field:focus {
-            outline: none;
-            border-color: #3B82F6; /* blue-500 */
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.05); /* Custom blue glow */
-        }
+         /* Hero Section: More dynamic background and prominent text */
+         .hero-section {
+             background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+             padding: 5rem 1.5rem;
+             text-align: center;
+             position: relative;
+             overflow: hidden;
+             color: white;
+         }
+         @media (min-width: 768px) {
+             .hero-section { padding-left: 2rem; padding-right: 2rem; }
+         }
+         @media (min-width: 1024px) {
+             .hero-section { padding-left: 3rem; padding-right: 3rem; }
+         }
+         .hero-section h1 { animation: fadeInScale 1s ease-out forwards; }
+         .hero-section p { animation: fadeInScale 1.2s ease-out forwards; animation-delay: 0.2s; opacity: 0; }
+         .hero-section .flex { animation: fadeInUp 1.2s ease-out forwards; animation-delay: 0.4s; opacity: 0; }
+         @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Primary Button: Bold, gradient, with interactive press effect */
-        .btn-primary {
-            width: 100%;
-            padding: 0.75rem 1.5rem; /* py-3 px-6 */
-            font-weight: 600; /* font-semibold */
-            border-radius: 0.5rem; /* rounded-lg */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); /* shadow-lg */
-            background: linear-gradient(to right, #4F46E5, #6366F1); /* Deep blue to lighter blue gradient */
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease-in-out;
-            transform: translateY(0); /* For subtle press effect */
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem; /* space-x-2 */
-        }
+         /* FAQ Accordion: Smoother transitions and clearer active state */
+         .accordion-item {
+             border: 1px solid #E5E7EB;
+             border-radius: 0.5rem;
+             overflow: hidden;
+             margin-bottom: 1rem;
+             transition: all 0.3s ease-in-out;
+         }
+         .accordion-item.active {
+             border-color: #60A5FA;
+             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+         }
+         .accordion-header {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             width: 100%;
+             padding: 1rem 1.5rem;
+             text-align: left;
+             font-weight: 500;
+             color: #4B5563;
+             cursor: pointer;
+             background-color: #F9FAFB;
+             border-bottom: 1px solid #E5E7EB;
+             transition: background-color 0.2s ease-in-out;
+         }
+         .accordion-header:hover {
+             background-color: #F3F4F6;
+         }
+         .accordion-item.active .accordion-header {
+             background-color: #EFF6FF;
+             color: #2563EB;
+             border-bottom-color: #60A5FA;
+         }
+         .accordion-content {
+             padding: 0 1.5rem 1rem 1.5rem;
+             color: #4B5563;
+             display: none;
+             max-height: 0;
+             overflow: hidden;
+             opacity: 0;
+             transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+         }
+         .accordion-item.active .accordion-content {
+             display: block;
+             max-height: 500px;
+             opacity: 1;
+         }
+         .accordion-icon {
+             transform: rotate(0deg);
+             transition: transform 0.2s ease-in-out;
+         }
+         .accordion-item.active .accordion-icon {
+             transform: rotate(180deg);
+         }
 
-        .btn-primary:hover {
-            background: linear-gradient(to right, #4338CA, #4F46E5); /* Darker gradient on hover */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
-            transform: translateY(-2px); /* Slight lift */
-        }
+         /* Pagination Buttons (Corrected from @apply) */
+         .pagination-nav-btn {
+             padding-left: 1.25rem;
+             padding-right: 1.25rem;
+             padding-top: 0.625rem;
+             padding-bottom: 0.625rem;
+             font-size: 0.875rem;
+             line-height: 1.25rem;
+             font-weight: 600;
+             color: #374151;
+             background-color: #FFFFFF;
+             border-radius: 9999px;
+             transition: all 0.3s ease-in-out;
+             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+             transform: translateY(0);
+         }
+         .pagination-nav-btn:hover {
+             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+             background-image: linear-gradient(to right, #60A5FA, #3B82F6);
+             color: #FFFFFF;
+             transform: translateY(-2px);
+         }
+         .pagination-page-btn {
+             width: 2.5rem;
+             height: 2.5rem;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-size: 0.875rem;
+             font-weight: 500;
+             color: #4B5563;
+             background-color: #FFFFFF;
+             border-radius: 9999px;
+             transition: all 0.3s ease-in-out;
+             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+             transform: scale(1);
+         }
+         .pagination-page-btn:hover {
+             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+             background-color: #EFF6FF;
+             color: #2563EB;
+             transform: scale(1.1);
+         }
+         .pagination-page-btn-active {
+             width: 2.5rem;
+             height: 2.5rem;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-size: 0.875rem;
+             font-weight: 700;
+             color: #FFFFFF;
+             background-color: #2563EB;
+             border-radius: 9999px;
+             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+             transform: scale(1.1);
+         }
+         .pagination-disabled-nav-btn {
+             padding-left: 1.25rem;
+             padding-right: 1.25rem;
+             padding-top: 0.625rem;
+             padding-bottom: 0.625rem;
+             font-size: 0.875rem;
+             font-weight: 500;
+             color: #9CA3AF;
+             background-color: #F3F4F6;
+             border-radius: 9999px;
+             cursor: not-allowed;
+             box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+         }
 
-        .btn-primary:active {
-            background: linear-gradient(to right, #3730A3, #4338CA); /* Even darker on active/click */
-            transform: translateY(1px); /* Simulates a press */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Reduced shadow on press */
-        }
+         /* About Us Page Specific Styles */
+         .remote-work-banner {
+             border: 2px solid #D1D5DB;
+             border-radius: 0.75rem;
+             padding: 2.5rem;
+             background: linear-gradient(to right, #F0F9FF, #F8F4FF);
+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+         }
+         .remote-work-banner h1 {
+             font-size: 3rem;
+             line-height: 1.2;
+         }
+         .remote-work-banner p {
+             font-size: 1.25rem;
+             color: #4B5563;
+         }
+         .about-image-section {
+             border-radius: 1rem;
+             overflow: hidden;
+             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+         }
+         .about-image-section img {
+             width: 100%;
+             height: auto;
+             object-fit: cover;
+         }
 
-        /* Secondary Button: Clean, subtle, with a gentle hover effect */
-        .btn-secondary {
-            width: 100%;
-            padding: 0.75rem 1.5rem; /* py-3 px-6 */
-            font-weight: 600; /* font-semibold */
-            border-radius: 0.5rem; /* rounded-lg */
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
-            background-color: #E5E7EB; /* gray-200 */
-            color: #374151; /* gray-800 */
-            border: 1px solid #D1D5DB; /* Light gray border */
-            cursor: pointer;
-            transition: all 0.3s ease-in-out;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem; /* space-x-2 */
-        }
+         /* Specific style for Django's checkbox input for is_active */
+         input[type="checkbox"].form-checkbox {
+             height: 1.25rem;
+             width: 1.25rem;
+             color: #2563EB;
+             border-radius: 0.25rem;
+             border-color: #D1D5DB;
+             --tw-ring-color: #3B82F6;
+             transition: all 0.15s ease-in-out;
+         }
 
-        .btn-secondary:hover {
-            background-color: #D1D5DB; /* gray-300 */
-            color: #1F2937; /* gray-900 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-secondary:active {
-            background-color: #9CA3AF; /* gray-400 */
-            transform: translateY(1px);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        }
-
-        /* Hero Section: More dynamic background and prominent text */
-        .hero-section {
-            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); /* Diagonal gradient */
-            padding-top: 5rem; /* py-20 */
-            padding-bottom: 5rem; /* py-20 */
-            padding-left: 1.5rem; /* px-6 */
-            padding-right: 1.5rem; /* px-6 */
-            text-align: center;
-            position: relative;
-            overflow: hidden; /* Hide any overflow from potential animations */
-            color: white;
-        }
-        @media (min-width: 768px) { /* md:px-8 */
-            .hero-section { padding-left: 2rem; padding-right: 2rem; }
-        }
-        @media (min-width: 1024px) { /* lg:px-12 */
-            .hero-section { padding-left: 3rem; padding-right: 3rem; }
-        }
-
-        /* Optional: Subtle animation for hero section elements */
-        .hero-section h1 {
-            animation: fadeInScale 1s ease-out forwards;
-        }
-        .hero-section p {
-            animation: fadeInScale 1.2s ease-out forwards;
-            animation-delay: 0.2s;
-            opacity: 0; /* Start hidden */
-        }
-        .hero-section .flex {
-            animation: fadeInUp 1.2s ease-out forwards;
-            animation-delay: 0.4s;
-            opacity: 0; /* Start hidden */
-        }
-
-        @keyframes fadeInScale {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* FAQ Accordion: Smoother transitions and clearer active state */
-        .accordion-item {
-            border: 1px solid #E5E7EB; /* border-gray-200 */
-            border-radius: 0.5rem; /* rounded-lg */
-            overflow: hidden;
-            margin-bottom: 1rem; /* mb-4 */
-            transition: all 0.3s ease-in-out;
-        }
-
-        .accordion-item.active {
-            border-color: #60A5FA; /* blue-400 */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); /* shadow-md */
-        }
-
-        .accordion-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding: 1rem 1.5rem; /* py-4 px-6 */
-            text-align: left;
-            font-weight: 500; /* font-medium */
-            color: #4B5563; /* gray-700 */
-            cursor: pointer;
-            background-color: #F9FAFB; /* gray-50 */
-            border-bottom: 1px solid #E5E7EB; /* Separator */
-            transition: background-color 0.2s ease-in-out;
-        }
-
-        .accordion-header:hover {
-            background-color: #F3F4F6; /* gray-100 */
-        }
-
-        .accordion-item.active .accordion-header {
-            background-color: #EFF6FF; /* blue-50 */
-            color: #2563EB; /* blue-700 */
-            border-bottom-color: #60A5FA;
-        }
-
-        .accordion-content {
-            padding: 0 1.5rem 1rem 1.5rem; /* px-6 pb-4 */
-            color: #4B5563; /* gray-600 */
-            display: none; /* Controlled by JS */
-            max-height: 0; /* Initial state for animation */
-            overflow: hidden;
-            opacity: 0;
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out; /* Smooth slide down */
-        }
-
-        .accordion-item.active .accordion-content {
-            display: block; /* Show content */
-            max-height: 500px; /* Arbitrary large value to allow content to expand */
-            opacity: 1;
-        }
-
-        .accordion-icon {
-            transform: rotate(0deg);
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .accordion-item.active .accordion-icon {
-            transform: rotate(180deg);
-        }
-
-        /* About Us Page Specific Styles */
-        .remote-work-banner {
-            border: 2px solid #D1D5DB; /* A slightly thicker, more defined border */
-            border-radius: 0.75rem; /* More rounded corners */
-            padding: 2.5rem; /* More padding */
-            background: linear-gradient(to right, #F0F9FF, #F8F4FF); /* Subtle background gradient */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* A softer shadow */
-        }
-
-        .pagination-nav-btn {
-            @apply px-5 py-2.5 text-sm font-semibold text-gray-800 bg-white rounded-full transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:bg-gradient-to-r from-blue-400 to-blue-600 hover:text-white transform hover:-translate-y-0.5;
-        }
-        
-        .pagination-page-btn {
-            @apply w-10 h-10 flex items-center justify-center text-sm font-medium text-gray-700 bg-white rounded-full transition-all duration-300 ease-in-out shadow-sm hover:shadow-md hover:bg-blue-50 hover:text-blue-600 transform hover:scale-110;
-        }
-        .pagination-page-btn-active {
-            @apply w-10 h-10 flex items-center justify-center text-sm font-bold text-white bg-blue-600 rounded-full shadow-lg transform scale-110;
-        }
-        .pagination-disabled-nav-btn {
-            @apply px-5 py-2.5 text-sm font-medium text-gray-400 bg-gray-100 rounded-full cursor-not-allowed shadow-inner;
-        }
-
-        .remote-work-banner h1 {
-            font-size: 3rem; /* Larger font size for impact */
-            line-height: 1.2;
-        }
-
-        .remote-work-banner p {
-            font-size: 1.25rem; /* Larger subtitle */
-            color: #4B5563; /* Darker gray for better contrast */
-        }
-
-        .about-image-section {
-            border-radius: 1rem; /* More pronounced rounded corners for images */
-            overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Stronger shadow for images */
-        }
-
-        .about-image-section img {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-        }
-
-        /* Specific style for Django's checkbox input for is_active */
-        input[type="checkbox"].form-checkbox {
-            height: 1.25rem; /* h-5 */
-            width: 1.25rem; /* w-5 */
-            color: #2563EB; /* text-blue-600 */
-            border-radius: 0.25rem; /* rounded */
-            border-color: #D1D5DB; /* border-gray-300 */
-            --tw-ring-color: #3B82F6; /* focus:ring-blue-500 */
-            transition: all 0.15s ease-in-out;
-        }
-
-        /* General form input styling for Django forms */
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="url"],
-        textarea,
-        select {
-            /* These will inherit .input-field styles from above */
-        }
-    </style>
+         /* General form input styling for Django forms */
+         input[type="text"],
+         input[type="email"],
+         input[type="password"],
+         input[type="url"],
+         textarea,
+         select {
+             /* These will inherit .input-field styles from above */
+         }
+     </style>
 
     {% block extra_head %}
     {% endblock %}
@@ -411,13 +407,12 @@
                 <a href="{% url 'register' %}" class="block px-4 py-2 bg-blue-600 text-white rounded-lg text-center flex items-center justify-center">
                     <i class="fas fa-user-plus mr-2"></i> Register
                 </a>
-            {% endif %}
-        </div>
+                {% endif %}
+            </div>
     </header>
 
     <main class="flex-grow">
         {% block content %}
-        <!-- Content will be inserted here by child templates -->
         {% endblock %}
     </main>
 
@@ -436,10 +431,9 @@
         </div>
     </footer>
 
-    <!-- Main JavaScript (Inlined as requested) -->
+    <!-- Main JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Mobile navigation toggle
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
 
@@ -449,39 +443,28 @@
                 });
             }
 
-            // FAQ Accordion functionality
             const accordionHeaders = document.querySelectorAll('.accordion-header');
-
             accordionHeaders.forEach(header => {
                 header.addEventListener('click', () => {
                     const accordionItem = header.closest('.accordion-item');
                     const accordionContent = accordionItem.querySelector('.accordion-content');
                     const accordionIcon = header.querySelector('.accordion-icon');
 
-                    // Toggle active class on the item
                     accordionItem.classList.toggle('active');
 
-                    // Toggle visibility of the content with animation
                     if (accordionContent.style.maxHeight !== '0px' && accordionContent.style.maxHeight !== '') {
                         accordionContent.style.maxHeight = '0';
                         accordionContent.style.opacity = '0';
-                        setTimeout(() => { accordionContent.style.display = 'none'; }, 300); // Hide after transition
+                        setTimeout(() => { accordionContent.style.display = 'none'; }, 300);
                     } else {
                         accordionContent.style.display = 'block';
-                        // Set a scrollHeight or a large fixed height for the transition to work
                         accordionContent.style.maxHeight = accordionContent.scrollHeight + 'px';
                         accordionContent.style.opacity = '1';
                     }
 
-                    // Rotate the icon
                     accordionIcon.classList.toggle('rotate-180');
                 });
             });
-
-            // Initialize Lucide icons if present on the page
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                lucide.createIcons();
-            }
         });
     </script>
     {% block extra_js %}
