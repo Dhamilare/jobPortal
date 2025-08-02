@@ -31,51 +31,69 @@
             </div>
         {% endif %}
 
-        <!-- Existing Jobs List (Moved to Top) -->
+        <!-- Existing Jobs List Section -->
         <section class="bg-white rounded-lg p-8 card-shadow border border-gray-200 mb-12">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                 <i class="fas fa-list-alt text-blue-600 mr-3"></i> Existing Jobs
             </h2>
             <div class="overflow-x-auto">
                 {% if jobs %}
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Active</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            {% for job in jobs %}
+                    <form id="bulk-delete-form" action="{% url 'job_bulk_delete' %}" method="POST">
+                        {% csrf_token %}
+                        <!-- NEW: Bulk delete button moved to the top -->
+                        <div class="mb-4 flex justify-end">
+                            <button type="submit" id="bulk-delete-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded inline-flex items-center transition-colors duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <i class="fas fa-trash-alt mr-2"></i> Delete Selected
+                            </button>
+                        </div>
+                        
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ job.title }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ job.company_name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ job.location }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ job.job_type }}</td>
-                                    <td class="px-6 py-4 text-center">
-                                        {% if job.is_active %}
-                                            <span class="px-2 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                <i class="fas fa-check-circle mr-1"></i> Yes
-                                            </span>
-                                        {% else %}
-                                            <span class="px-2 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                <i class="fas fa-times-circle mr-1"></i> No
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="px-6 py-4 text-center text-sm font-medium">
-                                        <a href="{% url 'job_update_delete' job.id %}" class="text-blue-600 hover:text-blue-900 inline-flex items-center">
-                                            <i class="fas fa-edit mr-1"></i> Edit/Delete
-                                        </a>
-                                    </td>
+                                    <!-- NEW: Bulk Select Checkbox -->
+                                    <th class="px-3 py-3 text-center w-12">
+                                        <input type="checkbox" id="select-all-jobs" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Active</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for job in jobs %}
+                                    <tr>
+                                        <!-- NEW: Individual Checkbox for each job -->
+                                        <td class="px-3 py-4 text-center">
+                                            <input type="checkbox" name="job_ids" value="{{ job.id }}" class="job-checkbox form-checkbox h-4 w-4 text-blue-600 rounded">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ job.title }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ job.company_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ job.location }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ job.job_type }}</td>
+                                        <td class="px-6 py-4 text-center">
+                                            {% if job.is_active %}
+                                                <span class="px-2 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                    <i class="fas fa-check-circle mr-1"></i> Yes
+                                                </span>
+                                            {% else %}
+                                                <span class="px-2 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                                    <i class="fas fa-times-circle mr-1"></i> No
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-6 py-4 text-center text-sm font-medium">
+                                            <a href="{% url 'job_update_delete' job.id %}" class="text-blue-600 hover:text-blue-900 inline-flex items-center">
+                                                <i class="fas fa-edit mr-1"></i> Edit/Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
                 {% else %}
                     <p class="text-center text-gray-600 flex items-center justify-center">
                         <i class="fas fa-info-circle mr-2"></i> No jobs have been posted yet.
@@ -172,7 +190,7 @@
             </form>
         </section>
 
-        <!-- Bulk Upload Jobs via CSV Section (Moved to Last) -->
+        <!-- Bulk Upload Jobs via CSV Section -->
         <section class="bg-white rounded-lg p-8 card-shadow mb-12 border border-gray-200">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                 <i class="fas fa-upload text-blue-600 mr-3"></i> Bulk Upload Jobs via CSV
@@ -209,7 +227,7 @@
                     <label for="{{ upload_form.csv_file.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         <i class="fas fa-file-csv mr-2 text-gray-500"></i>{{ upload_form.csv_file.label }}
                     </label>
-                    {{ upload_form.csv_file }} {# This will now render with the simplified styling #}
+                    {{ upload_form.csv_file }}
                 </div>
 
                 <div>
@@ -227,4 +245,53 @@
         </section>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const selectAllCheckbox = document.getElementById('select-all-jobs');
+        const jobCheckboxes = document.querySelectorAll('.job-checkbox');
+        const bulkDeleteButton = document.getElementById('bulk-delete-btn');
+        const bulkDeleteForm = document.getElementById('bulk-delete-form');
+
+        // Function to update button state
+        function updateButtonState() {
+            const checkedBoxes = document.querySelectorAll('.job-checkbox:checked');
+            bulkDeleteButton.disabled = checkedBoxes.length === 0;
+        }
+
+        // "Select all" functionality
+        selectAllCheckbox.addEventListener('change', () => {
+            jobCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            updateButtonState();
+        });
+
+        // Individual checkbox functionality
+        jobCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                // If any checkbox is unchecked, uncheck the "select all" checkbox
+                if (!checkbox.checked) {
+                    selectAllCheckbox.checked = false;
+                }
+                updateButtonState();
+            });
+        });
+
+        // Add a confirmation for the delete action
+        bulkDeleteForm.addEventListener('submit', (event) => {
+            const checkedBoxes = document.querySelectorAll('.job-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                // This case is unlikely because the button is disabled, but it's a good safety check.
+                event.preventDefault();
+                alert("Please select at least one job to delete.");
+            } else {
+                const confirmation = confirm(`Are you sure you want to delete ${checkedBoxes.length} selected job(s)? This action cannot be undone.`);
+                if (!confirmation) {
+                    event.preventDefault();
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

@@ -403,7 +403,7 @@ def is_staff_export_applicants_csv(request):
     messages.success(request, 'Applicant data exported successfully to CSV!')
     return response
 
-# New Category Management Views
+
 @moderator_required
 def manage_categories(request):
     form = CategoryForm(request.POST or None)
@@ -680,3 +680,16 @@ def unsave_job(request, job_id):
     else:
         messages.info(request, f'Job "{job.title}" was not found in your saved list.')
     return redirect('job_detail', job_id=job.id)
+
+
+@moderator_required
+def job_bulk_delete(request):
+    if request.method == 'POST':
+        job_ids = request.POST.getlist('job_ids')
+
+        if job_ids:
+            deleted_count, _ = Job.objects.filter(id__in=job_ids).delete()
+            messages.success(request, f"{deleted_count} job(s) have been successfully deleted.")
+        else:
+            messages.warning(request, "No jobs were selected for deletion.")
+    return redirect('job_list_create')

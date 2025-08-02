@@ -13,9 +13,9 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
 
     # -------------------- Job Listings --------------------
-    path('jobs/', views.job_list_view, name='job_list'),  # All jobs
-    path('jobs/<int:job_id>/', views.job_detail_view, name='job_detail'),  # Job details
-    path('jobs/<int:job_id>/apply-redirect/', views.job_apply_link_redirect, name='job_apply_redirect'),  # External redirect with tracking
+    path('jobs/', views.job_list_view, name='job_list'),
+    path('jobs/<int:job_id>/', views.job_detail_view, name='job_detail'),
+    path('jobs/<int:job_id>/apply-redirect/', views.job_apply_link_redirect, name='job_apply_redirect'), 
     path('jobs/<int:job_id>/save/', views.save_job, name='save_job'),
     path('jobs/<int:job_id>/unsave/', views.unsave_job, name='unsave_job'),
     
@@ -33,11 +33,12 @@ urlpatterns = [
 
     # -------------------- Moderator Module --------------------
     path('moderator/dashboard/', views.moderator_dashboard, name='moderator_dashboard'),
-    path('moderator/jobs/', views.job_list_create, name='job_list_create'),  # View + Create
-    path('moderator/jobs/<int:job_id>/', views.job_update_delete, name='job_update_delete'),  # Edit/Delete
+    path('moderator/jobs/', views.job_list_create, name='job_list_create'), 
+    path('moderator/jobs/<int:job_id>/', views.job_update_delete, name='job_update_delete'), 
     path('moderator/reports/', views.moderator_report_view, name='moderator_reports'),
     path('moderator/jobs/bulk-upload/', views.job_bulk_upload_csv, name='job_bulk_upload_csv'),
-    path('moderator/jobs/bulk-upload/sample/', views.job_bulk_upload_csv_sample, name='job_bulk_upload_csv_sample'), # New URL
+    path('moderator/jobs/bulk-upload/sample/', views.job_bulk_upload_csv_sample, name='job_bulk_upload_csv_sample'),
+    path('jobs/bulk-delete/', views.job_bulk_delete, name='job_bulk_delete'),
 
     # Category Management URLs
     path('moderator/categories/', views.manage_categories, name='manage_categories'),
