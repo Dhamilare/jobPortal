@@ -155,7 +155,6 @@ class SavedJobAdmin(admin.ModelAdmin):
     raw_id_fields = ('user', 'job') # Use raw_id_fields for FKs
 
 
-# NEW: Admin for JobAlert model
 @admin.register(JobAlert)
 class JobAlertAdmin(admin.ModelAdmin):
     list_display = ('user', 'alert_name', 'keywords_display', 'locations', 'job_types_display', 'frequency', 'is_active', 'created_at', 'last_sent')

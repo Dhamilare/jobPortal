@@ -24,7 +24,6 @@
                     <h2 class="text-xl font-semibold text-gray-800 flex items-center">
                         <i class="fas fa-user-plus text-green-600 mr-2"></i> Applicant Sign-ups Over Time
                     </h2>
-                    {# Pass signupsData directly to downloadCSV #}
                     <button id="downloadSignupsCsv" class="text-sm text-blue-600 hover:underline inline-flex items-center transition-colors duration-200">
                         <i class="fas fa-download mr-1"></i> Download CSV
                     </button>
@@ -40,7 +39,6 @@
                     <h2 class="text-xl font-semibold text-gray-800 flex items-center">
                         <i class="fas fa-tags text-purple-600 mr-2"></i> Jobs by Category
                     </h2>
-                    {# Pass jobsByCategoryData directly to downloadCSV #}
                     <button id="downloadCategoriesCsv" class="text-sm text-blue-600 hover:underline inline-flex items-center transition-colors duration-200">
                         <i class="fas fa-download mr-1"></i> Download CSV
                     </button>
@@ -56,7 +54,6 @@
                     <h2 class="text-xl font-semibold text-gray-800 flex items-center">
                         <i class="fas fa-chart-bar text-red-600 mr-2"></i> Top Jobs by Application Clicks
                     </h2>
-                    {# Pass topJobsAppliedData directly to downloadCSV #}
                     <button id="downloadTopJobsCsv" class="text-sm text-blue-600 hover:underline inline-flex items-center transition-colors duration-200">
                         <i class="fas fa-download mr-1"></i> Download CSV
                     </button>
@@ -68,7 +65,7 @@
         </div>
 
         <div class="text-center mt-8">
-            <a href="{% url 'moderator_dashboard' %}" class="btn-secondary inline-flex items-center px-6 py-3 rounded-full text-base font-medium text-white bg-gray-700 hover:bg-gray-800 transition-colors duration-200 shadow-md hover:shadow-lg">
+            <a href="{% url 'moderator_dashboard' %}" class="btn-secondary inline-flex items-center">
                 <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
             </a>
         </div>
@@ -113,10 +110,9 @@ document.addEventListener('DOMContentLoaded', function () {
         new Chart(document.getElementById('signupsChart'), {
             type: 'line',
             data: {
-                labels: signupsData.map(item => item.date),
                 datasets: [{
                     label: 'New Applicants',
-                    data: signupsData.map(item => item.count),
+                    data: signupsData.map(item => ({ x: item.date, y: item.count })),
                     borderColor: '#3B82F6', // blue-500
                     backgroundColor: 'rgba(59, 130, 246, 0.2)', // blue-500 with transparency
                     tension: 0.4, // Smoother curve

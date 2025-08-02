@@ -366,10 +366,32 @@ def job_update_delete(request, job_id):
 
 @moderator_required
 def moderator_report_view(request):
-    # Chart 1: Applicant Sign-ups Over Time
-    signups_data = CustomUser.objects.filter(is_applicant=True).annotate(
+
+    # Retrieve raw signup data as before
+    signups_raw = CustomUser.objects.filter(is_applicant=True).annotate(
         date=TruncDay('date_joined')
     ).values('date').annotate(count=models.Count('id')).order_by('date')
+
+    if signups_raw:
+        start_date = signups_raw.first()['date'].date()
+        end_date = signups_raw.last()['date'].date()
+    else:
+        # Handle case with no signups
+        start_date = date.today()
+        end_date = date.today()
+
+    # Create a dictionary for quick lookup of signup counts
+    signups_dict = {str(item['date'].date()): item['count'] for item in signups_raw}
+
+    # Generate a list of all dates in the range
+    continuous_signups_data = []
+    current_date = start_date
+    while current_date <= end_date:
+        continuous_signups_data.append({
+            'date': current_date.isoformat(),
+            'count': signups_dict.get(str(current_date), 0)
+        })
+        current_date += timedelta(days=1)
 
     # Chart 2: Jobs by Category
     jobs_by_category = Category.objects.annotate(
@@ -381,10 +403,16 @@ def moderator_report_view(request):
         application_count=models.Count('applications')
     ).values('title', 'application_count').order_by('-application_count')[:5]
 
+    # Debugging data (not used in the chart itself, but useful to keep)
+    applicant_details = CustomUser.objects.filter(is_applicant=True).values(
+        'first_name', 'last_name', 'date_joined'
+    ).order_by('date_joined')
+
     context = {
-        'signups_data_json': json.dumps(list(signups_data), default=str),  # date to string
+        'signups_data_json': json.dumps(continuous_signups_data),
         'jobs_by_category_json': json.dumps(list(jobs_by_category), default=str),
         'top_jobs_applied_json': json.dumps(list(top_jobs_applied), default=str),
+        'applicant_details': list(applicant_details),
     }
 
     return render(request, 'moderator/moderator_reports.html', context)
