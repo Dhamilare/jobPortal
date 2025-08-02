@@ -14,12 +14,12 @@ from django.contrib import messages
 from itertools import chain
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from datetime import datetime
+from datetime import date, datetime
 import json
 from django.core.mail import EmailMultiAlternatives
-
 from .forms import *
 from .models import *
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # ----------------------------
 # Role-based Access Decorators
@@ -138,25 +138,39 @@ def user_logout(request):
 # Job Views
 # ----------------------------
 def job_list_view(request):
-    jobs = Job.objects.filter(is_active=True).order_by('-date_posted')
+    """
+    Displays a list of active job postings with search, filtering, and pagination.
+    """
+    jobs_list = Job.objects.filter(is_active=True).order_by('-date_posted')
     query, category, job_type = request.GET.get('q'), request.GET.get('category'), request.GET.get('job_type')
 
     if query:
-        jobs = jobs.filter(
+        jobs_list = jobs_list.filter(
             models.Q(title__icontains=query) |
             models.Q(description__icontains=query) |
             models.Q(company_name__icontains=query) |
             models.Q(location__icontains=query)
         )
     if category:
-        jobs = jobs.filter(category__name__iexact=category)
+        jobs_list = jobs_list.filter(category__name__iexact=category)
     if job_type:
-        jobs = jobs.filter(job_type__iexact=job_type)
+        jobs_list = jobs_list.filter(job_type__iexact=job_type)
 
     now = timezone.now()
-    for job in jobs:
+    for job in jobs_list:
         time_since_posted = now - job.date_posted
         job.is_hot_job = time_since_posted < timedelta(hours=24)
+
+    paginator = Paginator(jobs_list, 9)
+    page_number = request.GET.get('page')
+    try:
+        jobs = paginator.page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        jobs = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        jobs = paginator.page(paginator.num_pages)
 
     context = {
         'jobs': jobs,
@@ -447,7 +461,7 @@ def category_update_delete(request, category_id):
 @moderator_required
 def job_bulk_upload_csv(request):
     upload_form = JobCSVUploadForm(request.POST or None, request.FILES or None)
-    
+
     if request.method == 'POST' and upload_form.is_valid():
         csv_file = request.FILES['csv_file']
         file_data = csv_file.read().decode('utf-8')
@@ -461,7 +475,7 @@ def job_bulk_upload_csv(request):
         expected_headers = [
             'title', 'company name', 'location', 'job type',
             'category name', 'external application url',
-            'description', 'is active'
+            'description', 'is active', 'job expiry date'
         ]
         header_map = {
             'title': 'title',
@@ -472,6 +486,7 @@ def job_bulk_upload_csv(request):
             'external application url': 'external_application_url',
             'description': 'description',
             'is active': 'is_active',
+            'job expiry date': 'job_expiry_date',
         }
         job_type_choices = [choice[0].lower() for choice in Job.JOB_TYPE_CHOICES]
 
@@ -483,10 +498,13 @@ def job_bulk_upload_csv(request):
                 if missing_headers:
                     messages.error(request, f"Missing headers: {', '.join(missing_headers)}")
                     return redirect('job_list_create')
-                
+
                 unexpected_columns = [col for col in headers if col not in expected_headers]
                 if unexpected_columns:
                     messages.warning(request, f"Note: Ignored extra columns: {', '.join(unexpected_columns)}")
+                continue
+
+            if not any(row):
                 continue
 
             try:
@@ -523,6 +541,21 @@ def job_bulk_upload_csv(request):
                 elif model_field == 'is_active':
                     job_data['is_active'] = value.lower() == 'true'
 
+                elif model_field == 'job_expiry_date':
+                    if value:
+                        try:
+                            job_data['job_expiry_date'] = datetime.strptime(value, '%d/%m/%Y').date()
+                        except ValueError:
+                            try:
+                                job_data['job_expiry_date'] = datetime.strptime(value, '%Y-%m-%d').date()
+                            except ValueError:
+                                row_errors.append(
+                                    f"Row {i+1}: Invalid date format for '{csv_col}'. "
+                                    f"Expected 'YYYY-MM-DD' or 'DD/MM/YYYY', got '{value}'."
+                                )
+                    else:
+                        job_data['job_expiry_date'] = None
+
                 elif model_field == 'external_application_url':
                     if value and not (value.startswith('http://') or value.startswith('https://')):
                         row_errors.append(f"Row {i+1}: Invalid URL '{value}'. Must start with http:// or https://.")
@@ -548,6 +581,7 @@ def job_bulk_upload_csv(request):
                         'external_application_url': job_data['external_application_url'],
                         'description': job_data['description'],
                         'is_active': job_data['is_active'],
+                        'job_expiry_date': job_data['job_expiry_date'],
                         'posted_by': request.user,
                     }
                 )
@@ -558,9 +592,8 @@ def job_bulk_upload_csv(request):
             except Exception as e:
                 errors.append(f"Row {i+1}: Failed to save job '{job_data.get('title')}' - {e}")
 
-        # Final messaging
         if errors:
-            for e in errors[:10]:  # Show only first 10 errors
+            for e in errors[:10]:
                 messages.error(request, e)
             if len(errors) > 10:
                 messages.warning(request, f"And {len(errors) - 10} more errors hidden. Please check the file carefully.")
@@ -570,13 +603,13 @@ def job_bulk_upload_csv(request):
 
         return redirect('job_list_create')
 
-    # GET or invalid form
     jobs = Job.objects.all().order_by('-date_posted')
     return render(request, 'moderator/job_list_create.html', {
         'jobs': jobs,
         'form': JobForm(),
         'upload_form': upload_form,
     })
+
 
 @moderator_required
 def job_bulk_upload_csv_sample(request):
@@ -587,28 +620,27 @@ def job_bulk_upload_csv_sample(request):
     response['Content-Disposition'] = 'attachment; filename="job_upload_sample.csv"'
 
     writer = csv.writer(response)
-    # Define the headers that the bulk upload expects
     headers = [
         'Title', 'Company Name', 'Location', 'Job Type',
-        'Category Name', 'External Application URL', 'Description', 'Is Active'
+        'Category Name', 'External Application URL', 'Description', 'Is Active',
+        'Job Expiry Date'
     ]
     writer.writerow(headers)
 
-    # Add a sample row (optional, but very helpful for users)
     writer.writerow([
         'Software Engineer', 'Acme Corp', 'Remote', 'Full-time',
         'Technology', 'https://acmecorp.com/careers/software-engineer',
-        'Develop and maintain software applications.', 'True'
+        'Develop and maintain software applications.', 'True', '2025-12-31'
     ])
     writer.writerow([
         'Marketing Specialist', 'Global Brands', 'New York, NY', 'Full-time',
         'Marketing', 'https://globalbrands.com/jobs/marketing-specialist',
-        'Execute marketing campaigns and analyze performance.', 'True'
+        'Execute marketing campaigns and analyze performance.', 'True', '17/09/2025'
     ])
     writer.writerow([
         'Customer Support Intern', 'Startup Innovations', 'San Francisco, CA', 'Internship',
-        'Customer Service', '', # Empty URL for this example
-        'Assist customers with product inquiries and support.', 'False'
+        'Customer Service', '',
+        'Assist customers with product inquiries and support.', 'False', ''
     ])
 
     return response
@@ -638,7 +670,7 @@ def manage_job_alerts(request, alert_id=None):
                     job_alert.last_sent = timezone.now()
 
                 job_alert.save()
-                form.save_m2m() # Save ManyToMany relations (categories)
+                form.save_m2m()
                 if alert_id:
                     messages.success(request, f'Job alert "{job_alert.alert_name}" updated successfully!')
                 else:

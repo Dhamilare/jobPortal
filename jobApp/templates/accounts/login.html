@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4">
-    <div class="w-full max-w-md bg-white rounded-lg p-8 md:p-10 shadow-lg">
+    <div class="w-full max-w-md bg-white card-shadow rounded-2xl p-8 md:p-10">
         <h1 class="text-3xl font-extrabold text-center text-blue-700 mb-6 flex items-center justify-center">
             <i class="fas fa-user-circle text-4xl mr-2"></i> Welcome Back!
         </h1>
@@ -12,7 +12,7 @@
 
         {% if messages %}
             {% for message in messages %}
-                <div class="mb-4 px-4 py-3 rounded relative 
+                <div class="mb-4 px-4 py-3 rounded-lg relative 
                     {% if message.tags == 'success' %}bg-green-100 border border-green-400 text-green-700
                     {% elif message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700
                     {% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}">
@@ -23,7 +23,7 @@
         {% endif %}
 
         {% if form.errors %}
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4">
                 <strong class="font-bold">Login Failed!</strong>
                 <span class="block sm:inline">Please check your credentials.</span>
                 <ul class="mt-2 list-disc list-inside text-sm">
@@ -42,16 +42,24 @@
         <form action="{% url 'login' %}" method="POST" class="space-y-6">
             {% csrf_token %}
             <div>
-                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-envelope mr-2 text-gray-500"></i>{{ form.email.label }}
+                <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-envelope mr-2 text-gray-500"></i>Email
                 </label>
-                {{ form.email }}
+                <!-- Manually render the email field and add the class -->
+                <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}"
+                       class="input-field"
+                       placeholder="e.g., jane.doe@example.com"
+                       required>
             </div>
             <div>
                 <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-lock mr-2 text-gray-500"></i>{{ form.password.label }}
+                    <i class="fas fa-lock mr-2 text-gray-500"></i>Password
                 </label>
-                {{ form.password }}
+                <!-- Manually render the password field and add the class -->
+                <input type="password" name="{{ form.password.name }}" id="{{ form.password.id_for_label }}"
+                       class="input-field"
+                       placeholder="********"
+                       required>
             </div>
             <div class="flex items-center justify-between text-sm">
                 <div class="flex items-center">

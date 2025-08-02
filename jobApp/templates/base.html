@@ -12,7 +12,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Custom Styles for Jaw-Dropping UI/UX (Inlined as requested) -->
-    <style>
+     <style>
         /* Base styles: Apply Inter font and a subtle light background */
         body {
             font-family: 'Inter', sans-serif;
@@ -39,9 +39,9 @@
         /* Card Shadows: Enhanced for depth and modern Material Design feel */
         .card-shadow {
             /* Multiple shadows for a more realistic, layered depth effect */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), /* Larger, softer shadow */
-                        0 4px 6px -2px rgba(0, 0, 0, 0.05),  /* Smaller, sharper shadow */
-                        0 1px 3px 0 rgba(0, 0, 0, 0.02);     /* Very subtle base shadow */
+            box-shadow: 10px 15px -3px rgba(0, 0, 0, 0.1), /* Larger, softer shadow */
+                        0 4px 6px -2px rgba(0, 0, 0, 0.05),  /* Smaller, sharper shadow */
+                        0 1px 3px 0 rgba(0, 0, 0, 0.02);     /* Very subtle base shadow */
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         }
 
@@ -262,6 +262,20 @@
             padding: 2.5rem; /* More padding */
             background: linear-gradient(to right, #F0F9FF, #F8F4FF); /* Subtle background gradient */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* A softer shadow */
+        }
+
+        .pagination-nav-btn {
+            @apply px-5 py-2.5 text-sm font-semibold text-gray-800 bg-white rounded-full transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl hover:bg-gradient-to-r from-blue-400 to-blue-600 hover:text-white transform hover:-translate-y-0.5;
+        }
+        
+        .pagination-page-btn {
+            @apply w-10 h-10 flex items-center justify-center text-sm font-medium text-gray-700 bg-white rounded-full transition-all duration-300 ease-in-out shadow-sm hover:shadow-md hover:bg-blue-50 hover:text-blue-600 transform hover:scale-110;
+        }
+        .pagination-page-btn-active {
+            @apply w-10 h-10 flex items-center justify-center text-sm font-bold text-white bg-blue-600 rounded-full shadow-lg transform scale-110;
+        }
+        .pagination-disabled-nav-btn {
+            @apply px-5 py-2.5 text-sm font-medium text-gray-400 bg-gray-100 rounded-full cursor-not-allowed shadow-inner;
         }
 
         .remote-work-banner h1 {

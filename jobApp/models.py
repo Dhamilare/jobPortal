@@ -71,6 +71,7 @@ class Job(models.Model):
         ('Contract', 'Contract'),
         ('Temporary', 'Temporary'),
         ('Internship', 'Internship'),
+        ('Remote', 'Remote'),
     ]
 
     title = models.CharField(max_length=200)
