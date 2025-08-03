@@ -156,12 +156,19 @@ def job_list_view(request):
     if job_type:
         jobs_list = jobs_list.filter(job_type__iexact=job_type)
 
+    sort_by = request.GET.get('sort_by', 'newest')
+    
+    if sort_by == 'oldest':
+        jobs_list.order_by('date_posted')
+    else: 
+        jobs_list.order_by('-date_posted')
+
     now = timezone.now()
     for job in jobs_list:
         time_since_posted = now - job.date_posted
         job.is_hot_job = time_since_posted < timedelta(hours=24)
 
-    paginator = Paginator(jobs_list, 9)
+    paginator = Paginator(jobs_list, 8)
     page_number = request.GET.get('page')
     try:
         jobs = paginator.page(page_number)
@@ -179,6 +186,7 @@ def job_list_view(request):
         'current_query': query or '',
         'current_category': category or '',
         'current_job_type': job_type or '',
+        'current_sort_by': sort_by,
     }
     return render(request, 'job_list.html', context)
 

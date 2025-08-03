@@ -4,7 +4,82 @@
 {% block title %}Job Listings - JobPortal{% endblock %}
 
 {% block content %}
-<div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
+<style>
+    .card-shadow {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease-in-out;
+    }
+
+    .card-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+        background-color: #3b82f6; /* Tailwind blue-500 */
+        color: white;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563eb; /* Tailwind blue-600 */
+        transform: translateY(-1px);
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db; /* Tailwind gray-300 */
+        border-radius: 0.5rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-field:focus {
+        border-color: #2563eb; /* Tailwind blue-600 */
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+    }
+
+    .pagination-nav-btn, .pagination-page-btn, .pagination-disabled-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .pagination-nav-btn, .pagination-page-btn {
+        background-color: white;
+        color: #4b5563; /* Tailwind gray-700 */
+        border: 1px solid #d1d5db;
+    }
+
+    .pagination-nav-btn:hover, .pagination-page-btn:hover {
+        background-color: #f3f4f6; /* Tailwind gray-100 */
+    }
+
+    .pagination-page-btn-active {
+        background-color: #2563eb;
+        color: white;
+        border: 1px solid #2563eb;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+    }
+
+    .pagination-disabled-nav-btn {
+        background-color: #e5e7eb;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+</style>
+
+<div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen lg:pt-20">
     <div class="container mx-auto">
         <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center flex items-center justify-center">
             <i class="fas fa-search-plus text-blue-600 mr-3"></i> Explore Job Opportunities
@@ -30,131 +105,172 @@
             </div>
         {% endif %}
 
-        <!-- Search and Filter Section -->
-        <div class="bg-white rounded-lg p-6 card-shadow mb-8 border border-gray-200">
-            <form method="GET" action="{% url 'job_list' %}" class="space-y-4 md:space-y-0 md:flex md:items-end md:space-x-4">
-                <div class="flex-grow">
-                    <label for="q" class="block text-sm font-medium text-gray-700 mb-1">Keywords / Title / Company / Location</label>
-                    <input type="text" name="q" id="q" placeholder="e.g., Software Engineer, Remote, Google"
-                            class="input-field" value="{{ current_query }}">
-                </div>
-                <div>
-                    <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select name="category" id="category" class="input-field">
-                        <option value="">All Categories</option>
-                        {% for cat in categories %}
-                            <option value="{{ cat.name }}" {% if current_category == cat.name %}selected{% endif %}>{{ cat.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label for="job_type" class="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-                    <select name="job_type" id="job_type" class="input-field">
-                        <option value="">All Types</option>
-                        {% for type in job_types %}
-                            <option value="{{ type }}" {% if current_job_type == type %}selected{% endif %}>{{ type }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn-primary w-full md:w-auto px-6 py-3">
-                    <i class="fas fa-filter mr-2"></i> Filter Jobs
-                </button>
-            </form>
-        </div>
+        <div class="lg:flex lg:space-x-8">
 
-        <!-- Job Listings Grid -->
-        {% if jobs %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {% for job in jobs %}
-                    <div class="bg-white rounded-lg p-6 card-shadow border border-gray-200 relative overflow-hidden">
-                        {% if job.is_hot_job %}
-                            <span class="absolute top-0 right-0 mt-3 mr-3 bg-red-500 text-white text-xs font-bold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center transform rotate-3 origin-top-right">
-                                <i class="fas fa-fire mr-1 text-sm"></i> Hot!
+            {# Search and Filter Section (Sidebar on desktop, collapses on mobile) #}
+            <div class="w-full lg:w-1/4 mb-6 lg:mb-0 lg:sticky lg:top-8 lg:self-start">
+                <button id="toggle-filters-btn" class="lg:hidden w-full flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mb-4 hover:bg-blue-700 transition-colors duration-200">
+                    <i class="fas fa-filter mr-2"></i> Show Filters
+                </button>
+                
+                <div id="filter-form-container" class="hidden lg:block bg-white rounded-lg p-6 card-shadow border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Filter & Sort</h2>
+                    <form method="GET" action="{% url 'job_list' %}" class="space-y-4">
+                        <div>
+                            <label for="q" class="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
+                            <input type="text" name="q" id="q" placeholder="e.g., Software Engineer"
+                                class="input-field" value="{{ current_query }}">
+                        </div>
+                        <div>
+                            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select name="category" id="category" class="input-field">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.name }}" {% if current_category == cat.name %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="job_type" class="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
+                            <select name="job_type" id="job_type" class="input-field">
+                                <option value="">All Types</option>
+                                {% for type in job_types %}
+                                    <option value="{{ type }}" {% if current_job_type == type %}selected{% endif %}>{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="sort_by" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                            <select name="sort_by" id="sort_by" class="input-field">
+                                <option value="newest" {% if current_sort_by == 'newest' %}selected{% endif %}>Newest to Oldest</option>
+                                <option value="oldest" {% if current_sort_by == 'oldest' %}selected{% endif %}>Oldest to Newest</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary w-full px-6 py-3 mt-4">
+                            <i class="fas fa-search mr-2"></i> Apply Filters
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {# Job Listings Grid (Main Content) #}
+            <div class="w-full lg:w-3/4">
+                {% if jobs %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {% for job in jobs %}
+                            <div class="bg-white rounded-lg p-6 card-shadow border border-gray-200 relative overflow-hidden flex flex-col">
+                                {% if job.is_hot_job %}
+                                    <span class="absolute top-0 right-0 mt-3 mr-3 bg-red-500 text-white text-xs font-bold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center transform rotate-3 origin-top-right">
+                                        <i class="fas fa-fire mr-1 text-sm"></i> Hot!
+                                    </span>
+                                {% endif %}
+
+                                <h2 class="text-xl font-bold text-gray-900 mb-2 mt-2">{{ job.title }}</h2>
+                                <p class="text-blue-600 font-semibold mb-2">{{ job.company_name }}</p>
+                                <p class="text-gray-600 text-sm mb-4"><i class="fas fa-map-marker-alt mr-1"></i> {{ job.location }}</p>
+
+                                <div class="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full font-medium">
+                                        <i class="fas fa-briefcase mr-1"></i> {{ job.job_type }}
+                                    </span>
+                                    {% if job.category %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 bg-green-100 text-green-800 rounded-full font-medium">
+                                            <i class="fas fa-tag mr-1"></i> {{ job.category.name }}
+                                        </span>
+                                    {% endif %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">
+                                        <i class="fas fa-calendar-alt mr-1"></i> Posted: {{ job.date_posted|date:"M d, Y" }}
+                                    </span>
+                                    {% if job.job_expiry_date %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 bg-red-100 text-red-800 rounded-full font-medium">
+                                            <i class="fas fa-hourglass-end mr-1"></i> Expires: {{ job.job_expiry_date|date:"M d, Y" }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-700 rounded-full font-medium">
+                                            <i class="fas fa-calendar-times mr-1"></i> No Expiry
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="text-gray-700 text-sm mb-6 line-clamp-3">{{ job.description|striptags|truncatechars:150 }}</p>
+
+                                <div class="mt-auto">
+                                    <a href="{% url 'job_detail' job.id %}" class="btn-primary text-sm inline-flex items-center justify-center w-full">
+                                        View Details <i class="fas fa-arrow-right ml-2"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {# Updated Pagination Section #}
+                    <div class="mt-12 flex justify-center items-center space-x-2">
+                        {% if jobs.has_previous %}
+                            <a href="?page={{ jobs.previous_page_number }}{% if request.GET.urlencode and not request.GET.page %}&{{ request.GET.urlencode }}{% elif request.GET.urlencode and request.GET.page and request.GET.urlencode|length > 6 %}&{{ request.GET.urlencode|cut:'&page='|cut:request.GET.page }}{% endif %}"
+                                class="pagination-nav-btn">
+                                <i class="fas fa-chevron-left mr-2"></i> Previous
+                            </a>
+                        {% else %}
+                            <span class="pagination-disabled-nav-btn">
+                                <i class="fas fa-chevron-left mr-2"></i> Previous
                             </span>
                         {% endif %}
 
-                        <h2 class="text-xl font-bold text-gray-900 mb-2 mt-2">{{ job.title }}</h2>
-                        <p class="text-blue-600 font-semibold mb-2">{{ job.company_name }}</p>
-                        <p class="text-gray-600 text-sm mb-4"><i class="fas fa-map-marker-alt mr-1"></i> {{ job.location }}</p>
-
-                        <div class="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full font-medium">
-                                <i class="fas fa-briefcase mr-1"></i> {{ job.job_type }}
-                            </span>
-                            {% if job.category %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 bg-green-100 text-green-800 rounded-full font-medium">
-                                    <i class="fas fa-tag mr-1"></i> {{ job.category.name }}
-                                </span>
-                            {% endif %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">
-                                <i class="fas fa-calendar-alt mr-1"></i> Posted: {{ job.date_posted|date:"M d, Y" }}
-                            </span>
-                            {% if job.job_expiry_date %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 bg-red-100 text-red-800 rounded-full font-medium">
-                                    <i class="fas fa-hourglass-end mr-1"></i> Expires: {{ job.job_expiry_date|date:"M d, Y" }}
+                        {% for page_num in jobs.paginator.page_range %}
+                            {% if jobs.number == page_num %}
+                                <span class="pagination-page-btn-active">
+                                    {{ page_num }}
                                 </span>
                             {% else %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-700 rounded-full font-medium">
-                                    <i class="fas fa-calendar-times mr-1"></i> No Expiry
-                                </span>
+                                <a href="?page={{ page_num }}{% if request.GET.urlencode and not request.GET.page %}&{{ request.GET.urlencode }}{% elif request.GET.urlencode and request.GET.page and request.GET.urlencode|length > 6 %}&{{ request.GET.urlencode|cut:'&page='|cut:request.GET.page }}{% endif %}"
+                                    class="pagination-page-btn">
+                                    {{ page_num }}
+                                </a>
                             {% endif %}
-                        </div>
+                        {% endfor %}
 
-                        <p class="text-gray-700 text-sm mb-6 line-clamp-3">{{ job.description|striptags|truncatechars:150 }}</p>
-
-                        <div class="mt-auto">
-                            <a href="{% url 'job_detail' job.id %}" class="btn-primary text-sm inline-flex items-center justify-center w-full">
-                                View Details <i class="fas fa-arrow-right ml-2"></i>
+                        {% if jobs.has_next %}
+                            <a href="?page={{ jobs.next_page_number }}{% if request.GET.urlencode and not request.GET.page %}&{{ request.GET.urlencode }}{% elif request.GET.urlencode and request.GET.page and request.GET.urlencode|length > 6 %}&{{ request.GET.urlencode|cut:'&page='|cut:request.GET.page }}{% endif %}"
+                                class="pagination-nav-btn">
+                                Next <i class="fas fa-chevron-right ml-2"></i>
                             </a>
-                        </div>
+                        {% else %}
+                            <span class="pagination-disabled-nav-btn">
+                                Next <i class="fas fa-chevron-right ml-2"></i>
+                            </span>
+                        {% endif %}
                     </div>
-                {% endfor %}
-            </div>
-
-            {# Updated Pagination Section #}
-            <div class="mt-12 flex justify-center items-center space-x-2">
-                {% if jobs.has_previous %}
-                    <a href="?page={{ jobs.previous_page_number }}{% if request.GET.urlencode and not request.GET.page %}&{{ request.GET.urlencode }}{% elif request.GET.urlencode and request.GET.page and request.GET.urlencode|length > 6 %}&{{ request.GET.urlencode|cut:'&page='|cut:request.GET.page }}{% endif %}"
-                        class="pagination-nav-btn">
-                        <i class="fas fa-chevron-left mr-2"></i> Previous
-                    </a>
                 {% else %}
-                    <span class="pagination-disabled-nav-btn">
-                        <i class="fas fa-chevron-left mr-2"></i> Previous
-                    </span>
-                {% endif %}
-
-                {% for page_num in jobs.paginator.page_range %}
-                    {% if jobs.number == page_num %}
-                        <span class="pagination-page-btn-active">
-                            {{ page_num }}
-                        </span>
-                    {% else %}
-                        <a href="?page={{ page_num }}{% if request.GET.urlencode and not request.GET.page %}&{{ request.GET.urlencode }}{% elif request.GET.urlencode and request.GET.page and request.GET.urlencode|length > 6 %}&{{ request.GET.urlencode|cut:'&page='|cut:request.GET.page }}{% endif %}"
-                            class="pagination-page-btn">
-                            {{ page_num }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
-
-                {% if jobs.has_next %}
-                    <a href="?page={{ jobs.next_page_number }}{% if request.GET.urlencode and not request.GET.page %}&{{ request.GET.urlencode }}{% elif request.GET.urlencode and request.GET.page and request.GET.urlencode|length > 6 %}&{{ request.GET.urlencode|cut:'&page='|cut:request.GET.page }}{% endif %}"
-                        class="pagination-nav-btn">
-                        Next <i class="fas fa-chevron-right ml-2"></i>
-                    </a>
-                {% else %}
-                    <span class="pagination-disabled-nav-btn">
-                        Next <i class="fas fa-chevron-right ml-2"></i>
-                    </span>
+                    <div class="bg-white rounded-lg p-8 card-shadow text-center text-gray-600 border border-gray-200">
+                        <i class="fas fa-exclamation-circle text-5xl text-yellow-500 mb-4"></i>
+                        <p class="text-xl font-semibold">No jobs found matching your criteria.</p>
+                        <p class="mt-2">Try adjusting your search filters or check back later!</p>
+                    </div>
                 {% endif %}
             </div>
-        {% else %}
-            <div class="bg-white rounded-lg p-8 card-shadow text-center text-gray-600 border border-gray-200">
-                <i class="fas fa-exclamation-circle text-5xl text-yellow-500 mb-4"></i>
-                <p class="text-xl font-semibold">No jobs found matching your criteria.</p>
-                <p class="mt-2">Try adjusting your search filters or check back later!</p>
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('toggle-filters-btn');
+        const filterFormContainer = document.getElementById('filter-form-container');
+        
+        toggleBtn.addEventListener('click', function () {
+            const isHidden = filterFormContainer.classList.contains('hidden');
+            if (isHidden) {
+                filterFormContainer.classList.remove('hidden');
+                toggleBtn.classList.remove('bg-blue-600');
+                toggleBtn.classList.add('bg-gray-600');
+                toggleBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Hide Filters';
+            } else {
+                filterFormContainer.classList.add('hidden');
+                toggleBtn.classList.remove('bg-gray-600');
+                toggleBtn.classList.add('bg-blue-600');
+                toggleBtn.innerHTML = '<i class="fas fa-filter mr-2"></i> Show Filters';
+            }
+        });
+    });
+</script>
 {% endblock %}
