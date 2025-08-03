@@ -4,6 +4,35 @@
 {% block title %}Home - Job Application Portal{% endblock %}
 
 {% block content %}
+    <!-- Custom CSS for animations and shadows -->
+    <!-- This block ensures the custom styles are available when this template is rendered -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-400 { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
     <!-- Hero Section -->
     <section class="hero-section bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20 px-6 md:px-8 lg:px-12 text-center relative overflow-hidden">
         <div class="absolute inset-0 z-0 opacity-10" style="background-image: url('https://placehold.co/1920x1080/ffffff/000000?text=Abstract+Background'); background-size: cover; background-position: center;"></div>
@@ -79,11 +108,13 @@
                                         </span>
                                     {% endif %}
                                 </div>
-                                <div class="text-right w-full sm:w-auto">
-                                    <a href="{% url 'job_detail' job.id %}" class="text-blue-600 hover:underline font-medium inline-flex items-center">
-                                        View Details & Apply <i class="fas fa-arrow-right ml-2"></i>
-                                    </a>
-                                </div>
+                            </div>
+                            <!-- Divider and "View Job" Button -->
+                            <hr class="my-4 border-gray-200">
+                            <div class="text-center">
+                                <a href="{% url 'job_detail' job.id %}" class="bg-blue-600 text-white px-6 py-2 w-full font-semibold shadow-lg hover:bg-blue-700 transition-all duration-300 inline-flex items-center justify-center">
+                                    <i class="fas fa-eye mr-2"></i> View Job
+                                </a>
                             </div>
                         </div>
                     {% endfor %}
@@ -94,7 +125,7 @@
                 {% endif %}
             </div>
             <div class="text-center mt-12">
-                <a href="{% url 'job_list' %}" class="btn-primary inline-block w-auto">
+                <a href="{% url 'job_list' %}" class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 inline-flex items-center">
                     <i class="fas fa-list-alt mr-2"></i> View All Jobs
                 </a>
             </div>
@@ -209,7 +240,7 @@
             header.addEventListener('click', () => {
                 const accordionItem = header.closest('.accordion-item');
                 const accordionContent = accordionItem.querySelector('.accordion-content');
-                const icon = header.querySelector('.accordion-icon, .fa-chevron-down');
+                const icon = header.querySelector('.fa-chevron-down');
 
                 // Toggle visibility of the content
                 accordionContent.classList.toggle('hidden');
@@ -222,7 +253,7 @@
                     if (otherHeader !== header) {
                         const otherAccordionItem = otherHeader.closest('.accordion-item');
                         const otherAccordionContent = otherAccordionItem.querySelector('.accordion-content');
-                        const otherIcon = otherHeader.querySelector('.accordion-icon, .fa-chevron-down');
+                        const otherIcon = otherHeader.querySelector('.fa-chevron-down');
 
                         if (!otherAccordionContent.classList.contains('hidden')) {
                             otherAccordionContent.classList.add('hidden');
