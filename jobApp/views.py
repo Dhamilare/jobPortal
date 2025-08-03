@@ -183,10 +183,14 @@ def job_list_view(request):
     return render(request, 'job_list.html', context)
 
 def job_detail_view(request, job_id):
+    """
+    Displays a single job, including details, application status, and related jobs.
+    """
     job = get_object_or_404(Job, pk=job_id)
     has_applied = False
     is_saved = False
 
+    # Check if the job is "hot" (posted within the last 24 hours)
     now = timezone.now()
     time_since_posted = now - job.date_posted
     job.is_hot_job = time_since_posted < timedelta(hours=24)
@@ -195,7 +199,25 @@ def job_detail_view(request, job_id):
         has_applied = Application.objects.filter(applicant=request.user, job=job).exists()
         is_saved = SavedJob.objects.filter(user=request.user, job=job).exists()
 
-    return render(request, 'job_detail.html', {'job': job, 'has_applied': has_applied, 'is_saved': is_saved})
+    related_jobs = []
+
+    if job.category:
+        related_jobs = Job.objects.filter(
+            category=job.category
+        ).exclude(
+            pk=job.id 
+        ).order_by(
+            '-date_posted' 
+        )[:3] 
+
+    context = {
+        'job': job,
+        'has_applied': has_applied,
+        'is_saved': is_saved,
+        'related_jobs': related_jobs,
+    }
+
+    return render(request, 'job_detail.html', context)
 
 @login_required
 @applicant_required

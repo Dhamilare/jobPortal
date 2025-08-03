@@ -431,27 +431,40 @@
         </div>
     </footer>
 
+    <!-- Cookie Consent Modal -->
+    <div id="cookie-consent-modal" class="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 transition-transform duration-500 ease-out transform translate-y-full opacity-0">
+        <div class="container mx-auto bg-white rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-8 border-t-4 border-blue-600">
+            <div class="flex-grow text-sm md:text-base text-gray-700 text-center md:text-left">
+                <p>This website uses cookies to ensure you get the best experience on our site. By continuing to use this site, you agree to our <a href="#" class="text-blue-600 hover:underline font-semibold">Privacy Policy</a>.</p>
+            </div>
+            <div class="flex-shrink-0 w-full md:w-auto">
+                <button id="accept-cookies-btn" class="w-full btn-primary px-6 py-2.5 text-base md:text-sm">
+                    Accept Cookies
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Mobile menu toggle
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
-
             if (mobileMenuButton && mobileMenu) {
                 mobileMenuButton.addEventListener('click', () => {
                     mobileMenu.classList.toggle('hidden');
                 });
             }
 
+            // FAQ Accordion
             const accordionHeaders = document.querySelectorAll('.accordion-header');
             accordionHeaders.forEach(header => {
                 header.addEventListener('click', () => {
                     const accordionItem = header.closest('.accordion-item');
                     const accordionContent = accordionItem.querySelector('.accordion-content');
                     const accordionIcon = header.querySelector('.accordion-icon');
-
                     accordionItem.classList.toggle('active');
-
                     if (accordionContent.style.maxHeight !== '0px' && accordionContent.style.maxHeight !== '') {
                         accordionContent.style.maxHeight = '0';
                         accordionContent.style.opacity = '0';
@@ -461,10 +474,45 @@
                         accordionContent.style.maxHeight = accordionContent.scrollHeight + 'px';
                         accordionContent.style.opacity = '1';
                     }
-
                     accordionIcon.classList.toggle('rotate-180');
                 });
             });
+
+            // --- NEW: Cookie Consent Logic ---
+            const cookieModal = document.getElementById('cookie-consent-modal');
+            const acceptButton = document.getElementById('accept-cookies-btn');
+
+            // Function to show the modal with an animation
+            const showCookieModal = () => {
+                setTimeout(() => {
+                    cookieModal.classList.remove('translate-y-full', 'opacity-0');
+                    cookieModal.classList.add('translate-y-0', 'opacity-100');
+                }, 1000); // Wait 1 second before sliding in
+            };
+
+            // Function to hide the modal with an animation
+            const hideCookieModal = () => {
+                cookieModal.classList.remove('translate-y-0', 'opacity-100');
+                cookieModal.classList.add('translate-y-full', 'opacity-0');
+            };
+
+            // Check if the user has already accepted cookies
+            const hasAcceptedCookies = localStorage.getItem('cookie_consent');
+
+            if (!hasAcceptedCookies) {
+                // If not, show the modal
+                showCookieModal();
+            }
+
+            // Handle the "Accept" button click
+            if (acceptButton) {
+                acceptButton.addEventListener('click', () => {
+                    // Set a key in local storage to remember the user's choice
+                    localStorage.setItem('cookie_consent', 'accepted');
+                    // Hide the modal
+                    hideCookieModal();
+                });
+            }
         });
     </script>
     {% block extra_js %}
