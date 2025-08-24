@@ -343,32 +343,41 @@
                 <a href="{% url 'home' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
                     <i class="fas fa-home mr-2"></i> Home
                 </a>
-                <a href="{% url 'about' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                    <i class="fas fa-info-circle mr-2"></i> About Us
-                </a>
+                <!-- New Dropdown for About Us -->
+                <div class="relative">
+                    <a href="#" id="about-us-dropdown-toggle" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-2 text-xs transition-transform duration-300 transform" id="dropdown-icon"></i>
+                    </a>
+                    <div id="about-us-dropdown-menu" class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
+                        <a href="{% url 'about' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">About Us</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Review your Resume</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
+                    </div>
+                </div>
+                <!-- End of New Dropdown -->
                 <a href="{% url 'job_list' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
                     <i class="fas fa-briefcase mr-2"></i> Jobs
                 </a>
                 {% if user.is_authenticated %}
-                    {% if user.is_applicant %}
-                        <a href="{% url 'applicant_dashboard' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                            <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-                        </a>
-                    {% elif user.is_moderator or user.is_staff %}
-                        <a href="{% url 'moderator_dashboard' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                            <i class="fas fa-chart-line mr-2"></i> Dashboard
-                        </a>
-                    {% endif %}
-                    <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                    </a>
+                {% if user.is_applicant %}
+                <a href="{% url 'applicant_dashboard' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                </a>
+                {% elif user.is_moderator or user.is_staff %}
+                <a href="{% url 'moderator_dashboard' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-chart-line mr-2"></i> Dashboard
+                </a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </a>
                 {% else %}
-                    <a href="{% url 'login' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                        <i class="fas fa-sign-in-alt mr-2"></i> Login
-                    </a>
-                    <a href="{% url 'register' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
-                        <i class="fas fa-user-plus mr-2"></i> Register
-                    </a>
+                <a href="{% url 'login' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </a>
+                <a href="{% url 'register' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
+                    <i class="fas fa-user-plus mr-2"></i> Register
+                </a>
                 {% endif %}
             </div>
             <!-- Mobile Menu Button -->
@@ -383,32 +392,41 @@
             <a href="{% url 'home' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-home mr-2"></i> Home
             </a>
-            <a href="{% url 'about' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                <i class="fas fa-info-circle mr-2"></i> About Us
-            </a>
+            <!-- Mobile Dropdown for About Us -->
+            <div class="nav-dropdown-mobile">
+                <a href="javascript:void(0)" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center" id="mobile-about-us-toggle">
+                    <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-auto text-xs transition-transform duration-300 transform" id="mobile-dropdown-icon"></i>
+                </a>
+                <div id="mobile-about-us-menu" class="dropdown-menu-mobile hidden ml-8 space-y-2 py-1">
+                    <a href="{% url 'about' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">About Us</a>
+                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Review your Resume</a>
+                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
+                </div>
+            </div>
+            <!-- End of Mobile Dropdown -->
             <a href="{% url 'job_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-briefcase mr-2"></i> Jobs
             </a>
             {% if user.is_authenticated %}
-                {% if user.is_applicant %}
-                    <a href="{% url 'applicant_dashboard' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                        <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-                    </a>
-                {% elif user.is_moderator or user.is_staff %}
-                    <a href="{% url 'moderator_dashboard' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                        <i class="fas fa-chart-line mr-2"></i> Dashboard
-                    </a>
-                {% endif %}
-                <a href="{% url 'logout' %}" class="block px-4 py-2 bg-red-500 text-white rounded-lg text-center flex items-center justify-center">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                </a>
+            {% if user.is_applicant %}
+            <a href="{% url 'applicant_dashboard' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
+                <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+            </a>
+            {% elif user.is_moderator or user.is_staff %}
+            <a href="{% url 'moderator_dashboard' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
+                <i class="fas fa-chart-line mr-2"></i> Dashboard
+            </a>
+            {% endif %}
+            <a href="{% url 'logout' %}" class="block px-4 py-2 bg-red-500 text-white rounded-lg text-center flex items-center justify-center">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </a>
             {% else %}
-                <a href="{% url 'login' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                    <i class="fas fa-sign-in-alt mr-2"></i> Login
-                </a>
-                <a href="{% url 'register' %}" class="block px-4 py-2 bg-blue-600 text-white rounded-lg text-center flex items-center justify-center">
-                    <i class="fas fa-user-plus mr-2"></i> Register
-                </a>
+            <a href="{% url 'login' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
+                <i class="fas fa-sign-in-alt mr-2"></i> Login
+            </a>
+            <a href="{% url 'register' %}" class="block px-4 py-2 bg-blue-600 text-white rounded-lg text-center flex items-center justify-center">
+                <i class="fas fa-user-plus mr-2"></i> Register
+            </a>
             {% endif %}
         </div>
     </header>
@@ -515,6 +533,89 @@
                     hideCookieModal();
                 });
             }
+
+            // --- NEW: About Us Dropdown Logic ---
+            // For desktop dropdown
+            const aboutUsToggle = document.getElementById('about-us-dropdown-toggle');
+            const aboutUsMenu = document.getElementById('about-us-dropdown-menu');
+            const dropdownIcon = document.getElementById('dropdown-icon');
+
+            if (aboutUsToggle && aboutUsMenu) {
+                aboutUsToggle.addEventListener('click', (event) => {
+                    event.preventDefault(); // Prevents the default link behavior
+                    const isMenuHidden = aboutUsMenu.classList.contains('hidden');
+                    if (isMenuHidden) {
+                        // Hide any other open menus
+                        closeAllDropdowns();
+                        // Show the current menu
+                        aboutUsMenu.classList.remove('hidden');
+                        dropdownIcon.classList.add('rotate-180');
+                    } else {
+                        // Hide the menu
+                        aboutUsMenu.classList.add('hidden');
+                        dropdownIcon.classList.remove('rotate-180');
+                    }
+                });
+            }
+
+            // For mobile dropdown
+            const mobileAboutUsToggle = document.getElementById('mobile-about-us-toggle');
+            const mobileAboutUsMenu = document.getElementById('mobile-about-us-menu');
+            const mobileDropdownIcon = document.getElementById('mobile-dropdown-icon');
+
+            if (mobileAboutUsToggle && mobileAboutUsMenu) {
+                mobileAboutUsToggle.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const isMenuHidden = mobileAboutUsMenu.classList.contains('hidden');
+                    if (isMenuHidden) {
+                        // Hide any other open mobile menus
+                        closeAllMobileDropdowns();
+                        // Show the current mobile menu
+                        mobileAboutUsMenu.classList.remove('hidden');
+                        mobileDropdownIcon.classList.add('rotate-180');
+                    } else {
+                        // Hide the menu
+                        mobileAboutUsMenu.classList.add('hidden');
+                        mobileDropdownIcon.classList.remove('rotate-180');
+                    }
+                });
+            }
+
+            // Function to close all desktop dropdowns
+            function closeAllDropdowns() {
+                const menus = document.querySelectorAll('.hidden.absolute');
+                menus.forEach(menu => {
+                    menu.classList.add('hidden');
+                    const icon = menu.previousElementSibling.querySelector('#dropdown-icon');
+                    if (icon) {
+                        icon.classList.remove('rotate-180');
+                    }
+                });
+            }
+
+            // Function to close all mobile dropdowns
+            function closeAllMobileDropdowns() {
+                const menus = document.querySelectorAll('.dropdown-menu-mobile');
+                menus.forEach(menu => {
+                    menu.classList.add('hidden');
+                    const icon = menu.previousElementSibling.querySelector('#mobile-dropdown-icon');
+                    if (icon) {
+                        icon.classList.remove('rotate-180');
+                    }
+                });
+            }
+
+            // Close dropdowns if the user clicks outside of them
+            window.addEventListener('click', (event) => {
+                // Desktop dropdown
+                if (!event.target.closest('#about-us-dropdown-toggle') && !event.target.closest('#about-us-dropdown-menu')) {
+                    closeAllDropdowns();
+                }
+                // Mobile dropdown
+                if (!event.target.closest('#mobile-about-us-toggle') && !event.target.closest('#mobile-about-us-menu')) {
+                    closeAllMobileDropdowns();
+                }
+            });
         });
     </script>
     {% block extra_js %}

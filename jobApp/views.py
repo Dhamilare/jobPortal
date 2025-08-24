@@ -19,6 +19,7 @@ import json
 from django.core.mail import EmailMultiAlternatives
 from .forms import *
 from .models import *
+from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # ----------------------------
@@ -366,17 +367,42 @@ def moderator_dashboard(request):
 
     return render(request, 'moderator/dashboard.html', context)
 
+
 @moderator_required
 def job_list_create(request):
     form = JobForm(request.POST or None)
+    query = request.GET.get('q', '')
+    if query:
+        jobs_list = Job.objects.filter(
+            Q(title__icontains=query) |
+            Q(company_name__icontains=query) |
+            Q(description__icontains=query)
+        ).order_by('-date_posted')
+    else:
+        jobs_list = Job.objects.all().order_by('-date_posted')
+    paginator = Paginator(jobs_list, 10)
+    page = request.GET.get('page')
+
+    try:
+        jobs = paginator.page(page)
+    except PageNotAnInteger:
+        jobs = paginator.page(1)
+    except EmptyPage:
+        jobs = paginator.page(paginator.num_pages)
     if request.method == 'POST' and form.is_valid():
         job = form.save(commit=False)
         job.posted_by = request.user
         job.save()
         messages.success(request, f'Job "{job.title}" created successfully!')
         return redirect('job_list_create')
-    jobs = Job.objects.all().order_by('-date_posted')
-    return render(request, 'moderator/job_list_create.html', {'jobs': jobs, 'form': form})
+
+    context = {
+        'form': form,
+        'jobs': jobs, 
+        'query': query, 
+    }
+    return render(request, 'moderator/job_list_create.html', context)
+
 
 @moderator_required
 def job_update_delete(request, job_id):
@@ -393,6 +419,7 @@ def job_update_delete(request, job_id):
             messages.success(request, f'Job "{job.title}" updated successfully!')
             return redirect('job_list_create')
     return render(request, 'moderator/job_update_delete.html', {'form': form, 'job': job})
+
 
 @moderator_required
 def moderator_report_view(request):
