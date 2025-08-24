@@ -24,6 +24,11 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.mail import EmailMessage
 from django.templatetags.static import static
 from django.http import Http404
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes
 
 # ----------------------------
 # Role-based Access Decorators
@@ -65,6 +70,48 @@ def send_templated_email(template_name, subject, recipient_list, context, attach
         import traceback
         print(f"Error sending email: {e}\n{traceback.format_exc()}")
         return False
+    
+
+def send_custom_password_reset_email(user, request):
+    current_site = get_current_site(request)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    context = {
+        "protocol": "https" if request.is_secure() else "http",
+        "domain": current_site.domain,
+        "site_name": current_site.name, # Added for branding
+        "uid": uid,
+        "token": token,
+        "user": user
+    }
+
+    send_templated_email(
+        template_name="accounts/password_reset_email.html",
+        subject="Job Portal Password Reset Request",
+        recipient_list=[user.email],
+        context=context
+    )
+    
+
+def custom_password_reset(request):
+    if request.method == "POST":
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            users = User.objects.filter(email=email, is_active=True)
+            if users.exists():
+                for user in users:
+                    send_custom_password_reset_email(user, request)
+            return redirect('password_reset_done')
+            
+    else:
+        form = PasswordResetForm()
+
+    context = {
+        "form": form,
+    }
+    return render(request, "accounts/password_reset.html", context)
 
 
 # ----------------------------
@@ -515,8 +562,9 @@ def is_staff_create_moderator(request):
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         messages.success(request, f'Moderator account for "{user.username}" created successfully!')
-        return redirect('is_staff_create_moderator')
+        return redirect('manage_moderators')
     return render(request, 'staff/is_staff_create_moderator.html', {'form': form})
+
 
 @staff_required
 def manage_moderators(request, user_id=None):

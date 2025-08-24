@@ -5,9 +5,15 @@ from django.contrib.auth.forms import PasswordChangeForm as AuthPasswordChangeFo
 from django.contrib.auth import get_user_model
 from .models import *
 from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import SetPasswordForm
 
 User = get_user_model()
 
+class CustomSetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['new_password1'].help_text = ''
+        self.fields['new_password2'].help_text = ''
 
 # ==============================
 # Applicant Registration Form
