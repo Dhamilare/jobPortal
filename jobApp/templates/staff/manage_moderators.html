@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Moderators - JobPortal{% endblock %}
+
+{% block content %}
+<div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-50 min-h-screen font-sans">
+    <div class="container mx-auto">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-center justify-center">
+            <i class="fas fa-user-shield text-indigo-600 mr-3"></i> Manage Moderators
+        </h1>
+
+        {# Django Messages Section #}
+        {% if messages %}
+            <div class="mb-6 space-y-3">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg flex items-center
+                        {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400{% endif %}
+                        {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400{% endif %}
+                        {% if message.tags == 'info' %}bg-blue-100 text-blue-700 border border-blue-400{% endif %}
+                        {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
+                    " role="alert">
+                        {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'error' %}<i class="fas fa-exclamation-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'info' %}<i class="fas fa-info-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'warning' %}<i class="fas fa-exclamation-triangle mr-3 text-lg"></i>{% endif %}
+                        <div>{{ message }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Edit Moderator Section (Conditionally Displayed) -->
+        {% if editing_user %}
+        <section class="bg-white rounded-lg shadow-xl p-8 mb-12 border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-pen-square text-blue-600 mr-2"></i> Edit Moderator: {{ editing_user.username }}
+            </h2>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="user_id" value="{{ editing_user.id }}">
+                {{ edit_form.as_p }}
+                
+                <div class="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-3">
+                    <button type="submit" class="btn-primary w-full md:w-auto">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                    <a href="{% url 'manage_moderators' %}" class="btn-secondary w-full md:w-auto text-center">
+                        <i class="fas fa-times-circle mr-2"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+        
+        <!-- List of Existing Moderators -->
+        <section class="bg-white rounded-lg shadow-xl p-8 border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex flex-col sm:flex-row sm:items-center justify-between">
+                <div class="flex items-center mb-4 sm:mb-0">
+                    <i class="fas fa-users-cog text-blue-600 mr-2"></i> Existing Moderators ({{ page_obj.paginator.count }})
+                </div>
+                <!-- Sleek Search Form -->
+                <form method="get" action="{% url 'manage_moderators' %}" class="flex items-center relative w-full sm:w-auto">
+                    <input 
+                        type="search" 
+                        name="q" 
+                        value="{{ search_query|default_if_none:'' }}" 
+                        placeholder="Search moderators..." 
+                        class="pl-4 pr-10 py-2 w-full rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                    >
+                    <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition-colors duration-200">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </h2>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for moderator in page_obj %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ moderator.username }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ moderator.email }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{% url 'manage_moderators_edit_delete' moderator.id %}" class="text-indigo-600 hover:text-indigo-900 mr-4">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </a>
+                                <form method="post" class="inline" action="{% url 'manage_moderators_edit_delete' moderator.id %}" onsubmit="return confirm('Are you sure you want to delete this moderator?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit" class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash-alt mr-1"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">
+                                No moderators found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Navigation -->
+            <div class="flex justify-center mt-6">
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Previous</span>
+                            <i class="fas fa-chevron-left h-5 w-5"></i>
+                        </a>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                        <a href="?page={{ i }}{% if search_query %}&q={{ search_query }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium
+                            {% if page_obj.number == i %}
+                                bg-indigo-50 border-indigo-500 text-indigo-600 z-10
+                            {% else %}
+                                bg-white text-gray-700 hover:bg-gray-50
+                            {% endif %}
+                        ">
+                            {{ i }}
+                        </a>
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Next</span>
+                            <i class="fas fa-chevron-right h-5 w-5"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </section>
+        
+        <!-- Back to Dashboard Button -->
+        <div class="text-center mt-12 mb-6">
+            <a href="{% url 'moderator_dashboard' %}" class="btn-secondary inline-block">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

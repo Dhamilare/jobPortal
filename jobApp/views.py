@@ -21,6 +21,9 @@ from .forms import *
 from .models import *
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.mail import EmailMessage
+from django.templatetags.static import static
+from django.http import Http404
 
 # ----------------------------
 # Role-based Access Decorators
@@ -36,6 +39,33 @@ def moderator_required(view):
 
 def staff_required(view):
     return role_required(lambda u: u.is_authenticated and u.is_staff)(view)
+
+def send_templated_email(template_name, subject, recipient_list, context, attachments=None):
+    context['current_year'] = datetime.now().year
+    
+    html_content = render_to_string(template_name, context)
+    
+    email = EmailMessage(
+        subject,
+        html_content,
+        settings.DEFAULT_FROM_EMAIL,
+        recipient_list
+    )
+    
+    email.content_subtype = "html" 
+    
+    if attachments:
+        for filename, content, mimetype in attachments:
+            email.attach(filename, content, mimetype)
+    
+    try:
+        email.send()
+        return True
+    except Exception as e:
+        import traceback
+        print(f"Error sending email: {e}\n{traceback.format_exc()}")
+        return False
+
 
 # ----------------------------
 # Public Views
@@ -57,6 +87,9 @@ def home_view(request):
 def about_view(request):
     return render(request, 'about.html')
 
+def courses_coming_soon(request):
+    return render(request, 'courses_coming_soon.html')
+
 def applicant_register(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -70,7 +103,6 @@ def applicant_register(request):
             reverse('email_verification_confirm', args=[token.token])
         )
 
-        # Render HTML email
         subject = 'Verify your JobPortal account'
         from_email = settings.DEFAULT_FROM_EMAIL
         to_email = user.email
@@ -82,7 +114,6 @@ def applicant_register(request):
         html_content = render_to_string('email_verification.html', context)
         text_content = f'Hi {user.username},\n\nPlease verify your email using this link:\n{verification_link}'
 
-        # Send multipart email (HTML + plain text fallback)
         email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
         email.attach_alternative(html_content, "text/html")
         email.send()
@@ -92,11 +123,10 @@ def applicant_register(request):
             f'Registration successful! A verification link has been sent to {user.email}. '
             'Please check your inbox (and spam folder) to activate your account.'
         )
-
-        # Clear form after success to avoid resubmission
         form = ApplicantRegistrationForm()
 
     return render(request, 'accounts/register.html', {'form': form})
+
 
 def email_verification_confirm(request, token):
     try:
@@ -118,6 +148,7 @@ def email_verification_confirm(request, token):
     messages.success(request, f'Your email ({user.email}) has been successfully verified! You can now log in.')
     return redirect('login')
 
+
 def user_login(request):
     if request.user.is_authenticated:
         return redirect('applicant_dashboard' if request.user.is_applicant else 'moderator_dashboard')
@@ -128,6 +159,7 @@ def user_login(request):
         messages.success(request, f'Welcome back, {request.user.username}!')
         return redirect('applicant_dashboard' if form.user.is_applicant else 'moderator_dashboard')
     return render(request, 'accounts/login.html', {'form': form})
+
 
 @login_required
 def user_logout(request):
@@ -487,6 +519,72 @@ def is_staff_create_moderator(request):
     return render(request, 'staff/is_staff_create_moderator.html', {'form': form})
 
 @staff_required
+def manage_moderators(request, user_id=None):
+    moderators_list = User.objects.filter(is_moderator=True).order_by('username')
+
+    search_query = request.GET.get('q')
+    if search_query:
+        moderators_list = moderators_list.filter(
+            Q(username__icontains=search_query) | Q(email__icontains=search_query)
+        )
+        
+    # --- Pagination Logic ---
+    paginator = Paginator(moderators_list, 10) # Show 10 moderators per page
+    page_number = request.GET.get('page', 1)
+    
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+        
+    editing_user = None
+    edit_form = None
+
+    if user_id:
+        try:
+            editing_user = get_object_or_404(User, id=user_id, is_moderator=True)
+        except Http404:
+            messages.error(request, 'Moderator not found.')
+            return redirect('manage_moderators')
+    
+    # --- HANDLE POST REQUESTS (Update, Delete) ---
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'delete':
+            if editing_user:
+                editing_user.is_staff = False
+                editing_user.save()
+                messages.success(request, f'Moderator "{editing_user.username}" has been demoted successfully.')
+            return redirect('manage_moderators')
+        
+        elif action == 'update':
+            if editing_user:
+                edit_form = ModeratorUpdateForm(request.POST, instance=editing_user)
+                if edit_form.is_valid():
+                    edit_form.save()
+                    messages.success(request, f'Moderator "{editing_user.username}" updated successfully.')
+                    return redirect('manage_moderators')
+                else:
+                    messages.error(request, 'Error updating moderator. Please check the form.')
+    
+    # --- HANDLE GET REQUESTS (Pre-populate Edit Form) ---
+    if editing_user and not edit_form:
+        edit_form = ModeratorUpdateForm(instance=editing_user)
+
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'editing_user': editing_user,
+        'edit_form': edit_form,
+    }
+
+    return render(request, 'staff/manage_moderators.html', context)
+
+
+@staff_required
 def is_staff_export_applicants_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="applicants_export.csv"'
@@ -810,3 +908,82 @@ def job_bulk_delete(request):
         else:
             messages.warning(request, "No jobs were selected for deletion.")
     return redirect('job_list_create')
+
+
+def submit_resume_view(request):
+    if request.method == 'POST':
+        form = ResumeUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            full_name = form.cleaned_data['full_name']
+            applicant_email = form.cleaned_data['email']
+            resume_file = form.cleaned_data.get('resume')
+            request_template = form.cleaned_data.get('request_template')
+
+            success_messages = []
+
+            # Handle resume upload
+            if resume_file:
+                if not resume_file.content_type in ['application/pdf', 'application/msword', 
+                                                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+                    messages.error(request, 'Invalid file type. Please upload a PDF or Word document.')
+                    return redirect('submit_resume')
+
+                if resume_file.size > 5 * 1024 * 1024:  # 5 MB limit
+                    messages.error(request, 'File size exceeds 5MB limit.')
+                    return redirect('submit_resume')
+
+                staff_emails = User.objects.filter(is_staff=True).values_list('email', flat=True)
+                staff_emails = [email for email in staff_emails if email]
+
+                if staff_emails:
+                    resume_content = resume_file.read()
+                    resume_file.seek(0)
+
+                    attachments = [(resume_file.name, resume_content, resume_file.content_type)]
+
+                    email_context = {'full_name': full_name, 'email': applicant_email, 'file_name': resume_file.name}
+
+                    try:
+                        send_templated_email(
+                            'emails/staff_resume_notification.html',
+                            'New Resume Submission for Review',
+                            staff_emails,
+                            email_context,
+                            attachments=attachments
+                        )
+                        success_messages.append('Your resume has been submitted for review.')
+                    except Exception as e:
+                        messages.error(request, f'Failed to send email: {e}')
+                        return redirect('submit_resume')
+                else:
+                    messages.error(request, 'Submission failed: No staff email addresses found.')
+
+            # Handle template request
+            if request_template:
+                template_link = request.build_absolute_uri(static('resume_template/resume_template.docx'))
+                template_context = {'full_name': full_name, 'template_link': template_link}
+
+                try:
+                    send_templated_email(
+                        'emails/applicant_template_link.html',
+                        'Your Resume Template from Job Portal',
+                        [applicant_email],
+                        template_context
+                    )
+                    success_messages.append('A link to a resume template has been sent to your email.')
+                except Exception as e:
+                    messages.error(request, f'Failed to send template email: {e}')
+                    return redirect('submit_resume')
+
+            if not resume_file and not request_template:
+                messages.error(request, 'Please either upload a resume or check the box to request a template.')
+                return redirect('submit_resume')
+
+            for msg in success_messages:
+                messages.success(request, msg)
+            return redirect('submit_resume')
+
+    else:
+        form = ResumeUploadForm()
+
+    return render(request, 'submit_resume.html', {'form': form})

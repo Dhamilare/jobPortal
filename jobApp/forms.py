@@ -267,6 +267,45 @@ class ModeratorCreationForm(forms.ModelForm):
         return user
     
 
+class ModeratorUpdateForm(forms.ModelForm):
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Enter username'})
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'input-field', 'placeholder': 'moderator@example.com'})
+    )
+    first_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Enter First Name'})
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Enter Last Name'})
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email and User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("This email address is already registered.")
+        
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+        return user
+    
+
 class CategoryForm(forms.ModelForm):
     """
     Form for managing Category objects (create and update).
@@ -343,3 +382,36 @@ class JobAlertForm(forms.ModelForm):
         job_type_choices_str = ", ".join([choice[0] for choice in Job.JOB_TYPE_CHOICES])
         self.fields['job_types'].help_text = f"Comma-separated job types (e.g., 'Full-time, Remote'). Available types: {job_type_choices_str}."
 
+
+
+class ResumeUploadForm(forms.Form):
+    """
+    Form for applicants to upload their resume and/or request a resume template.
+    """
+    full_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Your Full Name',
+            'class': 'w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow'
+        })
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'Your Email Address',
+            'class': 'w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow'
+        })
+    )
+    resume = forms.FileField(
+        label="Upload your Resume (Optional)",
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none'
+        })
+    )
+    request_template = forms.BooleanField(
+        label="Send a resume template to my email",
+        required=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'h-4 w-4 text-blue-600 rounded border-gray-300'
+        })
+    )

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Resume Submission</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            background-color: #f7fafc;
+        }
+        table {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+            width: 100%;
+        }
+        td {
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #4299e1;
+            padding: 40px;
+            text-align: center;
+        }
+        .content {
+            padding: 40px;
+        }
+        .details-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .details-list li {
+            margin-bottom: 12px;
+            color: #4a5568;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .footer {
+            background-color: #edf2f7;
+            padding: 24px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f7fafc;">
+        <tr>
+            <td align="center" style="padding: 20px;">
+                <table class="container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td class="header">
+                            <h1 style="color: #ffffff; font-size: 28px; margin: 0; font-weight: 700;">New Resume Submission</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="content">
+                            <h2 style="color: #2d3748; font-size: 20px; margin: 0 0 16px; font-weight: 600;">Hello Admin,</h2>
+                            <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                                A new resume has been submitted for review. Please find the applicant's details below and the attached file.
+                            </p>
+                            <ul class="details-list">
+                                <li><strong><span style="color: #3182ce;">Applicant Name:</span></strong> {{ full_name }}</li>
+                                <li><strong><span style="color: #3182ce;">Applicant Email:</span></strong> <a href="mailto:{{ email }}" style="color: #3182ce; text-decoration: none;">{{ email }}</a></li>
+                                <li><strong><span style="color: #3182ce;">File Name:</span></strong> {{ file_name }}</li>
+                            </ul>
+                            <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin: 24px 0 0;">
+                                Thank you,
+                                <br>
+                                The Job Portal Team
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="footer">
+                            <p style="margin: 0;">&copy; {{ current_year }} Job Portal. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

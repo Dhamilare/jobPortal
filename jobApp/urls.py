@@ -11,6 +11,8 @@ urlpatterns = [
     path('verify-email/<uuid:token>/', views.email_verification_confirm, name='email_verification_confirm'),
     path('accounts/login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
+    path('courses/', views.courses_coming_soon, name='courses_coming_soon'),
+    path('resume/', views.submit_resume_view, name='submit_resume'),
 
     # -------------------- Job Listings --------------------
     path('jobs/', views.job_list_view, name='job_list'),
@@ -18,7 +20,6 @@ urlpatterns = [
     path('jobs/<int:job_id>/apply-redirect/', views.job_apply_link_redirect, name='job_apply_redirect'), 
     path('jobs/<int:job_id>/save/', views.save_job, name='save_job'),
     path('jobs/<int:job_id>/unsave/', views.unsave_job, name='unsave_job'),
-    
     
     # -------------------- Applicant Module --------------------
     path('applicant/dashboard/', views.applicant_dashboard, name='applicant_dashboard'),
@@ -47,6 +48,9 @@ urlpatterns = [
     # -------------------- Staff Only --------------------
     path('staff/create-moderator/', views.is_staff_create_moderator, name='is_staff_create_moderator'),
     path('staff/export-applicants/', views.is_staff_export_applicants_csv, name='is_staff_export_applicants_csv'),
+    path('staff/moderators/manage/', views.manage_moderators, name='manage_moderators'),
+    path('staff/moderators/manage/<int:user_id>/', views.manage_moderators, name='manage_moderators_edit_delete'),
+
 
     # -------------------- Feedback Pages --------------------
     path('register/success/', lambda request: render(request, 'registration_success.html'), name='registration_success'),

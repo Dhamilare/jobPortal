@@ -350,8 +350,8 @@
                     </a>
                     <div id="about-us-dropdown-menu" class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
                         <a href="{% url 'about' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">About Us</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Review your Resume</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
+                        <a href="{% url 'submit_resume' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Review your Resume</a>
+                        <a href="{% url 'courses_coming_soon' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
                     </div>
                 </div>
                 <!-- End of New Dropdown -->
@@ -399,8 +399,8 @@
                 </a>
                 <div id="mobile-about-us-menu" class="dropdown-menu-mobile hidden ml-8 space-y-2 py-1">
                     <a href="{% url 'about' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">About Us</a>
-                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Review your Resume</a>
-                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
+                    <a href="{% url 'submit_resume' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Review your Resume</a>
+                    <a href="{% url 'courses_coming_soon' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
                 </div>
             </div>
             <!-- End of Mobile Dropdown -->
