@@ -1,0 +1,60 @@
+<!-- This template is for AJAX requests to update the table only -->
+<div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm" id="subscribers-table-container">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Email
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Subscription Date
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for subscriber in subscribers_list %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ subscriber.email }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ subscriber.created_at|date:"F j, Y, P" }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                    No subscribers found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination (for dynamic updates) -->
+<div class="mt-8 flex justify-between items-center" id="subscribers-pagination">
+    {% if subscribers_list.has_previous %}
+        <a href="?page={{ subscribers_list.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" data-page="{{ subscribers_list.previous_page_number }}" class="page-link flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Previous
+        </a>
+    {% else %}
+        <span class="flex items-center text-gray-400 cursor-not-allowed">
+            <i class="fas fa-arrow-left mr-2"></i> Previous
+        </span>
+    {% endif %}
+
+    <span class="text-sm text-gray-700">
+        Page {{ subscribers_list.number }} of {{ subscribers_list.paginator.num_pages }}
+    </span>
+
+    {% if subscribers_list.has_next %}
+        <a href="?page={{ subscribers_list.next_page_number }}{% if query %}&q={{ query }}{% endif %}" data-page="{{ subscribers_list.next_page_number }}" class="page-link flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+            Next <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+    {% else %}
+        <span class="flex items-center text-gray-400 cursor-not-allowed">
+            Next <i class="fas fa-arrow-right ml-2"></i>
+        </span>
+    {% endif %}
+</div>

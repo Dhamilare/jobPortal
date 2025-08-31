@@ -16,7 +16,6 @@ urlpatterns = [
 
     # URL for recruiter registration and job posting landing page
     path('post-job/', views.recruiter_register, name='post_job'),
-    # URL for account activation
     path('activate/<uidb64>/<token>/', views.activate_account, name='activate_account'),
     
     path('password-reset/', views.custom_password_reset, name='custom_password_reset'),
@@ -63,6 +62,7 @@ urlpatterns = [
     path('staff/export-applicants/', views.is_staff_export_applicants_csv, name='is_staff_export_applicants_csv'),
     path('staff/moderators/manage/', views.manage_moderators, name='manage_moderators'),
     path('staff/moderators/manage/<int:user_id>/', views.manage_moderators, name='manage_moderators_edit_delete'),
+    path('staff/subscribers', views.subscribers_list, name='subscribers_list'),
 
 
     # -------------------- Feedback Pages --------------------

@@ -35,6 +35,7 @@ from django.http import JsonResponse
 from django.core.validators import validate_email
 import logging
 logger = logging.getLogger(__name__)
+from .utils import *
 
 # ----------------------------
 # Role-based Access Decorators
@@ -51,32 +52,6 @@ def moderator_required(view):
 def staff_required(view):
     return role_required(lambda u: u.is_authenticated and u.is_staff)(view)
 
-def send_templated_email(template_name, subject, recipient_list, context, attachments=None):
-    context['current_year'] = datetime.now().year
-    
-    html_content = render_to_string(template_name, context)
-    
-    email = EmailMessage(
-        subject,
-        html_content,
-        settings.DEFAULT_FROM_EMAIL,
-        recipient_list
-    )
-    
-    email.content_subtype = "html" 
-    
-    if attachments:
-        for filename, content, mimetype in attachments:
-            email.attach(filename, content, mimetype)
-    
-    try:
-        email.send()
-        return True
-    except Exception as e:
-        import traceback
-        print(f"Error sending email: {e}\n{traceback.format_exc()}")
-        return False
-    
 
 def send_custom_password_reset_email(user, request):
     current_site = get_current_site(request)
@@ -474,6 +449,11 @@ def applicant_email_change(request):
 # ----------------------------
 @moderator_required
 def moderator_dashboard(request):
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        subscribers_context = get_subscribers_context(request)
+        return render(request, 'staff/subscribers_table.html', subscribers_context)
+     
     context = {
         'total_jobs': Job.objects.count(),
         'total_applicants': CustomUser.objects.filter(is_applicant=True).count(),
@@ -512,6 +492,9 @@ def moderator_dashboard(request):
     activity_list.sort(key=lambda x: x['timestamp'], reverse=True)
 
     context['recent_activity_log'] = activity_list[:10]
+
+    if request.user.is_staff:
+        context.update(get_subscribers_context(request))
 
     return render(request, 'moderator/dashboard.html', context)
 
@@ -716,6 +699,31 @@ def is_staff_export_applicants_csv(request):
         ])
     messages.success(request, 'Applicant data exported successfully to CSV!')
     return response
+
+
+@staff_required
+def subscribers_list(request):
+    query = request.GET.get('q')
+    subscribers_list = Subscriber.objects.all()
+
+    if query:
+        subscribers_list = subscribers_list.filter(Q(email__icontains=query))
+
+    paginator = Paginator(subscribers_list, 20)
+    page_number = request.GET.get('page')
+
+    try:
+        subscribers = paginator.page(page_number)
+    except PageNotAnInteger:
+        subscribers = paginator.page(1)
+    except EmptyPage:
+        subscribers = paginator.page(paginator.num_pages)
+
+    context = {
+        'subscribers': subscribers,
+        'query': query,
+    }
+    return render(request, 'staff/subscribers.html', context)
 
 
 @moderator_required
