@@ -174,4 +174,54 @@ class JobAlertAdmin(admin.ModelAdmin):
     job_types_display.short_description = 'Job Types'
 
 
+@admin.register(Recruiter)
+class RecruiterAdmin(admin.ModelAdmin):
+    
+    list_display = (
+        'company_name',
+        'user_email',
+        'phone_number',
+        'created_at'
+    )
+
+    list_filter = (
+        'created_at',
+        'updated_at',
+    )
+
+    search_fields = (
+        'company_name',
+        'phone_number',
+        'user__email'
+    )
+
+    fieldsets = (
+        (None, {
+            'fields': ('user', 'company_name', 'address', 'phone_number')
+        }),
+        ('Important dates', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+
+    raw_id_fields = ('user',)
+    readonly_fields = ('created_at', 'updated_at')
+    
+    def user_email(self, obj):
+        return obj.user.email
+    user_email.short_description = 'User Email'
+    user_email.admin_order_field = 'user__email'
+
+
+@admin.register(Subscriber)
+class SubscriberAdmin(admin.ModelAdmin):
+    """
+    Admin configuration for the Subscriber model.
+    """
+    list_display = ('email', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('email',)
+    ordering = ('-created_at',)
+
+
 

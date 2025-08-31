@@ -13,6 +13,11 @@ urlpatterns = [
     path('verify-email/<uuid:token>/', views.email_verification_confirm, name='email_verification_confirm'),
     path('accounts/login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
+
+    # URL for recruiter registration and job posting landing page
+    path('post-job/', views.recruiter_register, name='post_job'),
+    # URL for account activation
+    path('activate/<uidb64>/<token>/', views.activate_account, name='activate_account'),
     
     path('password-reset/', views.custom_password_reset, name='custom_password_reset'),
     path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='accounts/password_reset_done.html'), name='password_reset_done'),
@@ -36,7 +41,7 @@ urlpatterns = [
     path('applicant/email/change/', views.applicant_email_change, name='applicant_email_change'),
     path('applicant/applications/', views.applicant_applications_list, name='applicant_applications_list'),
     
-    # NEW: Job Alerts URLs
+    # Job Alerts URLs
     path('applicant/job-alerts/', views.manage_job_alerts, name='manage_job_alerts'),
     path('applicant/job-alerts/<int:alert_id>/edit/', views.manage_job_alerts, name='edit_job_alert'),
 

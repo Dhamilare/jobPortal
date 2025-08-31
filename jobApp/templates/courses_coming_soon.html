@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Courses - Coming Soon{% endblock %}
 
 {% block content %}
-<div class="py-16 px-4 md:px-8 lg:px-12 bg-gray-50 min-h-screen font-sans flex items-center justify-center">
+<div class="py-16 px-4 md:px-8 lg:px-12 bg-gray-50 min-h-screen font-sans flex items-center justify-center relative">
     <div class="container mx-auto max-w-4xl text-center">
         <!-- Main Heading -->
         <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
@@ -50,22 +51,103 @@
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Be the first to know!</h2>
             <p class="text-gray-600 mb-6">Enter your email below to get notified as soon as our courses go live.</p>
             
-            <!-- Email Form Placeholder -->
-            <form action="#" method="POST" class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <!-- Email Form -->
+            <form id="newsletter-form" action="{% url 'courses_coming_soon' %}" method="POST" class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                {% csrf_token %}
                 <input 
                     type="email" 
+                    id="email-input"
+                    name="email"
                     placeholder="Your email address" 
                     class="w-full sm:w-80 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                 >
                 <button 
                     type="submit" 
-                    class="btn-primary w-full sm:w-auto"
+                    class="btn-primary w-full sm:w-auto bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
                 >
                     <i class="fas fa-paper-plane mr-2"></i> Notify Me
                 </button>
             </form>
+            <div id="form-message" class="mt-4 text-sm font-medium hidden"></div>
         </div>
         
     </div>
+    
+    <!-- The Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm mx-4 transform transition-transform duration-300 scale-95">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-check text-green-600 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">You're on the list!</h3>
+                <p class="text-gray-600 mb-6">
+                    Thanks for showing interest. We'll send you an email as soon as our courses are ready.
+                </p>
+                <button id="close-modal-btn" class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    const form = document.getElementById('newsletter-form');
+    const emailInput = document.getElementById('email-input');
+    const modal = document.getElementById('success-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const messageBox = document.getElementById('form-message');
+
+    function displayMessage(message, isSuccess) {
+        messageBox.textContent = message;
+        messageBox.classList.remove('hidden', 'text-green-600', 'text-red-600');
+        if (isSuccess) {
+            messageBox.classList.add('text-green-600');
+        } else {
+            messageBox.classList.add('text-red-600');
+        }
+    }
+
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        messageBox.classList.add('hidden'); // Clear previous messages
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const formData = new FormData();
+        formData.append('email', emailInput.value);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                emailInput.value = '';
+                // Show the modal
+                modal.classList.remove('hidden', 'opacity-0');
+                modal.classList.add('opacity-100');
+            } else {
+                // Display error message in the message box
+                displayMessage(data.message, false);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            displayMessage('An unexpected error occurred. Please try again.', false);
+        }
+    });
+
+    closeModalBtn.addEventListener('click', function() {
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    });
+
+</script>
 {% endblock %}

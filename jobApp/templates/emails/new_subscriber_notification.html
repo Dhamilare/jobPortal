@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Course Subscriber</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333333;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e0e0;
+        }
+        .header {
+            background-color: #10b981;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 30px;
+        }
+        .content p {
+            font-size: 16px;
+            margin: 0 0 16px;
+        }
+        .info-box {
+            background-color: #e0f2f1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #4ade80;
+        }
+        .info-box strong {
+            display: block;
+            font-size: 14px;
+            color: #065f46;
+            margin-bottom: 5px;
+        }
+        .info-box span {
+            font-size: 16px;
+            color: #333;
+        }
+        .footer {
+            background-color: #f0f4f8;
+            color: #6b7280;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>New Subscriber Alert</h1>
+        </div>
+        
+        <!-- Body -->
+        <div class="content">
+            <p>A new user has subscribed to the courses mailing list:</p>
+            <div class="info-box">
+                <strong>Email Address:</strong>
+                <span>{{ subscriber_email }}</span>
+            </div>
+            <p style="margin-top: 20px;">This is an automated notification. No action is required unless you want to reach out to them directly.</p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            &copy; {{ current_year }} Job Portal.
+        </div>
+    </div>
+</body>
+</html>

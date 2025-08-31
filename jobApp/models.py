@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils import timezone
 import uuid
 from django.conf import settings
+from django.core.validators import RegexValidator
 
 # -------------------------------
 # User Manager
@@ -118,11 +119,16 @@ class Application(models.Model):
     def __str__(self):
         return f"{self.applicant.username} → {self.job.title}"
 
+
 # -------------------------------
 # Email Verification Token
 # -------------------------------
 class EmailVerificationToken(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='verification_token')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='verification_tokens'
+    )
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
@@ -137,6 +143,13 @@ class EmailVerificationToken(models.Model):
 
     def __str__(self):
         return f"Token for {self.user.email}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['expires_at']),
+        ]
+        verbose_name = "Email Verification Token"
+        verbose_name_plural = "Email Verification Tokens"
     
 
 class SavedJob(models.Model):
@@ -179,3 +192,63 @@ class JobAlert(models.Model):
 
     class Meta:
         unique_together = ('user', 'alert_name')
+
+
+
+class Recruiter(models.Model):
+    company_name = models.CharField(
+        max_length=255,
+        verbose_name="Company Name"
+    )
+
+    address = models.TextField(
+        verbose_name="Company Address"
+    )
+
+    phone_number = models.CharField(
+        max_length=20,
+        verbose_name="Phone Number",
+        validators=[
+            RegexValidator(
+                regex=r'^\+?\d{7,15}$',
+                message="Enter a valid phone number (11 digits, may include +)."
+            )
+        ]
+    )
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='recruiter_profile',
+        verbose_name="User Account"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+
+    def __str__(self):
+        return f"{self.company_name} ({self.user.email})"
+
+    class Meta:
+        verbose_name = "Recruiter"
+        verbose_name_plural = "Recruiters"
+        ordering = ['company_name']
+        indexes = [
+            models.Index(fields=['company_name']),
+            models.Index(fields=['phone_number'])
+        ]
+
+
+class Subscriber(models.Model):
+    """
+    Model to store email addresses for newsletter subscriptions.
+    """
+    email = models.EmailField(unique=True, help_text="The subscriber's email address.")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+    class Meta:
+        verbose_name_plural = "Subscribers"
+        ordering = ['-created_at']

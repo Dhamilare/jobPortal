@@ -6,6 +6,9 @@ from django.contrib.auth import get_user_model
 from .models import *
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import SetPasswordForm
+from django.db import transaction
+from django.contrib.auth.password_validation import validate_password
+import re
 
 User = get_user_model()
 
@@ -421,3 +424,124 @@ class ResumeUploadForm(forms.Form):
             'class': 'h-4 w-4 text-blue-600 rounded border-gray-300'
         })
     )
+
+
+# -------------------------------
+# Recruiter Registration Form
+# -------------------------------
+
+class RecruiterRegistrationForm(forms.Form):
+    first_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300',
+            'placeholder': 'First Name'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300',
+            'placeholder': 'Last Name'
+        })
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300',
+            'placeholder': 'Email Address'
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300',
+            'placeholder': 'Password'
+        })
+    )
+    password2 = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300',
+            'placeholder': 'Confirm Password'
+        })
+    )
+    company_name = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            'class': 'block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300',
+            'placeholder': 'Company Name'
+        })
+    )
+    address = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300',
+            'placeholder': 'Company Address',
+            'rows': 3
+        })
+    )
+    phone_number = forms.CharField(
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            'class': 'block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300',
+            'placeholder': 'Phone Number'
+        })
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        # Check if email already exists
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("Email already exists.")
+
+        # Disallow free email providers
+        personal_domains = [
+            'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com',
+            'live.com', 'icloud.com', 'aol.com', 'mail.com', 'protonmail.com'
+        ]
+
+        domain = email.split('@')[-1].lower()
+        
+        # 1. Exact match with known personal domains
+        if domain in personal_domains:
+            raise forms.ValidationError("Please use your company email address, not a personal email.")
+
+        # 2. Regex check for patterns like gmail.*, yahoo.*, etc.
+        if re.match(r"^(gmail|yahoo|hotmail|outlook|aol|icloud|protonmail)\.", domain):
+            raise forms.ValidationError("Please use your company email address, not a personal email.")
+
+        # 3. Disallow suspicious TLDs
+        if domain.endswith('.xyz') or domain.endswith('.top'):
+            raise forms.ValidationError("Please use a valid business email domain.")
+
+        return email
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        validate_password(password)
+        return password
+
+    def clean_password2(self):
+        password = self.cleaned_data.get('password')
+        password2 = self.cleaned_data.get('password2')
+        if password and password2 and password != password2:
+            raise forms.ValidationError("Passwords do not match.")
+        return password2
+
+    @transaction.atomic
+    def save(self, commit=True):
+        user = CustomUser.objects.create_user(
+            email=self.cleaned_data['email'],
+            password=self.cleaned_data['password'],
+            first_name=self.cleaned_data['first_name'],
+            last_name=self.cleaned_data['last_name'],
+            is_moderator=True,
+            is_applicant=False
+        )
+
+        recruiter = Recruiter.objects.create(
+            company_name=self.cleaned_data['company_name'],
+            address=self.cleaned_data['address'],
+            phone_number=self.cleaned_data['phone_number'],
+            user=user
+        )
+
+        return recruiter

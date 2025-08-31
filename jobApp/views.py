@@ -11,7 +11,6 @@ from django.db.models.functions import TruncDay
 from datetime import timedelta
 import csv, io
 from django.contrib import messages 
-from itertools import chain
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from datetime import date, datetime
@@ -29,6 +28,13 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
+from django.views.decorators.http import require_http_methods
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from django.http import JsonResponse
+from django.core.validators import validate_email
+import logging
+logger = logging.getLogger(__name__)
 
 # ----------------------------
 # Role-based Access Decorators
@@ -134,8 +140,64 @@ def home_view(request):
 def about_view(request):
     return render(request, 'about.html')
 
+@require_http_methods(["GET", "POST"])
 def courses_coming_soon(request):
+    """
+    Renders the courses coming soon page and handles the newsletter signup form.
+    It returns a JSON response for AJAX POST requests to show the modal.
+    """
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        # Validate email
+        if not email:
+            return JsonResponse({'success': False, 'message': 'Email address is required.'}, status=400)
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            return JsonResponse({'success': False, 'message': 'Invalid email address.'}, status=400)
+
+        # Check if the email already exists
+        if Subscriber.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': 'This email address is already subscribed.'}, status=400)
+
+        try:
+            with transaction.atomic():
+                Subscriber.objects.create(email=email)
+
+            # 1. Send thank-you email to the subscriber
+            user_context = {'email': email}
+            email_sent_to_user = send_templated_email(
+                template_name='emails/subscriber_thank_you_email.html',
+                subject='Thanks for Your Interest!',
+                recipient_list=[email],
+                context=user_context
+            )
+
+            if not email_sent_to_user:
+                logger.warning(f"Thank-you email not sent to {email}")
+
+            # 2. Send notification email to staff
+            staff_emails = list(
+                User.objects.filter(is_staff=True, is_active=True).values_list('email', flat=True)
+            )
+            if staff_emails:
+                staff_context = {'subscriber_email': email}
+                send_templated_email(
+                    template_name='emails/new_subscriber_notification.html',
+                    subject='New Course Subscriber!',
+                    recipient_list=staff_emails,
+                    context=staff_context
+                )
+
+            return JsonResponse({'success': True, 'message': 'Thank you! Your email has been added.'})
+        except Exception as e:
+            logger.error(f"Error processing subscription: {e}")
+            return JsonResponse({'success': False, 'message': 'An error occurred. Please try again later.'}, status=500)
     return render(request, 'courses_coming_soon.html')
+
+
 
 def applicant_register(request):
     if request.user.is_authenticated:
@@ -175,9 +237,14 @@ def applicant_register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
+@require_http_methods(["GET"])
 def email_verification_confirm(request, token):
+    """
+    Confirms email verification using a secure token.
+    Activates the user if token is valid and not expired.
+    """
     try:
-        token_obj = EmailVerificationToken.objects.get(token=token)
+        token_obj = EmailVerificationToken.objects.select_related('user').get(token=token)
     except EmailVerificationToken.DoesNotExist:
         messages.error(request, 'Invalid verification link. Please register again or request a new link.')
         return redirect('register')
@@ -188,10 +255,12 @@ def email_verification_confirm(request, token):
         return redirect('register')
 
     user = token_obj.user
-    if not user.is_active:
-        user.is_active = True
-        user.save()
-    token_obj.delete()
+    with transaction.atomic():
+        if not user.is_active:
+            user.is_active = True
+            user.save(update_fields=['is_active'])
+        token_obj.delete()
+
     messages.success(request, f'Your email ({user.email}) has been successfully verified! You can now log in.')
     return redirect('login')
 
@@ -203,7 +272,7 @@ def user_login(request):
     form = LoginForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         login(request, form.user)
-        messages.success(request, f'Welcome back, {request.user.username}!')
+        messages.success(request, f'Welcome back, {request.user.get_full_name() or request.user.username}!')
         return redirect('applicant_dashboard' if form.user.is_applicant else 'moderator_dashboard')
     return render(request, 'accounts/login.html', {'form': form})
 
@@ -1035,3 +1104,95 @@ def submit_resume_view(request):
         form = ResumeUploadForm()
 
     return render(request, 'submit_resume.html', {'form': form})
+
+
+# -------------------------------
+# View for Recruiter Registration
+# -------------------------------
+
+@require_http_methods(["GET", "POST"])
+def recruiter_register(request):
+    """
+    Handles recruiter registration: creates a user (is_moderator=True), 
+    recruiter profile, and sends an account activation email.
+    """
+    if request.method == 'POST':
+        form = RecruiterRegistrationForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    recruiter = form.save()  # recruiter instance
+                    user = recruiter.user    # get linked user
+
+                # Prepare context for the activation email
+                current_site = get_current_site(request)
+                context = {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': default_token_generator.make_token(user),
+                }
+
+                # Send verification email
+                try:
+                    email_sent = send_templated_email(
+                        template_name='emails/recruiter_activation_email.html',
+                        subject='Activate your Account',
+                        recipient_list=[user.email],
+                        context=context
+                    )
+                except Exception as e:
+                    email_sent = False
+
+                if email_sent:
+                    messages.success(
+                        request,
+                        'Your account has been created! Please check your email to activate your account.'
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        'Your account has been created, but we could not send the verification email. Please contact support.'
+                    )
+
+                return redirect('login')
+
+            except Exception as e:
+                messages.error(request, f"An error occurred during registration: {str(e)}")
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = RecruiterRegistrationForm()
+
+    return render(request, 'post_job.html', {'form': form})
+
+
+@require_http_methods(["GET"])
+def activate_account(request, uidb64, token):
+    CustomUser = User
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = CustomUser.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+
+    if user is not None:
+        if user.is_active:
+            messages.info(request, 'Your account is already activated. Please log in.')
+            return redirect('login')
+
+        if default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+
+            messages.success(
+                request,
+                'Thank you for confirming your email. Your account has been activated successfully!'
+            )
+            return redirect('login')
+        else:
+            messages.error(request, 'Activation link is invalid or has expired!')
+            return redirect('post_job')
+    else:
+        messages.error(request, 'Invalid activation request!')
+        return redirect('post_job')
