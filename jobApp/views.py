@@ -474,17 +474,17 @@ def applicant_email_change(request):
 # ----------------------------
 @moderator_required
 def moderator_dashboard(request):
-    now = timezone.now()
     context = {
         'total_jobs': Job.objects.count(),
         'total_applicants': CustomUser.objects.filter(is_applicant=True).count(),
-        'applications_24hrs': Application.objects.filter(application_date__gte=now - timedelta(hours=24)).count(),
+        'applications_24hrs': Application.objects.count(),
         'verified_users': CustomUser.objects.filter(is_active=True).count(),
     }
 
     recent_jobs = Job.objects.select_related('posted_by').order_by('-date_posted')[:5]
     recent_applicants = CustomUser.objects.order_by('-date_joined')[:5]
     recent_applications = Application.objects.select_related('applicant', 'job').order_by('-application_date')[:5]
+    
 
     activity_list = []
 
@@ -499,14 +499,14 @@ def moderator_dashboard(request):
         activity_list.append({
             'timestamp': applicant.date_joined,
             'type': 'applicant_registered',
-            'message': f'Applicant "{applicant.username}" registered.'
+            'message': f'Applicant "{applicant.get_full_name() or applicant.username}" registered.'
         })
 
     for app in recent_applications:
         activity_list.append({
             'timestamp': app.application_date,
             'type': 'job_applied',
-            'message': f'Applicant "{app.applicant.username}" clicked apply for "{app.job.title}".'
+            'message': f'Applicant "{app.applicant.get_full_name() or app.applicant.username}" clicked apply for "{app.job.title}".'
         })
 
     activity_list.sort(key=lambda x: x['timestamp'], reverse=True)
