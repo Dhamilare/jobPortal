@@ -6,8 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- SEO & Social Media Meta Tags -->
-    <title>{% block title %}Job Application Portal{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}A powerful and user-friendly job application portal built with Django and Tailwind CSS.{% endblock %}">
+    <title>{% block title %}Remote Ready With Tess{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}We connect you with trusted job opportunities while giving you the tools to prepare, apply, and land your next role.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
 
     <!-- Open Graph Tags: For rich social media previews -->
@@ -338,7 +338,7 @@
     <!-- Header/Navigation - Fixed at the top -->
     <header class="fixed top-0 left-0 w-full bg-white shadow-sm py-4 px-6 md:px-8 lg:px-12 z-50">
         <nav class="container mx-auto flex justify-between items-center">
-            <a href="{% url 'home' %}" class="text-2xl font-bold text-blue-600">JobPortal</a>
+            <a href="{% url 'home' %}" class="text-2xl font-bold text-blue-600">Remote Ready With Tess</a>
             <div class="hidden md:flex space-x-6 items-center">
                 <a href="{% url 'home' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
                     <i class="fas fa-home mr-2"></i> Home
@@ -446,11 +446,11 @@
     <footer class="bg-gray-800 text-white py-8 px-6 md:px-8 lg:px-12 mt-auto">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="mb-4 md:mb-0">
-                <p>&copy; {% now "Y" %} JobPortal. All rights reserved.</p>
+                <p>&copy; {% now "Y" %} Remote Ready With Tess</p>
             </div>
             <div class="flex space-x-6">
-                <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200"><i class="fab fa-instagram text-xl"></i></a>
-                <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200"><i class="fab fa-linkedin-in text-xl"></i></a>
+                <a href="https://www.instagram.com/i.am.testimonysonowo?igsh=MTk1emV4ZWYwMjB0Mg==" class="text-gray-400 hover:text-white transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram text-xl"></i></a>
+                <a href="https://www.linkedin.com/company/remote-ready-with-tess-rrwt/" class="text-gray-400 hover:text-white transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in text-xl"></i></a>
                 <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200"><i class="fab fa-twitter text-xl"></i></a>
                 <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200"><i class="fab fa-tiktok text-xl"></i></a>
                 <a href="#" class="text-gray-400 hover:text-green-500 transition-colors duration-200"><i class="fab fa-whatsapp text-xl"></i></a>

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home - Job Application Portal{% endblock %}
+{% block title %}Home - Remote Ready With Tess{% endblock %}
 
 {% block content %}
     <!-- Custom CSS for animations and shadows -->
@@ -34,14 +34,14 @@
     </style>
 
     <!-- Hero Section -->
-    <section class="hero-section bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20 px-6 md:px-8 lg:px-12 text-center relative overflow-hidden">
-        <div class="absolute inset-0 z-0 opacity-10" style="background-image: url('https://placehold.co/1920x1080/ffffff/000000?text=Abstract+Background'); background-size: cover; background-position: center;"></div>
+    <section class="hero-section bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20 px-6 sm:px-10 lg:px-20 text-center relative overflow-hidden rounded-lg shadow-lg">
+        <div class="absolute inset-0 z-0 opacity-10" style="background-image: url('https://tse4.mm.bing.net/th/id/OIP.JvN5qVqJujCT4wJhkeC0rgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3'); background-size: cover; background-position: center;"></div>
         <div class="container mx-auto relative z-10">
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 animate-fade-in-up">
-                Find Your Dream Job Today
+                Find Verified Remote Jobs<br>Build Your Career
             </h1>
             <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto animate-fade-in-up delay-200">
-                Connecting talented individuals with leading companies. Your next career move starts here.
+                We connect you with trusted job opportunities while giving you the tools to prepare, apply, and land your next role
             </p>
             <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4 animate-fade-in-up delay-400">
                 <a href="{% url 'job_list' %}" class="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center">
@@ -58,7 +58,7 @@
     <section class="py-16 px-6 md:px-8 lg:px-12 bg-gray-50">
         <div class="container mx-auto">
             <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center">
-                <i class="fas fa-check-circle text-green-600 mr-3"></i> Verified Job Openings
+                <i class="fas fa-search text-blue-600 mr-3"></i> Explore Remote Opportunities
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% if verified_jobs %}
@@ -70,7 +70,7 @@
                                     <i class="fas fa-fire mr-1 text-sm"></i> Hot!
                                 </span>
                             {% endif %}
-                            {# NEW: Expired Job Banner #}
+                            {# Expired Job Banner #}
                             {% if job.is_expired %}
                                 <span class="absolute top-0 left-0 mt-3 ml-3 bg-gray-700 text-white text-xs font-bold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center transform -rotate-3 origin-top-left">
                                     <i class="fas fa-times-circle mr-1 text-sm"></i> Expired
@@ -141,20 +141,20 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Testimonial Card 1 -->
                 <div class="bg-gray-50 rounded-lg p-6 card-shadow border border-gray-200">
-                    <p class="text-gray-700 italic mb-4 text-center">"This portal helped me land my dream job in just a few weeks! The interface is intuitive and the job listings are highly relevant."</p>
+                    <p class="text-gray-700 italic mb-4 text-center">"Finally, a job portal I can trust. No fake offers, just real jobs and real results."</p>
                     <div class="flex flex-col items-center">
-                        <img src="https://placehold.co/64x64/F0F0F0/888888?text=JD" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-blue-300">
-                        <p class="font-semibold text-gray-900">Jane Doe</p>
-                        <p class="text-sm text-gray-600">Software Engineer</p>
+                        <img src="https://placehold.co/64x64/F0F0F0/888888?text=TO" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-blue-300">
+                        <p class="font-semibold text-gray-900">Tunde O.</p>
+                        <p class="text-sm text-gray-600">Software Developer</p>
                     </div>
                 </div>
                 <!-- Testimonial Card 2 -->
                 <div class="bg-gray-50 rounded-lg p-6 card-shadow border border-gray-200">
-                    <p class="text-gray-700 italic mb-4 text-center">"The email verification process was smooth, and the dashboard helps me track all my applications easily. Highly recommended!"</p>
+                    <p class="text-gray-700 italic mb-4 text-center">"This platform helped me land my first job after graduation. The process was smooth, and I felt confident every step of the way"</p>
                     <div class="flex flex-col items-center">
-                        <img src="https://placehold.co/64x64/F0F0F0/888888?text=AS" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-green-300">
-                        <p class="font-semibold text-gray-900">Alex Smith</p>
-                        <p class="text-sm text-gray-600">Marketing Specialist</p>
+                        <img src="https://placehold.co/64x64/F0F0F0/888888?text=GA" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-green-300">
+                        <p class="font-semibold text-gray-900">Grace A.</p>
+                        <p class="text-sm text-gray-600">Customer Service Executive</p>
                     </div>
                 </div>
                 <!-- Testimonial Card 3 -->
@@ -223,6 +223,42 @@
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
                         <p>Absolutely! From your applicant dashboard, you can access your profile settings to update your personal details, change your password, and modify your email address.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 5 -->
+                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                        <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> Is it free to use?
+                        </h3>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                    </div>
+                    <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
+                        <p>Yes, our platform is completely free to use. You can create an account and apply for jobs without any cost.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 6 -->
+                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                        <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> Are the jobs verified?
+                        </h3>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                    </div>
+                    <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
+                        <p>Yes, every single job listing is carefully screened and approved by our team before it goes live on the site. We are committed to providing only legitimate and verified opportunities.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 7 -->
+                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                        <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> Do you offer career support?
+                        </h3>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                    </div>
+                    <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
+                        <p>Yes, we do! We offer a range of career support services, including resume reviews, interview preparation, and one-on-one career counseling to help you succeed.</p>
                     </div>
                 </div>
             </div>
