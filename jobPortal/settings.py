@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'jobApp',
+    "storages",
 ]
 
 MIDDLEWARE = [
@@ -145,11 +146,43 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 BASE_URL = 'http://127.0.0.1:8000'
 
 
-# Security settings for production
-# CSRF_COOKIE_SECURE = True
-# SESSION_COOKIE_SECURE = True
-# SECURE_SSL_REDIRECT = True # Redirects all HTTP requests to HTTPS
-# SECURE_HSTS_SECONDS = 31536000 # Enable HTTP Strict Transport Security
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
-# X_FRAME_OPTIONS = 'DENY' # Protects against clickjacking
+USE_AZURE_STORAGE = config("USE_AZURE_STORAGE", default=not DEBUG, cast=bool)
+
+if USE_AZURE_STORAGE and not DEBUG:
+    # Azure Blob credentials
+    AZURE_ACCOUNT_NAME = config("AZURE_ACCOUNT_NAME")
+    AZURE_ACCOUNT_KEY = config("AZURE_ACCOUNT_KEY")
+    AZURE_CONNECTION_STRING = config("AZURE_CONNECTION_STRING")
+    AZURE_STATIC_CONTAINER = config("AZURE_STATIC_CONTAINER", default="staticfiles") # To rename later
+    AZURE_MEDIA_CONTAINER = config("AZURE_MEDIA_CONTAINER", default="mediafiles") # To rename later
+
+    STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_STATIC_CONTAINER}/"
+    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}/"
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "OPTIONS": {
+                "account_name": AZURE_ACCOUNT_NAME,
+                "account_key": AZURE_ACCOUNT_KEY,
+                "connection_string": AZURE_CONNECTION_STRING,
+                "azure_container": AZURE_MEDIA_CONTAINER,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "OPTIONS": {
+                "account_name": AZURE_ACCOUNT_NAME,
+                "account_key": AZURE_ACCOUNT_KEY,
+                "connection_string": AZURE_CONNECTION_STRING,
+                "azure_container": AZURE_STATIC_CONTAINER,
+            },
+        },
+    }
+
+AZURE_OVERWRITE_FILES = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://"
+]
+
