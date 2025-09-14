@@ -4,6 +4,8 @@ from django.utils import timezone
 import uuid
 from django.conf import settings
 from django.core.validators import RegexValidator
+from django.template.defaultfilters import slugify
+import string, random
 
 # -------------------------------
 # User Manager
@@ -252,3 +254,106 @@ class Subscriber(models.Model):
     class Meta:
         verbose_name_plural = "Subscribers"
         ordering = ['-created_at']
+
+
+
+# -------------------------------
+# Blog Models
+# -------------------------------
+class BlogCategory(models.Model):
+    """
+    Model for blog post categories.
+    """
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Blog Categories"
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+def generate_unique_slug(model, title, slug_field_name="slug"):
+    base_slug = slugify(title)
+    slug = base_slug
+    ModelClass = model.__class__
+    counter = 0
+
+    while ModelClass.objects.filter(**{slug_field_name: slug}).exists():
+        counter += 1
+        rand_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+        slug = f"{base_slug}-{rand_suffix}"
+
+        if counter > 10:
+            break
+
+    return slug
+
+
+class Post(models.Model):
+    """
+    Model for a blog post.
+    """
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+    ]
+
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blog_posts')
+    content = models.TextField()
+    image = models.ImageField(
+        upload_to='blog_images/',
+        blank=True,
+        null=True,
+        help_text="Optional image for the blog post."
+    )
+    category = models.ForeignKey(
+        BlogCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='blog_posts'
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+    publish_date = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-publish_date']
+        indexes = [
+            models.Index(fields=['-publish_date']),
+        ]
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(self, self.title)
+        super().save(*args, **kwargs)
+
+
+class Comment(models.Model):
+    """
+    Model for comments on a blog post.
+    """
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blog_comments')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Comment by {self.author.username} on {self.post.title} ({self.content[:20]}...)"

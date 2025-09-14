@@ -343,6 +343,9 @@
                 <a href="{% url 'home' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
                     <i class="fas fa-home mr-2"></i> Home
                 </a>
+                <a href="{% url 'blog_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
+                    <i class="fas fa-blog mr-2"></i> Blog
+                </a>
                 <!-- New Dropdown for About Us -->
                 <div class="relative">
                     <a href="#" id="about-us-dropdown-toggle" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
@@ -394,6 +397,9 @@
         <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
             <a href="{% url 'home' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-home mr-2"></i> Home
+            </a>
+            <a href="{% url 'blog_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
+                <i class="fas fa-blog mr-2"></i> Blog
             </a>
             <!-- Mobile Dropdown for About Us -->
             <div class="nav-dropdown-mobile">

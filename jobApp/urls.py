@@ -64,6 +64,15 @@ urlpatterns = [
     path('staff/moderators/manage/<int:user_id>/', views.manage_moderators, name='manage_moderators_edit_delete'),
     path('staff/subscribers', views.subscribers_list, name='subscribers_list'),
 
+    
+    # Blog Post Management
+    path('blogs/', views.post_list_view, name='blog_list'),
+    path('blogs/new_post', views.post_create_view, name='blog_create'),
+    path('blogs/<slug:slug>/', views.post_detail_view, name='blog_detail'),
+    path('blogs/<slug:slug>/edit/', views.post_update_view, name='blog_update'),
+    path('blogs/<slug:slug>/delete/', views.post_delete_view, name='blog_delete'),
+    path('blogs/<slug:slug>/comment/', views.add_comment_to_post, name='add_comment_to_post'),
+    path('create-category/', views.create_category, name='create_category'),
 
     # -------------------- Feedback Pages --------------------
     path('register/success/', lambda request: render(request, 'registration_success.html'), name='registration_success'),

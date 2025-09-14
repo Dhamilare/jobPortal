@@ -545,3 +545,42 @@ class RecruiterRegistrationForm(forms.Form):
         )
 
         return recruiter
+    
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ('title', 'content', 'image', 'category', 'status')
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 10
+            }),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'w-full p-2 border rounded bg-gray-50'
+            }),
+            'category': forms.Select(attrs={
+                'class': 'w-full p-2 border rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'w-full p-2 border rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+        }
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ('content',)
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 5
+            }),
+        }
+        labels = {
+            'content': 'Your Comment',
+        }

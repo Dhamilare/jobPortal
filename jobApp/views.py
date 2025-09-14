@@ -20,7 +20,6 @@ from .forms import *
 from .models import *
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.mail import EmailMessage
 from django.templatetags.static import static
 from django.http import Http404
 from django.contrib.auth.forms import PasswordResetForm
@@ -36,6 +35,9 @@ from django.core.validators import validate_email
 import logging
 logger = logging.getLogger(__name__)
 from .utils import *
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 # ----------------------------
 # Role-based Access Decorators
@@ -1204,3 +1206,174 @@ def activate_account(request, uidb64, token):
     else:
         messages.error(request, 'Invalid activation request!')
         return redirect('post_job')
+    
+
+# -------------------------------
+# Blog Post Views
+# -------------------------------
+
+def post_list_view(request):
+    """
+    View to display a list of all published blog posts with search and pagination.
+    """
+    # Get search query from the URL
+    query = request.GET.get('q')
+    posts_list = Post.objects.filter(status='published').order_by('-publish_date')
+
+    # Apply search filter if a query is present
+    if query:
+        posts_list = posts_list.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query)
+        ).distinct()
+
+    # Pagination logic
+    paginator = Paginator(posts_list, 6) # Show 6 posts per page
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results.
+        page_obj = paginator.get_page(paginator.num_pages)
+    
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+    }
+    return render(request, 'blog/post_list.html', context)
+
+
+def post_detail_view(request, slug):
+    """
+    View to display a single blog post and its comments.
+    """
+    # Staff can see all posts, normal visitors only see published posts
+    if request.user.is_staff:
+        post = get_object_or_404(Post, slug=slug)
+    else:
+        post = get_object_or_404(Post, slug=slug, status='published')
+
+    # Filter for approved comments
+    comments = post.comments.all()
+
+
+    # Check if the currently logged-in user has already commented on this post
+    has_commented = False
+    if request.user.is_authenticated:
+        if Comment.objects.filter(post=post, author=request.user).exists():
+            has_commented = True
+
+    comment_form = CommentForm()
+
+    return render(request, 'blog/post_detail.html', {
+        'post': post,
+        'comments': comments,
+        'comment_form': comment_form,
+        'has_commented': has_commented,
+    })
+
+@staff_required
+def post_create_view(request):
+    """
+    View for creating a new blog post. Requires staff access.
+    """
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect('blog_detail', slug=post.slug)
+    else:
+        form = PostForm()
+    
+    return render(request, 'blog/post_form.html', {'form': form})
+
+@staff_required
+def post_update_view(request, slug):
+    """
+    View for updating an existing blog post. Requires staff access and ownership.
+    """
+    post = get_object_or_404(Post, slug=slug)
+    if request.user != post.author:
+        # A simple redirect or permission denied
+        return redirect('blog_detail', slug=post.slug)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            post = form.save()
+            return redirect('blog_detail', slug=post.slug)
+    else:
+        form = PostForm(instance=post)
+    
+    return render(request, 'blog/post_form.html', {'form': form, 'post': post})
+
+@staff_required
+def post_delete_view(request, slug):
+    """
+    View for deleting a blog post. Requires staff access and ownership.
+    """
+    post = get_object_or_404(Post, slug=slug)
+    if request.user != post.author:
+        # A simple redirect or permission denied
+        return redirect('blog_detail', slug=post.slug)
+    
+    if request.method == 'POST':
+        post.delete()
+        return redirect('blog_list')
+    
+    return render(request, 'blog/post_confirm_delete.html', {'post': post})
+
+
+# -------------------------------
+# Comment Views 
+# -------------------------------
+
+def add_comment_to_post(request, slug):
+    """
+    View to handle adding comments to a blog post. Requires applicant access.
+    """
+    post = get_object_or_404(Post, slug=slug, status='published')
+
+    # This check prevents multiple comments from the same user
+    if Comment.objects.filter(post=post, author=request.user).exists():
+        return redirect('blog_detail', slug=post.slug)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            return redirect('blog_detail', slug=post.slug)
+            
+    return redirect('blog_detail', slug=post.slug)
+
+
+@csrf_exempt
+def create_category(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            category_name = data.get('name')
+
+            if category_name:
+                # Create and save the new category
+                category, created = BlogCategory.objects.get_or_create(name=category_name)
+                
+                # Check if a new category was created or an existing one was retrieved
+                if created:
+                    return JsonResponse({'status': 'success', 'id': category.id, 'name': category.name})
+                else:
+                    return JsonResponse({'status': 'error', 'error': 'Category already exists.'}, status=409)
+            else:
+                return JsonResponse({'status': 'error', 'error': 'Category name is required.'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'error': 'Invalid JSON.'}, status=400)
+    
+    return JsonResponse({'status': 'error', 'error': 'Invalid request method.'}, status=405)

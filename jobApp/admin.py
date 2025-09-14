@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from django import forms
 from .models import *
+from django.utils.html import format_html
 
 
 # -----------------------
@@ -222,6 +222,73 @@ class SubscriberAdmin(admin.ModelAdmin):
     list_filter = ('created_at',)
     search_fields = ('email',)
     ordering = ('-created_at',)
+
+
+@admin.register(BlogCategory)
+class BlogCategoryAdmin(admin.ModelAdmin):
+    """
+    Admin configuration for the BlogCategory model.
+    """
+    list_display = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    """
+    Admin configuration for the Post model.
+    """
+    list_display = ('title', 'author', 'status', 'publish_date', 'category', 'is_active', 'image_tag')
+    list_filter = ('status', 'publish_date', 'author')
+    search_fields = ('title', 'content')
+    prepopulated_fields = {'slug': ('title',)}
+    raw_id_fields = ('author',)
+    date_hierarchy = 'publish_date'
+    ordering = ('status', 'publish_date')
+    readonly_fields = ('created_at', 'updated_at', 'image_tag')
+    actions = ['make_published', 'make_draft']
+
+    def is_active(self, obj):
+        """
+        Custom method to check if the post is active.
+        """
+        return obj.status == 'published'
+    is_active.boolean = True
+    is_active.short_description = 'Published'
+
+    def image_tag(self, obj):
+        """
+        Displays a thumbnail of the blog post image in the admin.
+        """
+        if obj.image:
+            return format_html('<img src="{}" style="max-height: 100px; max-width: 150px;" />'.format(obj.image.url))
+        return "No Image"
+    image_tag.short_description = 'Image Preview'
+
+    def make_published(self, request, queryset):
+        """
+        Action to set selected posts to 'published'.
+        """
+        queryset.update(status='published')
+    make_published.short_description = "Mark selected posts as published"
+
+    def make_draft(self, request, queryset):
+        """
+        Action to set selected posts to 'draft'.
+        """
+        queryset.update(status='draft')
+    make_draft.short_description = "Mark selected posts as draft"
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    """
+    Admin configuration for the Comment model.
+    """
+    list_display = ('author', 'post', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('author__username', 'content')
+    
 
 
 
