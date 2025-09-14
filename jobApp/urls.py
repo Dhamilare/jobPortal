@@ -26,6 +26,7 @@ urlpatterns = [
     path('courses/', views.courses_coming_soon, name='courses_coming_soon'),
     path('resume/', views.submit_resume_view, name='submit_resume'),
 
+
     # -------------------- Job Listings --------------------
     path('jobs/', views.job_list_view, name='job_list'),
     path('jobs/<int:job_id>/', views.job_detail_view, name='job_detail'),

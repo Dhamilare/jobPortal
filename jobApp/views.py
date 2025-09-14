@@ -112,7 +112,15 @@ def home_view(request):
         if job.job_expiry_date and job.job_expiry_date < now:
             job.is_expired = True
 
-    return render(request, 'home.html', {'verified_jobs': verified_jobs})
+    # Fetch the 3 most recent published blog posts.
+    blog_posts = Post.objects.filter(status='published').order_by('-publish_date')[:3]
+
+    context = {
+        'verified_jobs': verified_jobs,
+        'blog_posts': blog_posts,
+    }
+
+    return render(request, 'home.html', context)
 
 def about_view(request):
     return render(request, 'about.html')
@@ -1087,13 +1095,13 @@ def submit_resume_view(request):
 
             # Handle template request
             if request_template:
-                template_link = request.build_absolute_uri(static('resume_template/resume_template.docx'))
+                template_link = request.build_absolute_uri(static('resume_template/Resume-Template.docx'))
                 template_context = {'full_name': full_name, 'template_link': template_link}
 
                 try:
                     send_templated_email(
                         'emails/applicant_template_link.html',
-                        'Your Resume Template from Job Portal',
+                        'Your Resume Template from Remote Ready With Tess(RRWT)',
                         [applicant_email],
                         template_context
                     )
