@@ -136,7 +136,7 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 EMAIL_BACKEND = config("EMAIL_BACKEND")
-EMAIL_USE_SSL = config('EMAIL_USE_SSL', cast=bool)
+EMAIL_USE_TLS = config('EMAIL_USE_SSL', cast=bool)
 EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_PORT = config("EMAIL_PORT", cast=int)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
@@ -183,6 +183,6 @@ if USE_AZURE_STORAGE and not DEBUG:
 AZURE_OVERWRITE_FILES = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://"
+    "https://jobportal-vs63.onrender.com"
 ]
 
