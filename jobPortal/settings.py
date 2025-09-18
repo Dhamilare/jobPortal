@@ -143,7 +143,7 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
-BASE_URL = 'http://127.0.0.1:8000'
+BASE_URL = 'https://jobportal-vs63.onrender.com'
 
 
 USE_AZURE_STORAGE = config("USE_AZURE_STORAGE", default=not DEBUG, cast=bool)
