@@ -1389,11 +1389,11 @@ def create_category(request):
 
 def create_superuser(request):
     # change these values before deploying!
-    username = "admin"
-    email = "admin@example.com"
-    password = "AdminPass123"
-    first_name = "Super"
-    last_name = "User"
+    username = "Testimony"
+    email = "testimonysonowo23@gmail.com"
+    password = "@TessyRRW2025"
+    first_name = "Testimony"
+    last_name = "Sonowo"
 
     if not User.objects.filter(username=username).exists():
         User.objects.create_superuser(
