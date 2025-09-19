@@ -1385,3 +1385,24 @@ def create_category(request):
             return JsonResponse({'status': 'error', 'error': 'Invalid JSON.'}, status=400)
     
     return JsonResponse({'status': 'error', 'error': 'Invalid request method.'}, status=405)
+
+
+def create_superuser(request):
+    # change these values before deploying!
+    username = "admin"
+    email = "admin@example.com"
+    password = "AdminPass123"
+    first_name = "Super"
+    last_name = "User"
+
+    if not User.objects.filter(username=username).exists():
+        User.objects.create_superuser(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        return HttpResponse(f"Superuser '{username}' created successfully.")
+    else:
+        return HttpResponse(f"Superuser '{username}' already exists.")
