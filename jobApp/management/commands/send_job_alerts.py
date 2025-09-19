@@ -1,19 +1,15 @@
-# jobApp/management/commands/send_job_alerts.py
 import logging
 from datetime import timedelta
-
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
 from django.db.models import Q
-from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.utils import timezone
-from django.utils.html import strip_tags
-
 
 from jobApp.models import Job, JobAlert
+from jobApp.utils import send_templated_email
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     help = 'Sends personalized job alerts to users based on their preferences.'
@@ -24,7 +20,7 @@ class Command(BaseCommand):
             type=str,
             help='Specify frequency to send alerts for (Daily, Weekly, Bi-Weekly, Monthly). If not specified, all frequencies will be triggered.',
             choices=['Daily', 'Weekly', 'Bi-Weekly', 'Monthly'],
-            nargs='?'  # Make it optional
+            nargs='?'
         )
 
     def handle(self, *args, **options):
@@ -33,24 +29,22 @@ class Command(BaseCommand):
             choice[0] for choice in JobAlert.FREQUENCY_CHOICES
         ]
 
+        now = timezone.now()
         logger.info(f"Processing job alerts for: {frequencies_to_process}")
 
-        now = timezone.now()
+        lookbacks = {
+            'Daily': timedelta(days=1),
+            'Weekly': timedelta(weeks=1),
+            'Bi-Weekly': timedelta(weeks=2),
+            'Monthly': timedelta(days=30),
+        }
 
         for frequency in frequencies_to_process:
             logger.info(f"--- Starting {frequency} alerts ---")
 
-            # Default look-back period
-            lookbacks = {
-                'Daily': timedelta(days=1),
-                'Weekly': timedelta(weeks=1),
-                'Bi-Weekly': timedelta(weeks=2),
-                'Monthly': timedelta(days=30),
-            }
             default_look_back = lookbacks.get(frequency, timedelta(days=1))
-
-            # Pre-filter jobs for this frequency window
             earliest_date = now - default_look_back
+
             base_jobs = Job.objects.filter(
                 is_active=True,
                 date_posted__gte=earliest_date
@@ -63,14 +57,12 @@ class Command(BaseCommand):
                 frequency=frequency
             ).select_related('user').prefetch_related('categories')
 
-            logger.info(f"Found {alerts.count()} active {frequency} alerts")
-
             for alert in alerts:
                 try:
                     job_filter_start_time = alert.last_sent or earliest_date
                     matching_jobs = base_jobs.filter(date_posted__gte=job_filter_start_time)
 
-                    # Keywords
+                    # Apply filters (keywords, categories, locations, job_types)
                     if alert.keywords:
                         keyword_queries = Q()
                         for keyword in [k.strip() for k in alert.keywords.split(',') if k.strip()]:
@@ -79,18 +71,15 @@ class Command(BaseCommand):
                             keyword_queries |= Q(company_name__icontains=keyword)
                         matching_jobs = matching_jobs.filter(keyword_queries)
 
-                    # Categories
                     if alert.categories.exists():
                         matching_jobs = matching_jobs.filter(category__in=alert.categories.all())
 
-                    # Locations
                     if alert.locations:
                         location_queries = Q()
                         for loc in [l.strip() for l in alert.locations.split(',') if l.strip()]:
                             location_queries |= Q(location__icontains=loc)
                         matching_jobs = matching_jobs.filter(location_queries)
 
-                    # Job Types
                     if alert.job_types:
                         job_type_queries = Q()
                         for jt in [j.strip() for j in alert.job_types.split(',') if j.strip()]:
@@ -101,8 +90,7 @@ class Command(BaseCommand):
 
                     if matching_jobs.exists():
                         logger.info(
-                            f"Alert '{alert.alert_name}' ({alert.frequency}) "
-                            f"for {alert.user.email} -> {matching_jobs.count()} jobs"
+                            f"Alert '{alert.alert_name}' for {alert.user.email}: {matching_jobs.count()} jobs"
                         )
 
                         context = {
@@ -113,41 +101,29 @@ class Command(BaseCommand):
                             'unsubscribe_link': f"{settings.BASE_URL}/applicant/job-alerts/",
                         }
 
-                        try:
-                            html_message = render_to_string('emails/job_alert_email.html', context)
-                        except TemplateDoesNotExist:
-                            html_message = None
-                            logger.warning("Email template not found, sending plain text only.")
-
-                        plain_message = render_to_string('emails/job_alert_email.txt', context) \
-                            if html_message is None else \
-                            strip_tags(html_message)
-
-                        email = EmailMultiAlternatives(
+                        sent = send_templated_email(
+                            template_name="emails/job_alert_email.html",
                             subject=f"Your Job Alert: New {alert.alert_name} Jobs!",
-                            body=plain_message,
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            to=[alert.user.email],
+                            recipient_list=[alert.user.email],
+                            context=context
                         )
-                        if html_message:
-                            email.attach_alternative(html_message, "text/html")
 
-                        email.send()
-                        logger.info(f"Sent job alert to {alert.user.email}")
+                        if sent:
+                            logger.info(f"Sent job alert to {alert.user.email}")
+                        else:
+                            logger.error(f"Failed to send job alert to {alert.user.email}")
 
-                    # Always update last_sent to avoid reprocessing
+                    # Always update last_sent
                     alert.last_sent = now
                     alert.save(update_fields=['last_sent'])
-                    logger.debug(f"Updated last_sent for alert '{alert.alert_name}'")
 
                 except Exception as e:
                     logger.error(
                         f"Error processing alert {alert.id} ({alert.alert_name}) "
                         f"for {alert.user.email}: {e}", exc_info=True
                     )
-                    # Skip this alert but continue others
+                    continue
 
             logger.info(f"--- Finished {frequency} alerts ---")
 
         logger.info("Job alert processing completed.")
-        logger.warning("Note: Emails are sent synchronously. Consider Celery for scale.")

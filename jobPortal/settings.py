@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'jobApp',
     "storages",
+    "django_crontab",
 ]
 
 MIDDLEWARE = [
@@ -196,5 +197,9 @@ AZURE_OVERWRITE_FILES = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://jobportal-vs63.onrender.com"
+]
+
+CRONJOBS = [
+    ('0 8 * * *', 'django.core.management.call_command', ['send_job_alerts']),
 ]
 
