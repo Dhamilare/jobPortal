@@ -1258,11 +1258,8 @@ def post_detail_view(request, slug):
     """
     View to display a single blog post and its comments.
     """
-    # Staff can see all posts, normal visitors only see published posts
-    if request.user.is_staff:
-        post = get_object_or_404(Post, slug=slug)
-    else:
-        post = get_object_or_404(Post, slug=slug, status='published')
+    
+    post = get_object_or_404(Post, slug=slug)
 
     # Filter for approved comments
     comments = post.comments.all()
