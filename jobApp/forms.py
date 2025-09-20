@@ -555,10 +555,6 @@ class PostForm(forms.ModelForm):
             'title': forms.TextInput(attrs={
                 'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
             }),
-            'content': forms.Textarea(attrs={
-                'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500',
-                'rows': 10
-            }),
             'image': forms.ClearableFileInput(attrs={
                 'class': 'w-full p-2 border rounded bg-gray-50'
             }),

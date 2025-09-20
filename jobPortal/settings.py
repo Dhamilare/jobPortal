@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'jobApp',
     "storages",
+    'django_ckeditor_5',
 ]
 
 MIDDLEWARE = [
@@ -199,4 +200,51 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'codeBlock', '|', 'imageUpload', 'fileUpload', 'mediaEmbed', 'undo', 'redo'], # Added fileUpload and mediaEmbed
+        'image': {
+            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:full', 'imageStyle:alignRight'],
+            'styles': ['full', 'alignLeft', 'alignRight']
+        },
+        'theme': 'lark',
+        'language': 'en',
+        'file_storage_path': os.path.join(BASE_DIR, 'media', 'ckeditor5_uploads'), # Explicit path for file uploads
+        'media_embed': {
+            'previewsInData': True,
+        },
+    },
+    'extends': {
+        'block_toolbar': [
+            'paragraph', 'heading1', 'heading2', 'heading3',
+            '|', 'bulletedList', 'numberedList',
+            '|', 'blockQuote',
+        ],
+        'toolbar': ['heading', '|', 'outdent', 'indent', '|', 'bold', 'italic', 'link', 'underline',
+                    'strike', 'subscript', 'superscript', 'code', 'removeFormat', '|', 'bulletedList',
+                    'numberedList', 'todoList', '|', 'blockQuote', 'codeBlock', '|',
+                    'imageUpload', 'fileUpload', 'mediaEmbed', 'insertTable', 'undo', 'redo'], # Added fileUpload and mediaEmbed
+        'image': {
+            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft',
+                        'imageStyle:full', 'imageStyle:alignRight'],
+            'styles': ['full', 'alignLeft', 'alignRight']
+        },
+        'table': {
+            'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells',
+                               'tableProperties', 'tableCellProperties'],
+        },
+        'heading': {
+            'options': [
+                {'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph'},
+                {'model': 'heading1', 'view': 'h1', 'title': 'Heading 1', 'class': 'ck-heading_heading1'},
+                {'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2'},
+                {'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3'}
+            ]
+        },
+        'file_storage_path': os.path.join(BASE_DIR, 'media', 'ckeditor5_uploads'), # Explicit path for file uploads
+        'media_embed': {
+            'previewsInData': True,
+        },
+    }
+}
 

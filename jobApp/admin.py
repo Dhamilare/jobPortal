@@ -3,6 +3,20 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import *
 from django.utils.html import format_html
+from django_ckeditor_5.widgets import CKEditor5Widget
+from django import forms
+
+
+# ==========================
+# CKEditor5 Admin Integration
+# ==========================
+class PostAdminForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = '__all__'
+        widgets = {
+            'content': CKEditor5Widget(config_name='default'),
+        }
 
 
 # -----------------------
@@ -235,6 +249,7 @@ class BlogCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
+    form = PostAdminForm
     """
     Admin configuration for the Post model.
     """

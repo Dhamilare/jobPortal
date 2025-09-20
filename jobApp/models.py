@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.template.defaultfilters import slugify
 import string, random
+from django_ckeditor_5.fields import CKEditor5Field
 
 # -------------------------------
 # User Manager
@@ -301,7 +302,7 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=250, unique=True, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blog_posts')
-    content = models.TextField()
+    content = CKEditor5Field(config_name='default')
     image = models.ImageField(
         upload_to='blog_images/',
         blank=True,
