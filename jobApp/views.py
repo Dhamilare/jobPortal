@@ -113,7 +113,7 @@ def home_view(request):
             job.is_expired = True
 
     # Fetch the 3 most recent published blog posts.
-    blog_posts = Post.objects.filter(status='published').order_by('-publish_date')[:3]
+    blog_posts = Post.objects.all().order_by('-publish_date')[:3]
 
     context = {
         'verified_jobs': verified_jobs,
@@ -1226,7 +1226,7 @@ def post_list_view(request):
     """
     # Get search query from the URL
     query = request.GET.get('q')
-    posts_list = Post.objects.filter(status='published').order_by('-publish_date')
+    posts_list = Post.objects.all().order_by('-publish_date')
 
     # Apply search filter if a query is present
     if query:

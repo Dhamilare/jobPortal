@@ -550,7 +550,7 @@ class RecruiterRegistrationForm(forms.Form):
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ('title', 'content', 'image', 'category', 'status')
+        fields = ('title', 'content', 'image', 'category')
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -563,9 +563,6 @@ class PostForm(forms.ModelForm):
                 'class': 'w-full p-2 border rounded bg-gray-50'
             }),
             'category': forms.Select(attrs={
-                'class': 'w-full p-2 border rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
-            }),
-            'status': forms.Select(attrs={
                 'class': 'w-full p-2 border rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
             }),
         }

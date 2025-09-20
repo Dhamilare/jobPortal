@@ -298,14 +298,6 @@ def generate_unique_slug(model, title, slug_field_name="slug"):
 
 
 class Post(models.Model):
-    """
-    Model for a blog post.
-    """
-    STATUS_CHOICES = [
-        ('draft', 'Draft'),
-        ('published', 'Published'),
-    ]
-
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=250, unique=True, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blog_posts')
@@ -323,7 +315,6 @@ class Post(models.Model):
         blank=True,
         related_name='blog_posts'
     )
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     publish_date = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

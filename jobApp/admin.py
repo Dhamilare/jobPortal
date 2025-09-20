@@ -238,23 +238,15 @@ class PostAdmin(admin.ModelAdmin):
     """
     Admin configuration for the Post model.
     """
-    list_display = ('title', 'author', 'status', 'publish_date', 'category', 'is_active', 'image_tag')
-    list_filter = ('status', 'publish_date', 'author')
+    list_display = ('title', 'author', 'publish_date', 'category', 'image_tag')
+    list_filter = ('publish_date', 'author')
     search_fields = ('title', 'content')
     prepopulated_fields = {'slug': ('title',)}
     raw_id_fields = ('author',)
     date_hierarchy = 'publish_date'
-    ordering = ('status', 'publish_date')
+    ordering = ('publish_date',)
     readonly_fields = ('created_at', 'updated_at', 'image_tag')
-    actions = ['make_published', 'make_draft']
 
-    def is_active(self, obj):
-        """
-        Custom method to check if the post is active.
-        """
-        return obj.status == 'published'
-    is_active.boolean = True
-    is_active.short_description = 'Published'
 
     def image_tag(self, obj):
         """
@@ -264,20 +256,6 @@ class PostAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" style="max-height: 100px; max-width: 150px;" />'.format(obj.image.url))
         return "No Image"
     image_tag.short_description = 'Image Preview'
-
-    def make_published(self, request, queryset):
-        """
-        Action to set selected posts to 'published'.
-        """
-        queryset.update(status='published')
-    make_published.short_description = "Mark selected posts as published"
-
-    def make_draft(self, request, queryset):
-        """
-        Action to set selected posts to 'draft'.
-        """
-        queryset.update(status='draft')
-    make_draft.short_description = "Mark selected posts as draft"
 
 
 @admin.register(Comment)
