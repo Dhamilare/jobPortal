@@ -468,7 +468,7 @@ def moderator_dashboard(request):
         'total_jobs': Job.objects.count(),
         'total_applicants': CustomUser.objects.filter(is_applicant=True).count(),
         'applications_24hrs': Application.objects.count(),
-        'verified_users': CustomUser.objects.filter(is_active=True).count(),
+        'verified_users': CustomUser.objects.filter(is_active=True, is_staff=False, is_moderator=False).count(),
     }
 
     recent_jobs = Job.objects.select_related('posted_by').order_by('-date_posted')[:5]
