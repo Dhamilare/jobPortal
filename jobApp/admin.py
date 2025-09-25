@@ -19,6 +19,14 @@ class PostAdminForm(forms.ModelForm):
         }
 
 
+class JobAdminForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = '__all__'
+        widgets = {
+            'content': CKEditor5Widget(config_name='default'),
+        }
+
 # -----------------------
 # Custom User Admin Forms
 # -----------------------
@@ -82,6 +90,7 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
+    form = JobAdminForm
     list_display = ('title', 'slug', 'company_name', 'location', 'job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date', 'posted_by') # Added job_expiry_date
     list_filter = ('job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date') # Added job_expiry_date
     search_fields = ('title', 'company_name', 'location', 'description')

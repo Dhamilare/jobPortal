@@ -79,7 +79,7 @@ class Job(models.Model):
     ]
 
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = CKEditor5Field(config_name='default')
     company_name = models.CharField(max_length=150)
     location = models.CharField(max_length=100)
     job_type = models.CharField(max_length=50, choices=JOB_TYPE_CHOICES, default='Full-time')
