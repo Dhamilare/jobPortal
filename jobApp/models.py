@@ -93,7 +93,13 @@ class Job(models.Model):
         blank=True,
         help_text="External link for job application if not processed internally."
     )
+    slug = models.SlugField(unique=True, max_length=200, null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super(Job, self).save(*args, **kwargs)
+    
     def __str__(self):
         return f"{self.title} at {self.company_name}"
 

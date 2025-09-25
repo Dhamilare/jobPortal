@@ -82,7 +82,7 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('title', 'company_name', 'location', 'job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date', 'posted_by') # Added job_expiry_date
+    list_display = ('title', 'slug', 'company_name', 'location', 'job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date', 'posted_by') # Added job_expiry_date
     list_filter = ('job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date') # Added job_expiry_date
     search_fields = ('title', 'company_name', 'location', 'description')
     raw_id_fields = ('category', 'posted_by')
@@ -91,7 +91,7 @@ class JobAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('title', 'company_name', 'location', 'job_type', 'category', 'external_application_url', 'description', 'is_active', 'job_expiry_date') # Added job_expiry_date
+            'fields': ('title', 'slug', 'company_name', 'location', 'job_type', 'category', 'external_application_url', 'description', 'is_active', 'job_expiry_date') # Added job_expiry_date
         }),
         ('Dates', {
             'fields': ('date_posted',),
@@ -102,7 +102,7 @@ class JobAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
     )
-    readonly_fields = ('date_posted',) # date_posted should typically be auto_now_add
+    readonly_fields = ('date_posted','slug',) # date_posted should typically be auto_now_add
 
     def make_active(self, request, queryset):
         queryset.update(is_active=True)

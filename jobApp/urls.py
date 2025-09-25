@@ -29,10 +29,10 @@ urlpatterns = [
 
     # -------------------- Job Listings --------------------
     path('jobs/', views.job_list_view, name='job_list'),
-    path('jobs/<int:job_id>/', views.job_detail_view, name='job_detail'),
-    path('jobs/<int:job_id>/apply-redirect/', views.job_apply_link_redirect, name='job_apply_redirect'), 
-    path('jobs/<int:job_id>/save/', views.save_job, name='save_job'),
-    path('jobs/<int:job_id>/unsave/', views.unsave_job, name='unsave_job'),
+    path('jobs/<slug:slug>/', views.job_detail_view, name='job_detail'),
+    path('jobs/<slug:slug>/apply-redirect/', views.job_apply_link_redirect, name='job_apply_redirect'),
+    path('jobs/<slug:slug>/save/', views.save_job, name='save_job'),
+    path('jobs/<slug:slug>/unsave/', views.unsave_job, name='unsave_job'),
     
     # -------------------- Applicant Module --------------------
     path('applicant/dashboard/', views.applicant_dashboard, name='applicant_dashboard'),

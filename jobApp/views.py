@@ -324,11 +324,11 @@ def job_list_view(request):
     }
     return render(request, 'job_list.html', context)
 
-def job_detail_view(request, job_id):
+def job_detail_view(request, slug):
     """
     Displays a single job, including details, application status, and related jobs.
     """
-    job = get_object_or_404(Job, pk=job_id)
+    job = get_object_or_404(Job, slug=slug)
     has_applied = False
     is_saved = False
 
@@ -347,7 +347,7 @@ def job_detail_view(request, job_id):
         related_jobs = Job.objects.filter(
             category=job.category
         ).exclude(
-            pk=job.id 
+            slug=job.slug 
         ).order_by(
             '-date_posted' 
         )[:3] 
@@ -363,11 +363,11 @@ def job_detail_view(request, job_id):
 
 @login_required
 @applicant_required
-def job_apply_link_redirect(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
+def job_apply_link_redirect(request, slug):
+    job = get_object_or_404(Job, slug=slug)
     if not job.external_application_url:
         messages.error(request, 'This job does not currently have an external application link configured by the employer.')
-        return redirect('job_detail', job_id=job.id) # Redirect back to job detail with error
+        return redirect('job_detail', slug=job.slug) # Redirect back to job detail with error
 
     try:
         Application.objects.create(applicant=request.user, job=job)
@@ -1010,26 +1010,26 @@ def manage_job_alerts(request, alert_id=None):
 
 @login_required
 @applicant_required
-def save_job(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
+def save_job(request, slug):
+    job = get_object_or_404(Job, slug=slug)
     try:
         SavedJob.objects.create(user=request.user, job=job)
         messages.success(request, f'Job "{job.title}" saved successfully!')
     except IntegrityError:
         messages.info(request, f'Job "{job.title}" is already in your saved list.')
-    return redirect('job_detail', job_id=job.id)
+    return redirect('job_detail', slug=job.slug)
 
 @login_required
 @applicant_required
-def unsave_job(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
+def unsave_job(request, slug):
+    job = get_object_or_404(Job, slug=slug)
     saved_job = SavedJob.objects.filter(user=request.user, job=job)
     if saved_job.exists():
         saved_job.delete()
         messages.success(request, f'Job "{job.title}" removed from your saved list.')
     else:
         messages.info(request, f'Job "{job.title}" was not found in your saved list.')
-    return redirect('job_detail', job_id=job.id)
+    return redirect('job_detail', slug=job.slug)
 
 
 @moderator_required

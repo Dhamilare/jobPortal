@@ -128,7 +128,7 @@
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {% for related_job in related_jobs %}
-                        <a href="{% url 'job_detail' related_job.id %}" class="block group bg-white rounded-xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 ease-in-out border border-gray-200 hover:scale-105">
+                        <a href="{% url 'job_detail' related_job.slug %}" class="block group bg-white rounded-xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 ease-in-out border border-gray-200 hover:scale-105">
                             <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 mb-2">{{ related_job.title }}</h3>
                             <p class="text-lg text-gray-600 mb-3">{{ related_job.company_name }}</p>
                             <div class="flex flex-col space-y-2 text-gray-500 text-sm">
