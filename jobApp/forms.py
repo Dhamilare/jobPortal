@@ -122,7 +122,6 @@ class JobForm(forms.ModelForm):
             'job_type': forms.Select(attrs={'class': 'input-field'}),
             'category': forms.Select(attrs={'class': 'input-field'}),
             'external_application_url': forms.URLInput(attrs={'class': 'input-field', 'placeholder': 'https://example.com/apply'}),
-            'description': forms.Textarea(attrs={'class': 'input-field', 'rows': 6, 'placeholder': 'Detailed job description...'}),
             'job_expiry_date': forms.DateTimeInput(attrs={'class': 'input-field', 'type': 'datetime-local'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'})
         }
