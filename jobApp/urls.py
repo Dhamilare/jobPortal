@@ -48,7 +48,7 @@ urlpatterns = [
     # -------------------- Moderator Module --------------------
     path('moderator/dashboard/', views.moderator_dashboard, name='moderator_dashboard'),
     path('moderator/jobs/', views.job_list_create, name='job_list_create'), 
-    path('moderator/jobs/<int:job_id>/', views.job_update_delete, name='job_update_delete'), 
+    path('moderator/jobs/<slug:slug>/', views.job_update_delete, name='job_update_delete'), 
     path('moderator/reports/', views.moderator_report_view, name='moderator_reports'),
     path('moderator/jobs/bulk-upload/', views.job_bulk_upload_csv, name='job_bulk_upload_csv'),
     path('moderator/jobs/bulk-upload/sample/', views.job_bulk_upload_csv_sample, name='job_bulk_upload_csv_sample'),
@@ -56,7 +56,7 @@ urlpatterns = [
 
     # Category Management URLs
     path('moderator/categories/', views.manage_categories, name='manage_categories'),
-    path('moderator/categories/<int:category_id>/edit-delete/', views.category_update_delete, name='category_update_delete'),
+    path('moderator/categories/<slug:slug>/edit-delete/', views.category_update_delete, name='category_update_delete'),
 
     # -------------------- Staff Only --------------------
     path('staff/create-moderator/', views.is_staff_create_moderator, name='is_staff_create_moderator'),

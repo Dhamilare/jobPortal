@@ -546,8 +546,8 @@ def job_list_create(request):
 
 
 @moderator_required
-def job_update_delete(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
+def job_update_delete(request, slug):
+    job = get_object_or_404(Job, slug=slug)
     form = JobForm(request.POST or None, instance=job)
     if request.method == 'POST':
         if 'delete' in request.POST:
@@ -751,8 +751,8 @@ def manage_categories(request):
     return render(request, 'moderator/manage_categories.html', {'categories': categories, 'form': form})
 
 @moderator_required
-def category_update_delete(request, category_id):
-    category = get_object_or_404(Category, pk=category_id)
+def category_update_delete(request, slug):
+    category = get_object_or_404(Category, slug=slug)
     form = CategoryForm(request.POST or None, instance=category)
 
     if request.method == 'POST':
@@ -764,7 +764,7 @@ def category_update_delete(request, category_id):
                 return redirect('manage_categories')
             except models.ProtectedError:
                 messages.error(request, f'Cannot delete category "{category_name}" because it has associated jobs. Please reassign or delete jobs in this category first.')
-                return redirect('category_update_delete', category_id=category.id)
+                return redirect('category_update_delete', slug=category.slug)
         elif form.is_valid():
             try:
                 form.save()

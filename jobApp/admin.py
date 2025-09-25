@@ -150,7 +150,7 @@ class CategoryAdmin(admin.ModelAdmin):
     """
     Admin interface for Category model.
     """
-    list_display = ('name', 'description')
+    list_display = ('name', 'slug', 'description')
     search_fields = ('name',)
 
 
