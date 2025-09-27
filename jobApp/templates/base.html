@@ -5,19 +5,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}Remote Ready With Tess{% endblock %}</title>
+    <!-- SEO & Social Media Meta Tags -->
+    <title>{% block title %}Remote Ready With Tess{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}We connect you with trusted job opportunities while giving you the tools to prepare, apply, and land your next role.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
 
-        <meta property="og:title" content="{% block og_title %}{% endblock %}">
+    <!-- Open Graph Tags: For rich social media previews -->
+    <meta property="og:title" content="{% block og_title %}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{% endblock %}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
 
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for social media icons and general icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-        <style>
+    <!-- Custom Styles -->
+    <style>
         /* Base styles: Apply Inter font and a subtle light background */
         body {
             font-family: 'Inter', sans-serif;
@@ -28,38 +33,6 @@
             display: flex;
             flex-direction: column;
         }
-
-        /* --- NEW: Loader Styles --- */
-        #page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #ffffff; /* White background for the loader */
-            z-index: 10000; /* Ensure it's above everything else */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 1;
-            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
-        }
-        #page-loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-        .loader-image {
-            width: 100%;
-            max-width: 300px; /* Control max size of the logo */
-            height: auto;
-            animation: pulse 2s infinite; /* Subtle animation to show it's loading */
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        /* --- End Loader Styles --- */
 
         /* General Link Styling */
         a {
@@ -362,11 +335,8 @@
     {% endblock %}
 </head>
 <body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
-
-        <div id="page-loader">
-            <img src="{% static 'img/RRWT.png' %}" alt="Remote Ready With Tess Logo Loader" class="loader-image">
-        </div>
-            <header class="fixed top-0 left-0 w-full bg-white shadow-sm py-4 px-6 md:px-8 lg:px-12 z-50">
+    <!-- Header/Navigation - Fixed at the top -->
+    <header class="fixed top-0 left-0 w-full bg-white shadow-sm py-4 px-6 md:px-8 lg:px-12 z-50">
         <nav class="container mx-auto flex justify-between items-center">
             <a href="{% url 'home' %}" class="text-2xl font-bold text-blue-600">Remote Ready With Tess</a>
             <div class="hidden md:flex space-x-6 items-center">
@@ -376,7 +346,8 @@
                 <a href="{% url 'blog_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                     <i class="fas fa-blog mr-2"></i> Blog
                 </a>
-                                <div class="relative">
+                <!-- New Dropdown for About Us -->
+                <div class="relative">
                     <a href="#" id="about-us-dropdown-toggle" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
                         <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-2 text-xs transition-transform duration-300 transform" id="dropdown-icon"></i>
                     </a>
@@ -386,7 +357,8 @@
                         <a href="{% url 'courses_coming_soon' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
                     </div>
                 </div>
-                                <a href="{% url 'job_list' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
+                <!-- End of New Dropdown -->
+                <a href="{% url 'job_list' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
                     <i class="fas fa-briefcase mr-2"></i> Jobs
                 </a>
                 {% if user.is_authenticated %}
@@ -409,22 +381,28 @@
                 <a href="{% url 'post_job' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
                     <i class="fas fa-cloud-upload-alt mr-2"></i> Post a Job
                 </a>
-                                {% endif %}
+                <!-- <a href="{% url 'register' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
+                    <i class="fas fa-user-plus mr-2"></i> Register
+                </a> -->
+                {% endif %}
             </div>
-                        <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
         </nav>
-                <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
             <a href="{% url 'home' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-home mr-2"></i> Home
             </a>
             <a href="{% url 'blog_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-blog mr-2"></i> Blog
             </a>
-                        <div class="nav-dropdown-mobile">
+            <!-- Mobile Dropdown for About Us -->
+            <div class="nav-dropdown-mobile">
                 <a href="javascript:void(0)" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center" id="mobile-about-us-toggle">
                     <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-auto text-xs transition-transform duration-300 transform" id="mobile-dropdown-icon"></i>
                 </a>
@@ -434,7 +412,8 @@
                     <a href="{% url 'courses_coming_soon' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
                 </div>
             </div>
-                        <a href="{% url 'job_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
+            <!-- End of Mobile Dropdown -->
+            <a href="{% url 'job_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-briefcase mr-2"></i> Jobs
             </a>
             {% if user.is_authenticated %}
@@ -457,7 +436,10 @@
             <a href="{% url 'post_job' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
                 <i class="fas fa-cloud-upload-alt mr-2"></i> Post a Job
             </a>
-                        {% endif %}
+            <!-- <a href="{% url 'register' %}" class="block px-4 py-2 bg-blue-600 text-white rounded-lg text-center flex items-center justify-center">
+                <i class="fas fa-user-plus mr-2"></i> Register
+            </a> -->
+            {% endif %}
         </div>
     </header>
 
@@ -466,7 +448,8 @@
         {% endblock %}
     </main>
 
-        <footer class="bg-gray-800 text-white py-8 px-6 md:px-8 lg:px-12 mt-auto">
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 px-6 md:px-8 lg:px-12 mt-auto">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="mb-4 md:mb-0">
                 Copyright &copy; {% now "Y" %} Remote Ready With Tess
@@ -480,7 +463,8 @@
         </div>
     </footer>
 
-        <div id="cookie-consent-modal" class="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 transition-transform duration-500 ease-out transform translate-y-full opacity-0">
+    <!-- Cookie Consent Modal -->
+    <div id="cookie-consent-modal" class="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 transition-transform duration-500 ease-out transform translate-y-full opacity-0">
         <div class="container mx-auto bg-white rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-8 border-t-4 border-blue-600">
             <div class="flex-grow text-sm md:text-base text-gray-700 text-center md:text-left">
                 <p>This website uses cookies to ensure you get the best experience on our site. By continuing to use this site, you agree to our <a href="#" class="text-blue-600 hover:underline font-semibold">Privacy Policy</a>.</p>
@@ -493,21 +477,8 @@
         </div>
     </div>
 
-        <script>
-        // --- NEW: Loader Hiding Logic ---
-        const pageLoader = document.getElementById('page-loader');
-
-        // Hide the loader once all content (including images, but excluding delayed scripts) is loaded
-        window.addEventListener('load', () => {
-            if (pageLoader) {
-                // Add a slight delay for a smoother visual transition (optional)
-                setTimeout(() => {
-                    pageLoader.classList.add('hidden');
-                }, 300);
-            }
-        });
-        // --- End Loader Hiding Logic ---
-
+    <!-- Main JavaScript -->
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Mobile menu toggle
             const mobileMenuButton = document.getElementById('mobile-menu-button');
