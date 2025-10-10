@@ -45,13 +45,13 @@ urlpatterns = [
     path('applicant/job-alerts/', views.manage_job_alerts, name='manage_job_alerts'),
     path('applicant/job-alerts/<int:alert_id>/edit/', views.manage_job_alerts, name='edit_job_alert'),
 
-    # -------------------- Moderator Module --------------------
+   # -------------------- Moderator Module --------------------
     path('moderator/dashboard/', views.moderator_dashboard, name='moderator_dashboard'),
     path('moderator/jobs/', views.job_list_create, name='job_list_create'), 
+    path('moderator/jobs/bulk-upload/sample/', views.job_bulk_upload_csv_sample, name='job_bulk_upload_csv_sample'),
+    path('moderator/jobs/bulk-upload/', views.job_bulk_upload_csv, name='job_bulk_upload_csv'),
     path('moderator/jobs/<slug:slug>/', views.job_update_delete, name='job_update_delete'), 
     path('moderator/reports/', views.moderator_report_view, name='moderator_reports'),
-    path('moderator/jobs/bulk-upload/', views.job_bulk_upload_csv, name='job_bulk_upload_csv'),
-    path('moderator/jobs/bulk-upload/sample/', views.job_bulk_upload_csv_sample, name='job_bulk_upload_csv_sample'),
     path('jobs/bulk-delete/', views.job_bulk_delete, name='job_bulk_delete'),
 
     # Category Management URLs

@@ -75,11 +75,11 @@
                 {% if user.is_authenticated and user.is_applicant %}
                     {# Save/Unsave Job Button #}
                     {% if is_saved %}
-                        <a href="{% url 'unsave_job' job.id %}" class="btn-secondary bg-gray-200 text-gray-700 hover:bg-gray-300 inline-flex items-center justify-center w-full sm:w-auto">
+                        <a href="{% url 'unsave_job' job.slug %}" class="btn-secondary bg-gray-200 text-gray-700 hover:bg-gray-300 inline-flex items-center justify-center w-full sm:w-auto">
                             <i class="fas fa-bookmark mr-2"></i> Saved
                         </a>
                     {% else %}
-                        <a href="{% url 'save_job' job.id %}" class="btn-secondary bg-blue-100 text-blue-700 hover:bg-blue-200 inline-flex items-center justify-center w-full sm:w-auto">
+                        <a href="{% url 'save_job' job.slug %}" class="btn-secondary bg-blue-100 text-blue-700 hover:bg-blue-200 inline-flex items-center justify-center w-full sm:w-auto">
                             <i class="far fa-bookmark mr-2"></i> Save Job
                         </a>
                     {% endif %}
@@ -95,7 +95,7 @@
                         </div>
                     {% else %}
                         {% if job.external_application_url %}
-                            <a href="{% url 'job_apply_redirect' job.id %}" class="btn-primary inline-flex w-full sm:w-auto" target="_blank" rel="noopener noreferrer">
+                            <a href="{% url 'job_apply_redirect' job.slug %}" class="btn-primary inline-flex w-full sm:w-auto" target="_blank" rel="noopener noreferrer">
                                 <i class="fas fa-external-link-alt mr-2"></i> Apply Now (External Site)
                             </a>
                         {% else %}
