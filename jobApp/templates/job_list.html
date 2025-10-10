@@ -195,7 +195,7 @@
                                 <p class="text-gray-700 text-sm mb-6 line-clamp-3">{{ job.description|striptags|truncatechars:150 }}</p>
 
                                 <div class="mt-auto">
-                                    <a href="{% url 'job_detail' job.id %}" class="btn-primary text-sm inline-flex items-center justify-center w-full">
+                                    <a href="{% url 'job_detail' job.slug %}" class="btn-primary text-sm inline-flex items-center justify-center w-full">
                                         View Details <i class="fas fa-arrow-right ml-2"></i>
                                     </a>
                                 </div>

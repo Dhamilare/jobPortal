@@ -65,10 +65,10 @@
                                     <p class="text-sm text-gray-600">Saved on: {{ saved_job.saved_at|date:"M d, Y" }}</p>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <a href="{% url 'job_detail' saved_job.job.id %}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200" title="View Details">
+                                    <a href="{% url 'job_detail' saved_job.job.slug %}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{% url 'unsave_job' saved_job.job.id %}" class="text-red-600 hover:text-red-800 transition-colors duration-200" title="Remove from Saved">
+                                    <a href="{% url 'unsave_job' saved_job.job.slug %}" class="text-red-600 hover:text-red-800 transition-colors duration-200" title="Remove from Saved">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>
