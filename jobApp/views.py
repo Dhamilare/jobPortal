@@ -1273,11 +1273,25 @@ def post_detail_view(request, slug):
 
     comment_form = CommentForm()
 
+    related_posts = Post.objects.none()
+
+    if post.category:
+        related_posts = Post.objects.filter(
+            category=post.category  
+        ).exclude(
+            pk=post.pk          
+        ).order_by('-publish_date')[:3] 
+    else:
+        related_posts = Post.objects.exclude(
+            pk=post.pk
+        ).order_by('-publish_date')[:3]
+
     return render(request, 'blog/post_detail.html', {
         'post': post,
         'comments': comments,
         'comment_form': comment_form,
         'has_commented': has_commented,
+        'related_posts': related_posts,
     })
 
 @staff_required
