@@ -80,4 +80,21 @@ urlpatterns = [
     path('email-change/success/', lambda request: render(request, 'email_change_success.html'), name='email_change_success'),
     path('email-verification/failed/', lambda request: render(request, 'email_verification_failed.html'), name='email_verification_failed'),
     path('email-verification/success/', lambda request: render(request, 'email_verification_success.html'), name='email_verification_success'),
+
+    # --- URLS FOR RESUME ANALYZER ---
+
+    # The page the user visits to see the analysis
+    path('job/<slug:job_slug>/analyze/', 
+         views.resume_analyzer_view, 
+         name='resume_analyzer'),
+         
+    # The API endpoint the page calls to get the AI result
+    path('api/job/<slug:job_slug>/run_analysis/', 
+         views.run_analysis_api_view, 
+         name='api_run_analysis'),
+
+      # The URL endpoint to handle the resume file upload POST request
+    path('job/<slug:job_slug>/analyze/upload/',
+         views.handle_resume_upload_view,
+         name='handle_resume_upload'),
 ]

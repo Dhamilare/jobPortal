@@ -290,6 +290,74 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('author', 'post', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('author__username', 'content')
+
+
+# ---------------------------------
+# --- NEW: ApplicantProfile Inline ---
+# ---------------------------------
+class ApplicantProfileInline(admin.StackedInline):
+    """
+    This will show the ApplicantProfile fields directly on the
+    CustomUser admin page for easy editing.
+    """
+    model = ApplicantProfile
+    can_delete = False # A user should always have a profile
+    verbose_name_plural = 'Applicant Profile'
+    fk_name = 'user'
+    
+    # Make the AI-parsed fields read-only in the admin
+    readonly_fields = ('resume_text', 'parsed_skills', 'parsed_experience', 'parsed_summary')
+    
+    # Control the field order
+    fields = ('resume', 'resume_text', 'parsed_skills', 'parsed_summary', 'parsed_experience')
+    
+    # Show only one profile (since it's OneToOne)
+    max_num = 1
+    min_num = 1
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """
+        Only show this inline if the user is an applicant.
+        """
+        if obj and obj.is_applicant:
+            return super().get_formset(request, obj, **kwargs)
+        # If the user is not an applicant, don't show the profile form
+        return super().get_formset(request, obj, **kwargs)
+        
+    def has_add_permission(self, request, obj=None):
+        # Prevent adding a new profile if one already exists
+        if obj and hasattr(obj, 'applicant_profile'):
+             return False
+        return True
+    
+
+# ---------------------------------
+# --- ApplicantProfile Admin (Standalone) ---
+# ---------------------------------
+@admin.register(ApplicantProfile)
+class ApplicantProfileAdmin(admin.ModelAdmin):
+    """
+    A separate admin view to see all ApplicantProfiles at once.
+    """
+    list_display = ('user', 'get_resume_filename', 'last_updated')
+    search_fields = ('user__email', 'user__username', 'user__first_name')
+    
+    # Make AI fields read-only
+    readonly_fields = ('resume_text', 'parsed_skills', 'parsed_experience', 'parsed_summary', 'last_updated')
+    
+    # Use a popup search box for the user field for better performance
+    raw_id_fields = ('user',)
+
+    def get_resume_filename(self, obj):
+        if obj.resume:
+            # Return just the filename, not the full path
+            return obj.resume.name.split('/')[-1]
+        return "No resume"
+    get_resume_filename.short_description = "Resume File"
+
+
+
+
     
 
 

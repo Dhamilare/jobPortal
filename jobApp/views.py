@@ -21,7 +21,7 @@ from .models import *
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.templatetags.static import static
-from django.http import Http404
+from django.http import Http404, HttpRequest
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -38,6 +38,9 @@ from .utils import *
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+import requests
+from decouple import config
+from django.core.files.storage import default_storage
 
 # ----------------------------
 # Role-based Access Decorators
@@ -1056,7 +1059,6 @@ def submit_resume_view(request):
 
             success_messages = []
 
-            # Handle resume upload
             if resume_file:
                 if not resume_file.content_type in ['application/pdf', 'application/msword', 
                                                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
@@ -1093,7 +1095,6 @@ def submit_resume_view(request):
                 else:
                     messages.error(request, 'Submission failed: No staff email addresses found.')
 
-            # Handle template request
             if request_template:
                 template_link = request.build_absolute_uri(static('resume_template/Resume-Template.docx'))
                 template_context = {'full_name': full_name, 'template_link': template_link}
@@ -1139,10 +1140,9 @@ def recruiter_register(request):
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    recruiter = form.save()  # recruiter instance
-                    user = recruiter.user    # get linked user
+                    recruiter = form.save()  
+                    user = recruiter.user   
 
-                # Prepare context for the activation email
                 current_site = get_current_site(request)
                 context = {
                     'user': user,
@@ -1151,7 +1151,6 @@ def recruiter_register(request):
                     'token': default_token_generator.make_token(user),
                 }
 
-                # Send verification email
                 try:
                     email_sent = send_templated_email(
                         template_name='emails/recruiter_activation_email.html',
@@ -1224,27 +1223,21 @@ def post_list_view(request):
     """
     View to display a list of all published blog posts with search and pagination.
     """
-    # Get search query from the URL
     query = request.GET.get('q')
     posts_list = Post.objects.all().order_by('-publish_date')
 
-    # Apply search filter if a query is present
     if query:
         posts_list = posts_list.filter(
             Q(title__icontains=query) |
             Q(content__icontains=query)
         ).distinct()
-
-    # Pagination logic
-    paginator = Paginator(posts_list, 6) # Show 6 posts per page
+    paginator = Paginator(posts_list, 6) 
     page_number = request.GET.get('page')
     try:
         page_obj = paginator.get_page(page_number)
     except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
         page_obj = paginator.get_page(1)
     except EmptyPage:
-        # If page is out of range, deliver last page of results.
         page_obj = paginator.get_page(paginator.num_pages)
     
     context = {
@@ -1260,12 +1253,8 @@ def post_detail_view(request, slug):
     """
     
     post = get_object_or_404(Post, slug=slug)
-
-    # Filter for approved comments
     comments = post.comments.all()
 
-
-    # Check if the currently logged-in user has already commented on this post
     has_commented = False
     if request.user.is_authenticated:
         if Comment.objects.filter(post=post, author=request.user).exists():
@@ -1318,7 +1307,6 @@ def post_update_view(request, slug):
     """
     post = get_object_or_404(Post, slug=slug)
     if request.user != post.author:
-        # A simple redirect or permission denied
         return redirect('blog_detail', slug=post.slug)
 
     if request.method == 'POST':
@@ -1338,7 +1326,6 @@ def post_delete_view(request, slug):
     """
     post = get_object_or_404(Post, slug=slug)
     if request.user != post.author:
-        # A simple redirect or permission denied
         return redirect('blog_detail', slug=post.slug)
     
     if request.method == 'POST':
@@ -1358,7 +1345,6 @@ def add_comment_to_post(request, slug):
     """
     post = get_object_or_404(Post, slug=slug, status='published')
 
-    # This check prevents multiple comments from the same user
     if Comment.objects.filter(post=post, author=request.user).exists():
         return redirect('blog_detail', slug=post.slug)
 
@@ -1382,10 +1368,7 @@ def create_category(request):
             category_name = data.get('name')
 
             if category_name:
-                # Create and save the new category
                 category, created = BlogCategory.objects.get_or_create(name=category_name)
-                
-                # Check if a new category was created or an existing one was retrieved
                 if created:
                     return JsonResponse({'status': 'success', 'id': category.id, 'name': category.name})
                 else:
@@ -1396,3 +1379,221 @@ def create_category(request):
             return JsonResponse({'status': 'error', 'error': 'Invalid JSON.'}, status=400)
     
     return JsonResponse({'status': 'error', 'error': 'Invalid request method.'}, status=405)
+
+
+# -------------------------------------------------
+# --- RENDER THE ANALYZER PAGE ---
+# -------------------------------------------------
+
+@login_required
+def resume_analyzer_view(request: HttpRequest, job_slug: str) -> HttpResponse:
+    """
+    Checks for user profile and resume status. Passes flags to the template
+    to conditionally show upload form, processing message, or analysis results.
+    """
+    if not request.user.is_applicant:
+        messages.error(request, "This feature is for applicants only.")
+        return redirect('job_list')
+
+    job = get_object_or_404(Job, slug=job_slug, is_active=True)
+
+    needs_upload = False
+    is_processing = False
+    profile = None
+
+    try:
+        profile = request.user.applicant_profile
+
+        if not profile.resume:
+            needs_upload = True
+            messages.info(request, "Please upload your resume to start the analysis.")
+
+        elif profile.resume and not profile.resume_text:
+            is_processing = True
+            extracted = extract_resume_text(profile.resume.path)
+            if extracted:
+                profile.resume_text = extracted
+                profile.save()
+                is_processing = False
+                messages.success(request, "Your resume has been processed successfully.")
+            else:
+                messages.warning(request, "We couldn't extract text from your resume. Try re-uploading a clearer file.")
+
+    except ApplicantProfile.DoesNotExist:
+        messages.warning(request, "Applicant profile not found. Please upload your resume to create one.")
+        needs_upload = True
+        return redirect('job_list')
+    except Exception as e:
+        messages.error(request, f"Unexpected error while accessing your profile: {e}")
+        print(f"ERROR accessing profile for user {request.user.id}: {e}")
+        return redirect('job_list')
+
+    context = {
+        'job': job,
+        'needs_upload': needs_upload,
+        'is_processing': is_processing,
+        'profile': profile
+    }
+    return render(request, 'resume_analyzer.html', context)
+
+
+# -------------------------------------------------
+# --- HANDLE RESUME UPLOAD ---
+# -------------------------------------------------
+
+@login_required
+def handle_resume_upload_view(request: HttpRequest, job_slug: str) -> HttpResponse:
+    """
+    Handles resume file upload and automatically extracts text upon upload.
+    """
+    if not request.user.is_applicant:
+        messages.error(request, "Only applicants can upload resumes.")
+        return redirect('job_list')
+
+    job = get_object_or_404(Job, slug=job_slug)
+
+    if request.method == 'POST':
+        resume_file = request.FILES.get('resume_file')
+        if not resume_file:
+            messages.error(request, "No resume file was selected.")
+            return redirect('resume_analyzer', job_slug=job.slug)
+
+        allowed_types = [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/msword'
+        ]
+        if resume_file.content_type not in allowed_types:
+            messages.error(request, "Invalid file type. Please upload PDF or DOCX.")
+            return redirect('resume_analyzer', job_slug=job.slug)
+
+        if resume_file.size > 5 * 1024 * 1024:
+            messages.error(request, "File size exceeds 5MB limit.")
+            return redirect('resume_analyzer', job_slug=job.slug)
+
+        try:
+            profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
+
+            # Delete old resume if exists
+            if profile.resume and default_storage.exists(profile.resume.name):
+                default_storage.delete(profile.resume.name)
+
+            profile.resume = resume_file
+            profile.resume_text = ""
+            profile.save()
+
+            extracted = extract_resume_text(profile.resume.path)
+            if extracted:
+                profile.resume_text = extracted
+                profile.save()
+                messages.success(request, f"Resume '{resume_file.name}' uploaded and processed successfully.")
+            else:
+                messages.warning(request, f"Resume '{resume_file.name}' uploaded, but text extraction failed. Try re-uploading.")
+
+            return redirect('resume_analyzer', job_slug=job.slug)
+
+        except Exception as e:
+            messages.error(request, f"Error during upload: {e}")
+            return redirect('resume_analyzer', job_slug=job.slug)
+
+    return redirect('resume_analyzer', job_slug=job.slug)
+
+
+# -------------------------------------------------
+# --- AI ANALYSIS API ENDPOINT ---
+# -------------------------------------------------
+
+@login_required
+def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
+    """
+    Calls Gemini API to analyze the applicant’s resume vs job description.
+    """
+    if not request.user.is_applicant:
+        return JsonResponse({"error": "This feature is for applicants only."}, status=403)
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method. Please use POST."}, status=405)
+
+    try:
+        job = get_object_or_404(Job, slug=job_slug)
+        profile = request.user.applicant_profile
+
+        if not profile.resume_text:
+            return JsonResponse({"error": "Resume text not found. Please upload or re-process your resume."}, status=404)
+
+        resume_text = profile.resume_text
+        job_description = strip_tags(job.description)
+
+        # AI system + user prompts
+        system_prompt = (
+            "You are an expert AI recruitment assistant specialized in the Nigerian job market. "
+            "Analyze the candidate's resume against the job description and respond in JSON with keys: "
+            "'score' (0-100), 'summary', 'pros', and 'cons'."
+        )
+
+        user_query = f"""
+        Candidate Resume:
+        --- START ---
+        {resume_text}
+        --- END ---
+
+        Job Description:
+        --- START ---
+        {job_description}
+        --- END ---
+
+        Provide the JSON analysis based on resume-job alignment.
+        """
+
+        payload = {
+            "contents": [{"parts": [{"text": user_query}]}],
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "temperature": 0.5,
+                "responseSchema": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "score": {"type": "INTEGER"},
+                        "summary": {"type": "STRING"},
+                        "pros": {"type": "ARRAY", "items": {"type": "STRING"}},
+                        "cons": {"type": "ARRAY", "items": {"type": "STRING"}}
+                    },
+                    "required": ["score", "summary", "pros", "cons"]
+                }
+            }
+        }
+
+        apiKey = config("GEMINI_API_KEY")
+        model_name = "gemini-2.5-flash-preview-09-2025"
+        apiUrl = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={apiKey}"
+
+        response = requests.post(apiUrl, headers={'Content-Type': 'application/json'}, data=json.dumps(payload), timeout=60)
+        response.raise_for_status()
+        result = response.json()
+
+        if (
+            result.get('candidates')
+            and result['candidates'][0].get('content')
+            and result['candidates'][0]['content'].get('parts')
+        ):
+            ai_part = result['candidates'][0]['content']['parts'][0]
+            if 'text' not in ai_part:
+                return JsonResponse({"error": "Unexpected AI response format."}, status=500)
+
+            ai_data = json.loads(ai_part['text'])
+            if not all(k in ai_data for k in ["score", "summary", "pros", "cons"]):
+                return JsonResponse({"error": "AI response missing required keys."}, status=500)
+
+            profile.parsed_summary = ai_data.get("summary", "")
+            profile.parsed_skills = ai_data.get("pros", [])
+            profile.parsed_experience = ai_data.get("cons", [])
+            profile.save(update_fields=["parsed_summary", "parsed_skills", "parsed_experience"])
+
+            return JsonResponse(ai_data, status=200)
+
+        return JsonResponse({"error": "Unexpected AI response structure."}, status=500)
+
+    except Exception as e:
+        print(f"ERROR in run_analysis_api_view: {str(e)}")
+        return JsonResponse({"error": f"Unexpected server error: {e}"}, status=500)

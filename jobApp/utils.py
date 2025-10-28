@@ -5,6 +5,9 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from datetime import datetime
+import os
+import fitz 
+import docx2txt
 
 
 def send_templated_email(template_name, subject, recipient_list, context, attachments=None):
@@ -57,3 +60,30 @@ def get_subscribers_context(request):
         'subscribers_list': subscribers_list,
         'query': query,
     }
+
+
+def extract_resume_text(file_path: str) -> str:
+    """
+    Extracts readable text from a resume file (PDF or DOCX).
+    Returns the plain text or None if extraction fails.
+    """
+    try:
+        ext = os.path.splitext(file_path)[1].lower()
+
+        if ext == ".pdf":
+            text = ""
+            with fitz.open(file_path) as doc:
+                for page in doc:
+                    text += page.get_text()
+            return text.strip()
+
+        elif ext == ".docx":
+            text = docx2txt.process(file_path)
+            return text.strip()
+
+        else:
+            return None
+
+    except Exception as e:
+        print(f"❌ Resume text extraction failed: {e}")
+        return None

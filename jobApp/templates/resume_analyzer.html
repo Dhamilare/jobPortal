@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Resume Analysis for {{ job.title }}{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Loading Spinner --- */
+    .loader {
+        border: 8px solid #f3f4f6; /* bg-gray-100 */
+        border-top: 8px solid #3b82f6; /* text-blue-500 */
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* --- Results Styling --- */
+    .result-score {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800; /* extrabold */
+        font-size: 3rem; /* text-5xl */
+        background-color: #f3f4f6; /* bg-gray-100 */
+        color: #1f2937; /* text-gray-800 */
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+    /* Dynamic coloring for score */
+    .score-low { background-color: #FEE2E2; color: #B91C1C; } /* red */
+    .score-mid { background-color: #FEF3C7; color: #B45309; } /* yellow */
+    .score-high { background-color: #D1FAE5; color: #047857; } /* green */
+
+    .result-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .result-list li {
+        position: relative;
+        padding-left: 2.25rem; /* pl-9 */
+        margin-bottom: 0.75rem; /* mb-3 */
+        font-size: 1.125rem; /* text-lg */
+        line-height: 1.6; /* Added for better readability */
+        color: #374151; /* text-gray-700 */
+    }
+    .result-list li::before {
+        content: '';
+        font-family: 'Font Awesome 6 Free'; /* Ensure FontAwesome is loaded */
+        font-weight: 900;
+        position: absolute;
+        left: 0;
+        top: 4px; /* Adjust vertical alignment */
+        width: 1.75rem; /* w-7 */
+        height: 1.75rem; /* h-7 */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem; /* text-sm */
+    }
+    .result-list-pro li::before {
+        content: '\f00c'; /* check icon */
+        background-color: #10B981; /* bg-green-500 */
+    }
+    .result-list-con li::before {
+        content: '\f00d'; /* times icon */
+        background-color: #EF4444; /* bg-red-500 */
+    }
+
+    /* --- Upload Form Styling --- */
+    .upload-box {
+        border: 2px dashed #9ca3af; /* border-gray-400 */
+        border-radius: 0.75rem; /* rounded-xl */
+        padding: 2.5rem; /* p-10 */
+        text-align: center;
+        background-color: #f9fafb; /* bg-gray-50 */
+        transition: border-color 0.3s, background-color 0.3s;
+    }
+    .upload-box:hover, .upload-box.dragover { /* Added dragover state */
+        border-color: #3b82f6; /* border-blue-500 */
+        background-color: #eff6ff; /* bg-blue-50 */
+    }
+    .upload-box input[type="file"] {
+        display: none; /* Hide the default input */
+    }
+    .upload-label {
+        cursor: pointer;
+        color: #3b82f6; /* text-blue-500 */
+        font-weight: 600; /* font-semibold */
+    }
+    .upload-label:hover {
+        text-decoration: underline;
+    }
+    .upload-icon {
+        font-size: 3rem; /* text-5xl */
+        color: #9ca3af; /* text-gray-400 */
+        margin-bottom: 1rem; /* mb-4 */
+    }
+</style>
+
+<div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
+    <div class="container mx-auto max-w-4xl">
+
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="{% url 'job_detail' job.slug %}" class="text-blue-600 hover:underline mb-4 inline-flex items-center font-medium">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Job Details
+            </a>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900">Resume Analysis</h1>
+            <p class="text-xl text-gray-600 mt-2">
+                Comparing your profile against:
+                <span class="font-semibold text-blue-600">{{ job.title }}</span>
+            </p>
+        </div>
+
+        <!-- Django Messages (e.g., success after upload) -->
+        {% if messages %}
+            <div class="mb-6 space-y-3">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg flex items-center
+                        {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400{% endif %}
+                        {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400{% endif %}
+                        {% if message.tags == 'info' %}bg-blue-100 text-blue-700 border border-blue-400{% endif %}
+                        {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
+                    " role="alert">
+                        {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'error' %}<i class="fas fa-exclamation-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'info' %}<i class="fas fa-info-circle mr-3 text-lg"></i>{% endif %}
+                        {% if message.tags == 'warning' %}<i class="fas fa-exclamation-triangle mr-3 text-lg"></i>{% endif %}
+                        <div>{{ message }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-lg p-8 md:p-12 card-shadow border border-gray-200">
+            {% csrf_token %}
+        
+            <!-- ============================== -->
+            <!-- == CONDITIONAL SECTIONS == -->
+            <!-- ============================== -->
+
+            <!-- 1. Needs Upload Form -->
+            {% if needs_upload %}
+            <div id="upload-state" class="text-center py-12">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Upload Your Resume</h2>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                    To analyze your fit for this role, please upload your resume first.
+                    We accept PDF or DOCX files.
+                </p>
+                <form method="post" action="{% url 'handle_resume_upload' job.slug %}" enctype="multipart/form-data">
+                    <div id="upload-box-element" class="upload-box">
+                        <label for="resume-upload" class="cursor-pointer">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <p class="mb-2 text-gray-500">
+                                Drag & drop your file here or
+                                <span class="upload-label">browse files</span>
+                            </p>
+                            <p class="text-xs text-gray-400 mb-4">PDF, DOC, DOCX (Max 5MB)</p>
+                            <input id="resume-upload" name="resume_file" type="file" accept=".pdf,.doc,.docx" required>
+                            <p id="file-name" class="text-sm font-medium text-gray-700 mt-2"></p>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary w-full sm:w-auto mt-6 px-8 py-3">
+                        <i class="fas fa-upload mr-2"></i> Upload and Analyze
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- 2. Is Processing Message -->
+            {% if is_processing %}
+            <div id="processing-state" class="text-center py-12">
+                <div class="loader"></div>
+                <h2 class="text-2xl font-semibold text-gray-700 mt-8">Processing Resume...</h2>
+                <p class="text-gray-500 mt-2 max-w-md mx-auto">
+                    We're extracting the text from your uploaded resume. This might take a minute.
+                    The analysis will be available here once processing is complete. Please refresh the page in a bit.
+                </p>
+                 <button onclick="window.location.reload();" class="btn-secondary w-full sm:w-auto mt-6 px-6 py-2">
+                    <i class="fas fa-sync-alt mr-2"></i> Refresh Now
+                 </button>
+            </div>
+            {% endif %}
+
+            <!-- 3. Analysis States (Loading, Error, Success) -->
+            {% if not needs_upload and not is_processing %}
+            <div id="loading-state" class="text-center py-12">
+                <div class="loader"></div>
+                <h2 class="text-2xl font-semibold text-gray-700 mt-8">Analyzing...</h2>
+                <p class="text-gray-500 mt-2">
+                    Please wait while our AI compares your resume to the job description.
+                </p>
+            </div>
+
+            <div id="error-state" class="hidden text-center py-12">
+                <i class="fas fa-exclamation-triangle text-7xl text-red-400 mb-6"></i>
+                <h2 class="text-2xl font-semibold text-red-700">Analysis Failed</h2>
+                <p id="error-message" class="text-gray-600 mt-2">
+                    An error occurred. Please try again later.
+                </p>
+                 <button onclick="runAnalysis();" class="btn-secondary w-full sm:w-auto mt-6 px-6 py-2">
+                    <i class="fas fa-redo-alt mr-2"></i> Try Again
+                 </button>
+            </div>
+
+            <div id="success-state" class="hidden">
+                <div class="flex flex-col md:flex-row items-center gap-8 mb-10">
+                    <div class="flex-shrink-0">
+                        <div id="result-score-circle" class="result-score"><span id="result-score">--</span>%</div>
+                    </div>
+                    <div class="flex-grow text-center md:text-left">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Your Fit Score</h2>
+                        <p id="result-summary" class="text-lg text-gray-700 leading-relaxed">...</p>
+                    </div>
+                </div>
+                <hr class="my-10 border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-green-600 mb-6 flex items-center">
+                            <i class="fas fa-check-circle mr-3"></i> Key Matches & Strengths
+                        </h3>
+                        <ul id="result-pros" class="result-list result-list-pro">
+                             <li>Loading...</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-6 flex items-center">
+                            <i class="fas fa-times-circle mr-3"></i> Potential Gaps & Areas to Highlight
+                        </h3>
+                        <ul id="result-cons" class="result-list result-list-con">
+                             <li>Loading...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div> <!-- End Main Card -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Make runAnalysis globally accessible if needed by retry button
+    let runAnalysis;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Get context flags from Django ---
+    const needsUpload = {{ needs_upload|yesno:"true,false" }};
+    const isProcessing = {{ is_processing|yesno:"true,false" }};
+
+    // --- Elements for Upload Form (with Drag & Drop) ---
+    const uploadForm = document.querySelector('form[action*="handle_resume_upload"]');
+    const uploadInput = document.getElementById('resume-upload');
+    const fileNameDisplay = document.getElementById('file-name');
+    const uploadBox = document.getElementById('upload-box-element');
+
+    if (uploadInput && fileNameDisplay && uploadBox) {
+        // Handle file selection via browse button
+        uploadInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.textContent = `Selected: ${this.files[0].name}`;
+                fileNameDisplay.classList.remove('text-red-500'); // Remove error color if previously shown
+            } else {
+                fileNameDisplay.textContent = '';
+            }
+        });
+
+        // Handle Drag & Drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, () => uploadBox.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, () => uploadBox.classList.remove('dragover'), false);
+        });
+
+        uploadBox.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+
+            if (files.length > 0) {
+                 const file = files[0];
+                 const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                 if (!allowedTypes.includes(file.type)) {
+                     fileNameDisplay.textContent = 'Error: Only PDF, DOC, DOCX allowed.';
+                     fileNameDisplay.classList.add('text-red-500');
+                     uploadInput.value = '';
+                     return;
+                 }
+                 if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                     fileNameDisplay.textContent = 'Error: File exceeds 5MB limit.';
+                     fileNameDisplay.classList.add('text-red-500');
+                     uploadInput.value = '';
+                     return;
+                 }
+                uploadInput.files = files;
+                const event = new Event('change');
+                uploadInput.dispatchEvent(event);
+            }
+        }
+    }
+
+
+    // --- Elements for Analysis Results ---
+    const loadingState = document.getElementById('loading-state');
+    const successState = document.getElementById('success-state');
+    const errorState = document.getElementById('error-state');
+    const errorMessage = document.getElementById('error-message');
+
+    // --- Only set up analysis JS if needed ---
+    if (!needsUpload && !isProcessing && loadingState) {
+        // API endpoint URL
+        const apiUrl = "{% url 'api_run_analysis' job.slug %}"; // Use namespaced URL
+
+        // Function to get CSRF token - NOW IT WILL FIND THE TOKEN
+        function getCsrfToken() {
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            // console.log("CSRF Token Found:", csrfInput ? csrfInput.value : 'Not Found'); // Debugging line
+            return csrfInput ? csrfInput.value : null;
+        }
+
+        // Function to populate the results
+        function showResults(data) { /* (Keep existing function body) */
+            if (!successState) return;
+            const scoreEl = document.getElementById('result-score');
+            const scoreCircleEl = document.getElementById('result-score-circle');
+            const summaryEl = document.getElementById('result-summary');
+            const prosList = document.getElementById('result-pros');
+            const consList = document.getElementById('result-cons');
+
+            if (scoreEl && scoreCircleEl) { /* ... score logic ... */
+                scoreEl.textContent = data.score;
+                scoreCircleEl.classList.remove('score-low', 'score-mid', 'score-high');
+                if (data.score < 50) scoreCircleEl.classList.add('score-low');
+                else if (data.score < 80) scoreCircleEl.classList.add('score-mid');
+                else scoreCircleEl.classList.add('score-high');
+            }
+            if (summaryEl) summaryEl.textContent = data.summary;
+            if (prosList) { /* ... pros list logic ... */
+                 prosList.innerHTML = data.pros && data.pros.length > 0
+                    ? data.pros.map(pro => `<li>${escapeHtml(pro)}</li>`).join('')
+                    : '<li>No specific matches found by the AI. Review manually.</li>';
+            }
+             if (consList) { /* ... cons list logic ... */
+                consList.innerHTML = data.cons && data.cons.length > 0
+                    ? data.cons.map(con => `<li>${escapeHtml(con)}</li>`).join('')
+                    : '<li>No specific gaps identified by the AI!</li>';
+            }
+
+            if (loadingState) loadingState.classList.add('hidden');
+            if (errorState) errorState.classList.add('hidden');
+            successState.classList.remove('hidden');
+        }
+
+        // Function to show error
+        function showError(message) { /* (Keep existing function body) */
+             if (!errorState || !errorMessage || !loadingState) return;
+            errorMessage.textContent = message || 'An unknown error occurred.';
+            loadingState.classList.add('hidden');
+            if (successState) successState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+        }
+
+         // Helper to prevent basic HTML injection
+         function escapeHtml(unsafe) { /* (Keep existing function body) */
+             if (!unsafe) return '';
+             return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+         }
+
+        // --- Main function to run the analysis ---
+        runAnalysis = async function() { /* (Keep existing function body) */
+            if (loadingState) loadingState.classList.remove('hidden');
+            if (successState) successState.classList.add('hidden');
+            if (errorState) errorState.classList.add('hidden');
+
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                showError('Security token not found. Please refresh the page.');
+                // console.error("CSRF Token was null!"); // More debugging
+                return; // Stop execution if token is missing
+            }
+
+            // Show loading state when starting/retrying
+            if (loadingState) loadingState.classList.remove('hidden');
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                });
+
+                if (!response.ok) { /* ... error handling ... */
+                    let errorMsg = `Analysis service returned an error (Status: ${response.status}).`;
+                    try { const errorData = await response.json(); if (errorData && errorData.error) { errorMsg = errorData.error; } }
+                    catch (e) { errorMsg = `Analysis service error: ${response.statusText || response.status}. Please try again later.`; }
+                    throw new Error(errorMsg);
+                }
+
+                const data = await response.json();
+
+                if (typeof data.score !== 'number' || typeof data.summary !== 'string' || !Array.isArray(data.pros) || !Array.isArray(data.cons)) {
+                     throw new Error('Received incomplete or incorrectly formatted data from the AI.');
+                }
+                showResults(data);
+
+            } catch (err) { /* ... error handling ... */
+                console.error('Analysis failed:', err);
+                let displayError = 'An error occurred during analysis. Please try again.';
+                if (err.message && !err.message.includes('Status:')) { displayError = err.message; }
+                else if (err.message && err.message.includes('50')) { displayError = 'The analysis service is temporarily unavailable. Please try again later.';}
+                 showError(displayError);
+            }
+        }
+
+        // Run the analysis automatically!
+        runAnalysis();
+    } // End of conditional block for running analysis JS
+});
+</script>
+{% endblock %}
+
