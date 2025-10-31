@@ -148,13 +148,22 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
-EMAIL_BACKEND = config("EMAIL_BACKEND")
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
-EMAIL_HOST = config("EMAIL_HOST")
-EMAIL_PORT = config("EMAIL_PORT", cast=int)
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+ENVIRONMENT = config('ENVIRONMENT', default='local')
+
+if ENVIRONMENT == 'production':
+    # SENDGRID CONFIGURATION (for Render)
+    EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+    SENDGRID_API_KEY = config('SENDGRID_API_KEY')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+else:
+    # LOCAL SMTP CONFIGURATION (for your computer)
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = config("EMAIL_HOST")
+    EMAIL_PORT = config("EMAIL_PORT", cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+    EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 BASE_URL = 'https://jobportal-vs63.onrender.com'
 

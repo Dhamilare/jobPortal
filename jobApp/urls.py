@@ -13,6 +13,7 @@ urlpatterns = [
     path('verify-email/<uuid:token>/', views.email_verification_confirm, name='email_verification_confirm'),
     path('accounts/login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
+    path('account/delete/', views.delete_account_view, name='delete_account'),
 
     # URL for recruiter registration and job posting landing page
     path('post-job/', views.recruiter_register, name='post_job'),

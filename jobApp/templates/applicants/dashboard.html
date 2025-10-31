@@ -3,6 +3,27 @@
 {% block title %}Applicant Dashboard - JobPortal{% endblock %}
 
 {% block content %}
+<style>
+    /* Styles for the modal */
+    .modal-overlay {
+        transition: opacity 0.3s ease;
+    }
+    .modal-content {
+        transition: transform 0.3s ease;
+        transform: translateY(-20px);
+    }
+    .modal-active .modal-content {
+        transform: translateY(0);
+    }
+    
+    /* Style for the disabled delete button */
+    .btn-delete-disabled {
+        background-color: #fca5a5; /* red-300 */
+        color: #fef2f2; /* red-50 */
+        cursor: not-allowed;
+    }
+</style>
+
 <div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
     <div class="container mx-auto">
         <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center flex items-center justify-center">
@@ -29,7 +50,7 @@
             </div>
         {% endif %}
 
-        {# NEW: Profile Update Warning #}
+        {# Profile Update Warning #}
         {% if not user.first_name or not user.last_name %}
         <div class="mb-8 p-4 bg-yellow-100 text-yellow-800 rounded-lg shadow-md flex flex-col md:flex-row items-center justify-between" role="alert">
             <div class="flex items-center text-center md:text-left mb-2 md:mb-0">
@@ -131,7 +152,7 @@
             <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                 <i class="fas fa-cog text-gray-600 mr-3"></i> Account Settings
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <a href="{% url 'applicant_profile_update' %}" class="bg-blue-50 text-blue-700 p-4 rounded-lg hover:bg-blue-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
                     <i class="fas fa-user-edit mr-2"></i> Update Profile
                 </a>
@@ -141,12 +162,136 @@
                 <a href="{% url 'applicant_email_change' %}" class="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
                     <i class="fas fa-envelope mr-2"></i> Change Email
                 </a>
-                {# Link to Job Alerts Management #}
                 <a href="{% url 'manage_job_alerts' %}" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg hover:bg-yellow-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
                     <i class="fas fa-bell mr-2"></i> Manage Job Alerts
                 </a>
+                
+                <button id="open-delete-modal-btn" type="button" class="bg-red-50 text-red-700 p-4 rounded-lg hover:bg-red-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
+                    <i class="fas fa-trash-alt mr-2"></i> Delete Account
+                </button>
             </div>
         </section>
     </div>
 </div>
+
+<div id="delete-account-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 opacity-0 hidden" style="transition: opacity 0.3s ease;">
+    <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-md p-6" style="transform: translateY(-20px); transition: transform 0.3s ease;">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+            <h2 class="text-2xl font-bold text-red-700 flex items-center">
+                <i class="fas fa-exclamation-triangle mr-3"></i> Are you sure?
+            </h2>
+            <button id="close-delete-modal-btn" type="button" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="py-6">
+            <p class="text-gray-700 text-base mb-4">
+                <b>This action is permanent and cannot be undone</b>.
+            </p>
+            <p class="text-gray-700 text-base mb-6">
+                All your data, including your profile, applications, saved jobs, etc. will be permanently deleted.
+            </p>
+
+            <!-- Form that posts to the delete view -->
+            <form id="delete-account-form" method="POST" action="{% url 'delete_account' %}">
+                {% csrf_token %}
+                <label for="delete-confirm-input" class="block text-sm font-medium text-gray-700 mb-2">
+                    To confirm, please type "<strong class="text-red-700">delete</strong>" in the box below.
+                </label>
+                <input type="text" id="delete-confirm-input" name="delete_confirm" class="input-field w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500" autocomplete="off">
+
+                <!-- Modal Footer (Buttons) -->
+                <div class="flex items-center justify-end space-x-4 mt-8">
+                    <button id="cancel-delete-btn" type="button" class="btn-secondary w-auto px-6 py-2">
+                        Cancel
+                    </button>
+                    <button id="delete-confirm-btn" type="submit" class="btn-primary w-auto px-6 py-2 bg-red-600 hover:bg-red-700 btn-delete-disabled" disabled>
+                        <i class="fas fa-trash-alt mr-2"></i> Delete My Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Delete Account Modal Logic ---
+    const modal = document.getElementById('delete-account-modal');
+    const openBtn = document.getElementById('open-delete-modal-btn');
+    const closeBtn = document.getElementById('close-delete-modal-btn');
+    const cancelBtn = document.getElementById('cancel-delete-btn');
+    const confirmInput = document.getElementById('delete-confirm-input');
+    const deleteBtn = document.getElementById('delete-confirm-btn');
+    
+    const confirmationText = 'delete';
+
+    function showModal() {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modal.querySelector('.modal-content').classList.remove('translate-y-[-20px]');
+        }, 10); // Start transition
+    }
+
+    function hideModal() {
+        if (!modal) return;
+        modal.classList.add('opacity-0');
+        modal.querySelector('.modal-content').classList.add('translate-y-[-20px]');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            // Reset form state when modal is hidden
+            if (confirmInput) confirmInput.value = '';
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.classList.add('btn-delete-disabled');
+                deleteBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+            }
+        }, 300); // Wait for transition to finish
+    }
+
+    if (openBtn) {
+        openBtn.addEventListener('click', showModal);
+    }
+    if (closeBtn) {
+        closeBtn.addEventListener('click', hideModal);
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', hideModal);
+    }
+    
+    // Close modal if clicking on the overlay
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideModal();
+            }
+        });
+    }
+    
+    // Listen for input on the confirmation field
+    if (confirmInput && deleteBtn) {
+        confirmInput.addEventListener('input', function() {
+            if (this.value === confirmationText) {
+                deleteBtn.disabled = false;
+                deleteBtn.classList.remove('btn-delete-disabled');
+                deleteBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+            } else {
+                deleteBtn.disabled = true;
+                deleteBtn.classList.add('btn-delete-disabled');
+                deleteBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+            }
+        });
+    }
+
+    // You might have other JS here, like for the old accordion
+});
+</script>
 {% endblock %}

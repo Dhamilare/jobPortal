@@ -85,5 +85,4 @@ def extract_resume_text(file_path: str) -> str:
             return None
 
     except Exception as e:
-        print(f"❌ Resume text extraction failed: {e}")
         return None

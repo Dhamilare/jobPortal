@@ -1597,3 +1597,48 @@ def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
     except Exception as e:
         print(f"ERROR in run_analysis_api_view: {str(e)}")
         return JsonResponse({"error": f"Unexpected server error: {e}"}, status=500)
+    
+
+@login_required
+def delete_account_view(request: HttpRequest) -> HttpResponse:
+    """
+    Handles the permanent deletion of a user's account.
+    This view only accepts POST requests and checks for confirmation text.
+    """
+    if request.method != 'POST':
+        return redirect('applicant_dashboard')
+
+    user = request.user
+    confirmation_text = request.POST.get('delete_confirm', '')
+    if confirmation_text == 'delete':
+        try:
+            user_email = user.email
+            user_username = user.username or user.first_name or user.email
+            
+            logout(request)
+            
+            user.delete()
+
+            email_subject = "Your Account at Remote Ready With Tess has been Deleted"
+            email_template = "emails/account_deleted.html"
+            email_recipient_list = [user_email]
+            email_context = {
+                'username': user_username,
+            }
+            
+            send_templated_email(
+                email_template,
+                email_subject,
+                email_recipient_list,
+                email_context
+            )
+            messages.success(request, f"The account for {user_email} has been permanently deleted.")
+            return redirect('home')
+            
+        except Exception as e:
+            messages.error(request, "An unexpected error occurred while deleting your account. Please contact support.")
+            return redirect('home')
+            
+    else:
+        messages.error(request, 'Confirmation text was incorrect. Your account has not been deleted.')
+        return redirect('applicant_dashboard')
