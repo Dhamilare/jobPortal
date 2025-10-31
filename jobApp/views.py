@@ -203,10 +203,12 @@ def applicant_register(request):
         subject = 'Verify your JobPortal account'
         from_email = settings.DEFAULT_FROM_EMAIL
         to_email = user.email
-
+        current_year = datetime.now().year
+        
         context = {
             'user': user,
             'verification_link': verification_link,
+            'current_year': current_year
         }
         html_content = render_to_string('email_verification.html', context)
         text_content = f'Hi {user.username},\n\nPlease verify your email using this link:\n{verification_link}'

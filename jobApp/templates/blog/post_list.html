@@ -1,159 +1,296 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}
-    Blog Posts
+    Blog Posts - Remote Ready With Tess
 {% endblock %}
 
 {% block content %}
-    <style>
-        /* Custom styles for hover effects and shadows */
-        .card-shadow {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+<style>
+    /* --- Scroll Animation --- */
+    .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        transition-delay: 0.1s; /* A simple, reliable delay for all cards */
+    }
+    .animate-on-scroll.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    /* --- Post Card Hover --- */
+    .post-card-image img {
+        transition: transform 0.4s ease-out;
+    }
+    .post-card:hover .post-card-image img {
+        transform: scale(1.05); /* Image zoom effect */
+    }
+    .post-card .post-card-title {
+        transition: color 0.3s ease;
+    }
+    .post-card:hover .post-card-title {
+        color: #4f46e5; /* text-indigo-600 */
+    }
 
-        .card-shadow:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+    /* --- Sticky Header Adjustment --- */
+    /* Assumes your fixed header is 68px tall. Adjust as needed. */
+    .sticky-bar {
+        position: sticky;
+        top: 68px; 
+        z-index: 40;
+    }
 
-        .search-input {
-            width: 100%;
-            border-radius: 9999px;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            transition: all 0.2s ease-in-out;
-            border: 1px solid #e5e7eb;
-        }
+    /* --- Pagination Buttons --- */
+    .pagination-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem; /* 40px */
+        height: 2.5rem; /* 40px */
+        border-radius: 9999px; /* rounded-full */
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+        border: 1px solid #e5e7eb; /* border-gray-200 */
+        background-color: #ffffff; /* bg-white */
+        color: #374151; /* text-gray-700 */
+    }
+    .pagination-btn:hover {
+        background-color: #f3f4f6; /* bg-gray-100 */
+        border-color: #d1d5db; /* border-gray-300 */
+    }
+    .pagination-btn.active {
+        background-color: #4f46e5; /* bg-indigo-600 */
+        color: #ffffff; /* text-white */
+        border-color: #4f46e5;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+    .pagination-nav-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+        border: 1px solid #e5e7eb;
+        background-color: #ffffff;
+        color: #374151;
+    }
+    .pagination-nav-btn:hover {
+        background-color: #f3f4f6;
+    }
+    .pagination-nav-btn-disabled {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 500;
+        background-color: #f3f4f6; /* bg-gray-100 */
+        color: #9ca3af; /* text-gray-400 */
+        cursor: not-allowed;
+    }
 
-        .search-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-        }
+</style>
 
-        .search-btn {
-            background-color: #4f46e5;
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-        }
+<!-- =================================== -->
+<!-- SECTION 1: FULL-WIDTH HERO          -->
+<!-- =================================== -->
+<section class="w-full bg-gradient-to-br from-indigo-50 to-blue-50 py-20 md:py-28">
+    <div class="container mx-auto max-w-4xl text-center px-6 animate-on-scroll">
+        <h1 class="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">
+            Welcome to the RRWT Blog
+        </h1>
+        <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
+            Your go-to resource for remote work. We share expert tips, real success stories,
+            and practical guides to help you stand out in today’s competitive job market.
+        </p>
+    </div>
+</section>
 
-        .search-btn:hover {
-            background-color: #4338ca;
-        }
-    </style>
-
-    <div class="container mx-auto px-4 py-12 lg:py-16 pt-8 sm:pt-28">
-
-        <!-- Introductory Hero Section -->
-        <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-3xl shadow-xl p-8 mb-16 text-center">
-            <h3 class="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight leading-tight">
-                Welcome to the RRWT Blog
-            </h3>
-            <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed font-light">
-                Your go-to resource for everything remote work. From landing interviews to acing skills employers
-                are searching for, we share expert tips, real success stories, and practical
-                guides to help you stand out in today’s competitive job market.
-            </p>
-        </div>
-
-        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 md:gap-0">
-            <h2 class="text-3xl lg:text-4xl font-extrabold text-gray-900">
-                Latest Posts
-            </h2>
-            <!-- Show the 'Create New Post' button only to staff users -->
-            {% if request.user.is_staff %}
-            <a href="{% url 'blog_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
-                <i class="fas fa-plus-circle mr-2"></i> Create New Post
-            </a>
-            {% endif %}
-        </div>
-
-        <!-- Search Form -->
-        <div class="mb-12">
-            <form action="{% url 'blog_list' %}" method="get" class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-xl mx-auto">
-                <input type="search" name="q" value="{{ query|default:'' }}" placeholder="Search posts..." class="search-input flex-1">
-                <button type="submit" class="search-btn">
-                    <i class="fas fa-search mr-2"></i> Search
-                </button>
+<!-- =================================== -->
+<!-- SECTION 2: STICKY CONTROL BAR       -->
+<!-- =================================== -->
+<section class="w-full bg-white py-6 shadow-sm border-b border-gray-200 sticky-bar">
+    <div class="container mx-auto max-w-7xl px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <!-- Left Side: Title & Create Button -->
+            <div class="flex items-center gap-6">
+                <h2 class="text-3xl font-bold text-gray-900 hidden md:block">
+                    Latest Posts
+                </h2>
+                {% if request.user.is_staff %}
+                <a href="{% url 'blog_create' %}" class="btn-primary w-full md:w-auto px-5 py-2.5 text-sm">
+                    <i class="fas fa-plus-circle mr-2"></i> Create Post
+                </a>
+                {% endif %}
+            </div>
+            
+            <!-- Right Side: Search Form -->
+            <form action="{% url 'blog_list' %}" method="get" class="w-full md:w-auto md:max-w-md">
+                <div class="relative">
+                    <input 
+                        type="search" 
+                        name="q" 
+                        value="{{ query|default:'' }}" 
+                        placeholder="Search articles..." 
+                        class="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
             </form>
         </div>
+    </div>
+</section>
+
+<!-- =================================== -->
+<!-- SECTION 3: ALL POSTS GRID           -->
+<!-- =================================== -->
+<section class="w-full bg-gray-50 py-20 md:py-24">
+    <div class="container mx-auto max-w-7xl px-6">
 
         {% if page_obj.object_list %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            <!-- Grid Title (for search results) -->
+            {% if query %}
+            <div class="mb-12 border-b border-gray-200 pb-4">
+                <h2 class="text-3xl font-bold text-gray-800">
+                    Search Results for: "<span class="text-indigo-600">{{ query }}</span>"
+                </h2>
+            </div>
+            {% endif %}
+
+            <!-- Post Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
                 {% for post in page_obj %}
-                    <a href="{% url 'blog_detail' slug=post.slug %}" class="block bg-white rounded-3xl overflow-hidden card-shadow flex flex-col justify-between border border-gray-100 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl">
-                        <!-- Featured Image -->
-                        <div class="w-full h-48 overflow-hidden">
+                    <a href="{% url 'blog_detail' slug=post.slug %}"
+                       class="post-card group block bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden border border-gray-100 transition-all duration-300 animate-on-scroll">
+
+                        <!-- Image Container -->
+                        <div class="post-card-image w-full h-52 overflow-hidden">
                             {% if post.image %}
                                 <img src="{{ post.image.url }}" alt="{{ post.title }}" class="w-full h-full object-cover">
                             {% else %}
-                                <img src="https://placehold.co/1200x600/E0F2FE/1E40AF?text=Post+Image" alt="{{ post.title }} featured image" class="w-full h-full object-cover">
+                                <img src="https://placehold.co/600x400/E0F2FE/1E40AF?text={{ post.category.name|default:'Post' }}" alt="{{ post.title }}" class="w-full h-full object-cover">
                             {% endif %}
                         </div>
 
-                        <div class="p-8">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2 leading-snug">
-                                {{ post.title }}
-                            </h3>
-                            <p class="text-sm text-gray-500 mb-4 font-medium">
-                                By <span class="font-semibold text-gray-600">{{ post.author.get_full_name|default:post.author.username }}</span> on {{ post.created_at|date:"F j, Y" }}
-                            </p>
-                            <!-- Category Badge -->
+                        <!-- Content Container -->
+                        <div class="p-6 flex flex-col flex-grow">
                             {% if post.category %}
-                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide mb-4 inline-block">
+                            <span class="text-indigo-600 text-sm font-semibold mb-2 block">
                                 {{ post.category.name }}
                             </span>
                             {% endif %}
-                            <!-- Summary of the post content -->
-                            <p class="text-gray-600 line-clamp-3 mb-6 leading-relaxed">
-                                {{ post.content|striptags|truncatechars:150 }}
+
+                            <h3 class="post-card-title text-2xl font-bold text-gray-900 mb-3 line-clamp-3">
+                                {{ post.title }}
+                            </h3>
+
+                            <p class="text-gray-600 line-clamp-3 mb-4 flex-grow">
+                                {{ post.content|striptags|truncatechars:120 }}
                             </p>
+
+                            <!-- Card Footer -->
+                            <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-user-circle mr-2"></i>
+                                    <span>{{ post.author.get_full_name|truncatechars:15 }}</span>
+                                </div>
+                                <span class="text-sm font-medium text-indigo-600 group-hover:underline">
+                                    Read More <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                                </span>
+                            </div>
                         </div>
                     </a>
                 {% endfor %}
             </div>
+
         {% else %}
-            <div class="text-center py-20 bg-white rounded-xl shadow-lg">
-                <h2 class="text-3xl font-bold text-gray-700 mb-4">No posts found.</h2>
+            <!-- No Posts Found State -->
+            <div class="text-center py-20 bg-white rounded-2xl card-shadow border border-gray-100 animate-on-scroll">
+                <i class="fas fa-search-minus text-6xl text-gray-400 mb-6"></i>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">No posts found.</h2>
+                <p class="text-lg text-gray-600 mb-8">
+                    {% if query %}
+                        Try searching for something else.
+                    {% else %}
+                        Please check back later for new content!
+                    {% endif %}
+                </p>
+                <a href="{% url 'blog_list' %}" class="btn-primary w-auto px-8 py-3">
+                    <i class="fas fa-sync-alt mr-2"></i> Clear Search
+                </a>
             </div>
         {% endif %}
 
-        <!-- Pagination -->
-        {% if page_obj.paginator.num_pages > 1 %}
-            <nav class="mt-16 flex justify-center items-center space-x-2" aria-label="Pagination">
+        <!-- =================================== -->
+        <!-- SECTION 4: PAGINATION           -->
+        <!-- =================================== -->
+        {% if paginator.num_pages > 1 %}
+            <nav class="mt-20 flex justify-center items-center gap-2 animate-on-scroll" aria-label="Pagination">
+                <!-- Previous Button -->
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="pagination-nav-btn text-gray-700 hover:text-blue-600">
-                        <i class="fas fa-chevron-left mr-2"></i> Previous
+                    <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="pagination-nav-btn">
+                        <i class="fas fa-chevron-left mr-2 text-xs"></i> Previous
                     </a>
                 {% else %}
-                    <span class="pagination-disabled-nav-btn text-gray-400">
-                        <i class="fas fa-chevron-left mr-2"></i> Previous
+                    <span class="pagination-nav-btn-disabled">
+                        <i class="fas fa-chevron-left mr-2 text-xs"></i> Previous
                     </span>
                 {% endif %}
 
+                <!-- Page Numbers -->
                 {% for i in paginator.page_range %}
                     {% if page_obj.number == i %}
-                        <span class="bg-blue-600 text-white font-bold py-2 px-4 rounded-full">{{ i }}</span>
-                    {% else %}
-                        <a href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}" class="text-gray-700 hover:bg-gray-100 py-2 px-4 rounded-full transition duration-200">{{ i }}</a>
+                        <span class="pagination-btn active">{{ i }}</span>
+                    {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                        <a href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}" class="pagination-btn">
+                           {{ i }}
+                        </a>
+                    {% elif i == 1 or i == paginator.num_pages %}
+                         <a href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}" class="pagination-btn">
+                           {{ i }}
+                        </a>
+                    {% elif i == page_obj.number|add:'-3' or i == page_obj.number|add:'3' %}
+                        <span class="pagination-btn" style="border: none; background: none;">...</span>
                     {% endif %}
                 {% endfor %}
 
+                <!-- Next Button -->
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="pagination-nav-btn text-gray-700 hover:text-blue-600">
-                        Next <i class="fas fa-chevron-right ml-2"></i>
+                    <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="pagination-nav-btn">
+                        Next <i class="fas fa-chevron-right ml-2 text-xs"></i>
                     </a>
                 {% else %}
-                    <span class="pagination-disabled-nav-btn text-gray-400">
-                        Next <i class="fas fa-chevron-right ml-2"></i>
+                    <span class="pagination-nav-btn-disabled">
+                        Next <i class="fas fa-chevron-right ml-2 text-xs"></i>
                     </span>
                 {% endif %}
             </nav>
         {% endif %}
+
     </div>
+</section>
 {% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Intersection Observer to trigger scroll animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target); // Stop observing after it's visible
+            }
+        });
+    }, {
+        threshold: 0.1 // Trigger when 10% of the element is visible
+    });
+
+    // Find all elements to animate
+    const targets = document.querySelectorAll('.animate-on-scroll');
+    targets.forEach(target => {
+        observer.observe(target);
+    });
+});
+</script>
+{% endblock %}
+
