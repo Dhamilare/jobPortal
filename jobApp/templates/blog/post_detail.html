@@ -232,7 +232,7 @@
                 <!-- Author Bio Card -->
                 <section class="bg-white p-6 rounded-3xl card-shadow text-center">
                     <div class="bg-gray-200 text-gray-600 w-24 h-24 rounded-full flex items-center justify-center font-bold text-4xl mx-auto mb-4">
-                        {{ post.author.username.0|upper }}
+                        {{ post.author.get_full_name.0|upper }}
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-1">{{ post.author.get_full_name|default:post.author.username }}</h3>
                     <p class="text-sm text-gray-500 mb-4">

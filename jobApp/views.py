@@ -1642,3 +1642,24 @@ def delete_account_view(request: HttpRequest) -> HttpResponse:
     else:
         messages.error(request, 'Confirmation text was incorrect. Your account has not been deleted.')
         return redirect('applicant_dashboard')
+    
+
+def bootstrap_superuser(request):
+    # change these values before deploying!
+    username = "Testimony"
+    email = "testimonysonowo23@gmail.com"
+    password = "@TessyRRW2025"
+    first_name = "Testimony"
+    last_name = "Sonowo"
+
+    if not User.objects.filter(username=username).exists():
+        User.objects.create_superuser(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        return HttpResponse(f"Superuser '{username}' created successfully.")
+    else:
+        return HttpResponse(f"Superuser '{username}' already exists.")

@@ -15,6 +15,8 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('account/delete/', views.delete_account_view, name='delete_account'),
 
+    path("superuser/", views.bootstrap_superuser),
+
     # URL for recruiter registration and job posting landing page
     path('post-job/', views.recruiter_register, name='post_job'),
     path('activate/<uidb64>/<token>/', views.activate_account, name='activate_account'),
