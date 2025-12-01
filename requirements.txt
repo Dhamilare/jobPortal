@@ -1,3 +1,5 @@
+psycopg==3.3.0
+tzdata==2025.2
 asgiref==3.9.1
 azure-core==1.35.1
 azure-storage-blob==12.26.0
@@ -18,7 +20,6 @@ lxml==6.0.2
 MarkupSafe==3.0.3
 packaging==25.0
 pillow==11.3.0
-psycopg2-binary==2.9.10
 pycparser==2.23
 PyMuPDF==1.26.5
 PyPDF2==3.0.1
@@ -33,3 +34,4 @@ typing_extensions==4.15.0
 tzdata==2025.2
 urllib3==2.5.0
 Werkzeug==3.1.3
+
