@@ -515,6 +515,16 @@ def moderator_dashboard(request):
         app_count=models.Count('applications')
     ).order_by('-date_posted')
     
+    # --- Pagination Logic for Job Applications ---
+    job_app_page_number = request.GET.get('job_app_page', 1)
+    
+    paginator = Paginator(recent_jobs_with_apps, 10) 
+    
+    try:
+        job_app_page_obj = paginator.page(job_app_page_number)
+    except Exception:
+        job_app_page_obj = paginator.page(paginator.num_pages)
+
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         subscribers_context = get_subscribers_context(request)
         return render(request, 'staff/subscribers_table.html', subscribers_context)
@@ -522,9 +532,10 @@ def moderator_dashboard(request):
     context = {
         'total_jobs': Job.objects.count(),
         'total_applicants': CustomUser.objects.filter(is_applicant=True).count(),
-        'applications_24hrs': Application.objects.count(),
+        'applications': Application.objects.count(),
         'verified_users': CustomUser.objects.filter(is_active=True, is_staff=False, is_moderator=False).count(),
-        'recent_jobs_with_apps': recent_jobs_with_apps,
+        'recent_jobs_with_apps': job_app_page_obj.object_list,
+        'job_app_page_obj': job_app_page_obj,
     }
 
     recent_jobs = Job.objects.select_related('posted_by').order_by('-date_posted')[:5]
@@ -557,7 +568,7 @@ def moderator_dashboard(request):
 
     activity_list.sort(key=lambda x: x['timestamp'], reverse=True)
 
-    context['recent_activity_log'] = activity_list[:10]
+    context['recent_activity_log'] = activity_list[:15]
 
     if request.user.is_staff:
         context.update(get_subscribers_context(request))

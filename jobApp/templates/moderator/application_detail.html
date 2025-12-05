@@ -10,7 +10,7 @@
         <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Application Review
         </h1>
-        <p class="text-xl text-blue-600 mb-8">
+        <p class="text-xl text-purple-600 mb-8">
             {{ application.job.title }} at {{ application.job.company_name }}
         </p>
 
@@ -32,12 +32,14 @@
                     <i class="fas fa-user-circle mr-2 text-indigo-500"></i> Applicant Details
                 </h2>
 
-                <div class="mb-6 p-4 rounded-lg {% if is_internal_submission %}bg-green-50 border-l-4 border-green-500{% else %}bg-yellow-50 border-l-4 border-yellow-500{% endif %}">
+                {# Submission Type Banner (Updated colors) #}
+                <div class="mb-6 p-4 rounded-lg 
+                    {% if is_internal_submission %}bg-purple-50 border-l-4 border-purple-500{% else %}bg-yellow-50 border-l-4 border-yellow-500{% endif %}">
                     <p class="font-bold text-lg">
                         {% if is_internal_submission %}
-                            <i class="fas fa-check-circle mr-1"></i> Full Internal Submission
+                            <i class="fas fa-check-circle mr-1 text-purple-700"></i> Full Internal Submission
                         {% else %}
-                            <i class="fas fa-link mr-1"></i> External Link Click Log
+                            <i class="fas fa-link mr-1 text-yellow-700"></i> External Link Click Log
                         {% endif %}
                     </p>
                 </div>
@@ -86,7 +88,7 @@
             <div class="lg:col-span-1 space-y-6">
                 <div class="bg-white rounded-lg p-6 shadow-xl border border-gray-200">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                        <i class="fas fa-signal mr-2 text-blue-500"></i> Status & Date
+                        <i class="fas fa-signal mr-2 text-purple-500"></i> Status & Date
                     </h2>
                     <dl class="text-sm text-gray-700">
                         <div class="flex justify-between py-1 border-b">
@@ -95,15 +97,21 @@
                         </div>
                         <div class="flex justify-between py-1">
                             <dt class="font-medium">Current Status:</dt>
-                            <dd class="font-bold text-lg text-red-600" id="current-status-display">{{ application.get_status_display }}</dd>
+                            {# Initial status display updated to reflect potential color changes from JS #}
+                            <dd class="font-bold text-lg 
+                                {% if application.status == 'Rejected' %}text-red-600
+                                {% elif application.status == 'Interview' %}text-yellow-600
+                                {% elif application.status == 'Hired' %}text-green-600
+                                {% else %}text-purple-600{% endif %}" 
+                                id="current-status-display">{{ application.get_status_display }}</dd>
                         </div>
                     </dl>
 
                     <h3 class="text-lg font-bold text-gray-900 mt-4 mb-2">Update Status</h3>
                     <select id="status-update-select" 
-                            data-app-pk="{{ application.pk }}"
-                            data-current-status="{{ application.status }}"
-                            class="input-field status-select">
+                                data-app-pk="{{ application.pk }}"
+                                data-current-status="{{ application.status }}"
+                                class="input-field status-select">
                         {% for value, label in application_statuses %}
                             <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -116,11 +124,11 @@
                     </h2>
                     {% if application.submitted_resume %}
                         <p class="text-sm text-gray-600 mb-4">
-                            Resume uploaded: {{ application.submitted_resume.name|truncatechars:30 }}
+                            Resume/CV uploaded
                         </p>
                         <a href="{% url 'application_resume_download' application.pk %}" 
                            class="btn-primary w-full inline-flex justify-center items-center bg-green-600 hover:bg-green-700">
-                            <i class="fas fa-download mr-2"></i> Download Resume ({{ application.submitted_resume.size|floatformat:0|intword }})
+                            <i class="fas fa-download mr-2"></i> Download Resume ({{ application.submitted_resume.size|filesizeformat }})
                         </a>
                     {% else %}
                         <div class="p-4 bg-gray-100 rounded-lg text-gray-600">
@@ -145,6 +153,27 @@
 document.addEventListener('DOMContentLoaded', function() {
     const statusSelect = document.getElementById('status-update-select');
     const statusDisplay = document.getElementById('current-status-display');
+
+    // Function to dynamically update the text color of the status display
+    function updateStatusColor(status) {
+        statusDisplay.classList.remove('text-red-600', 'text-yellow-600', 'text-green-600', 'text-purple-600', 'text-indigo-600', 'text-gray-600');
+        
+        // Define color mapping based on your application model choices
+        if (status === 'Rejected') {
+            statusDisplay.classList.add('text-red-600');
+        } else if (status === 'Interview' || status === 'Under Review') {
+            statusDisplay.classList.add('text-yellow-600');
+        } else if (status === 'Hired') {
+            statusDisplay.classList.add('text-green-600');
+        } else if (status === 'Submitted' || status === 'Applied') {
+            statusDisplay.classList.add('text-purple-600');
+        } else {
+            statusDisplay.classList.add('text-gray-600');
+        }
+    }
+    
+    // Initial color setup
+    updateStatusColor(statusSelect.dataset.currentStatus);
 
     if (statusSelect) {
         statusSelect.addEventListener('change', function() {
@@ -177,18 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     this.dataset.currentStatus = newStatus;
                     statusDisplay.textContent = newStatusText;
-                    statusDisplay.classList.remove('text-red-600', 'text-yellow-600', 'text-green-600');
-                    
-                    // Simple color update based on status (customize as needed)
-                    if (newStatus === 'Rejected') {
-                        statusDisplay.classList.add('text-red-600');
-                    } else if (newStatus === 'Interview') {
-                        statusDisplay.classList.add('text-yellow-600');
-                    } else if (newStatus === 'Hired') {
-                        statusDisplay.classList.add('text-green-600');
-                    }
+                    updateStatusColor(newStatus);
+
                     console.log('Status updated successfully.');
-                    // Display success message via Django messages if possible, or use a fade-in element
                 } else {
                     response.json().then(data => {
                         alert('Error updating status: ' + data.message);
