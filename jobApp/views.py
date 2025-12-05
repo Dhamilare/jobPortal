@@ -43,6 +43,8 @@ import requests
 from decouple import config
 from django.core.files.storage import default_storage
 from django.utils.safestring import mark_safe
+from django.http import FileResponse
+import mimetypes  
 
 # ----------------------------
 # Role-based Access Decorators
@@ -631,7 +633,6 @@ def moderator_report_view(request):
         start_date = date.today()
         end_date = date.today()
 
-    # Create lookup dictionary: {"2025-12-04": 3}
     signups_dict = {str(item['date']): item['count'] for item in signups_raw}
 
     # Generate continuous date list
@@ -1791,3 +1792,57 @@ def application_status_update(request, pk):
         return JsonResponse({'status': 'error', 'message': 'Invalid status provided.'}, status=400)
     
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+
+@moderator_required
+def application_detail_view(request, pk):
+    """
+    Displays full details of a single application, 
+    including internal form fields like salary, resume, etc.
+    """
+    application = get_object_or_404(
+        Application.objects.select_related('job', 'applicant'),
+        pk=pk
+    )
+
+    context = {
+        'application': application,
+        'is_internal_submission': (application.status == 'Submitted'),
+        'application_statuses': Application.STATUS_CHOICES,
+    }
+
+    return render(request, 'moderator/application_detail.html', context)
+
+
+@moderator_required
+def application_resume_download(request, pk):
+    """
+    Securely downloads the applicant’s submitted resume.
+    Only accessible to moderators/staff.
+    """
+    application = get_object_or_404(Application, pk=pk)
+
+    if not application.submitted_resume:
+        messages.error(request, "No resume file found for this application.")
+        return redirect('application_detail_view', pk=pk)
+
+    try:
+        file_path = application.submitted_resume.path
+
+        # Detect MIME type (PDF, DOCX, etc.)
+        content_type, encoding = mimetypes.guess_type(file_path)
+        content_type = content_type or "application/octet-stream"
+
+        response = FileResponse(open(file_path, 'rb'), content_type=content_type)
+
+        # Force download
+        response['Content-Disposition'] = (
+            f'attachment; filename="{application.submitted_resume.name}"'
+        )
+
+        return response
+
+    except FileNotFoundError:
+        messages.error(request, "The resume file could not be found on the server.")
+        return redirect('application_detail_view', pk=pk)
+

@@ -107,7 +107,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {% if app.status == 'Submitted' %}
-                                <a href="#" class="text-purple-600 hover:text-purple-900 mr-3" title="Review Full Application & Resume">
+                                <a href="{% url 'application_detail_view' app.pk %}" class="text-purple-600 hover:text-purple-900 mr-3" title="Review Full Application & Resume">
                                     <i class="fas fa-eye"></i> Review
                                 </a>
                                 {% endif %}

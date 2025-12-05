@@ -60,10 +60,17 @@ urlpatterns = [
          views.job_applications_moderator_list, 
          name='job_applications_moderator_list'),
     
-    # Application Status Update (AJAX endpoint)
     path('moderator/applications/<int:pk>/update_status/', 
          views.application_status_update, 
          name='application_status_update'),
+
+    path('moderator/applications/<int:pk>/detail/',
+         views.application_detail_view,
+         name='application_detail_view'),
+         
+    path('moderator/applications/<int:pk>/download_resume/',
+         views.application_resume_download,
+         name='application_resume_download'),
 
     # Category Management URLs
     path('moderator/categories/', views.manage_categories, name='manage_categories'),

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %} 
+
+{% block title %}Application Review - {{ application.job.title }}{% endblock %}
+
+{% block content %}
+<div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
+    <div class="container mx-auto max-w-5xl">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Application Review
+        </h1>
+        <p class="text-xl text-blue-600 mb-8">
+            {{ application.job.title }} at {{ application.job.company_name }}
+        </p>
+
+        {# Messages #}
+        {% if messages %}
+            <div class="mb-6 space-y-3">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg bg-red-100 text-red-700 border border-red-400" role="alert">
+                        <i class="fas fa-exclamation-circle mr-3"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <div class="lg:col-span-2 bg-white rounded-lg p-6 shadow-xl border border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-user-circle mr-2 text-indigo-500"></i> Applicant Details
+                </h2>
+
+                <div class="mb-6 p-4 rounded-lg {% if is_internal_submission %}bg-green-50 border-l-4 border-green-500{% else %}bg-yellow-50 border-l-4 border-yellow-500{% endif %}">
+                    <p class="font-bold text-lg">
+                        {% if is_internal_submission %}
+                            <i class="fas fa-check-circle mr-1"></i> Full Internal Submission
+                        {% else %}
+                            <i class="fas fa-link mr-1"></i> External Link Click Log
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <dl class="divide-y divide-gray-100">
+                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Name</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ application.full_name|default:application.applicant.username }}</dd>
+                    </div>
+                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Email</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ application.email_address|default:application.applicant.email }}</dd>
+                    </div>
+                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Phone</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ application.phone_number|default:'N/A' }}</dd>
+                    </div>
+                    {% if is_internal_submission %}
+                        <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                            <dt class="text-sm font-medium leading-6 text-gray-900">Address</dt>
+                            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ application.address|default:'N/A' }}</dd>
+                        </div>
+                        <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                            <dt class="text-sm font-medium leading-6 text-gray-900">Expected Salary</dt>
+                            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ application.expected_salary|default:'N/A' }}</dd>
+                        </div>
+                        <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                            <dt class="text-sm font-medium leading-6 text-gray-900">Notice Period</dt>
+                            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ application.availability_notice_period|default:'N/A' }}</dd>
+                        </div>
+                    {% endif %}
+                </dl>
+
+                <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4 flex items-center">
+                    <i class="fas fa-comment-dots mr-2 text-indigo-500"></i> Cover Letter
+                </h3>
+                <div class="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap text-sm text-gray-700">
+                    {% if application.cover_letter %}
+                        {{ application.cover_letter }}
+                    {% else %}
+                        <span class="text-gray-500 italic">No cover letter provided.</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-lg p-6 shadow-xl border border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-signal mr-2 text-blue-500"></i> Status & Date
+                    </h2>
+                    <dl class="text-sm text-gray-700">
+                        <div class="flex justify-between py-1 border-b">
+                            <dt class="font-medium">Applied On:</dt>
+                            <dd>{{ application.application_date|date:"M d, Y H:i" }}</dd>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <dt class="font-medium">Current Status:</dt>
+                            <dd class="font-bold text-lg text-red-600" id="current-status-display">{{ application.get_status_display }}</dd>
+                        </div>
+                    </dl>
+
+                    <h3 class="text-lg font-bold text-gray-900 mt-4 mb-2">Update Status</h3>
+                    <select id="status-update-select" 
+                            data-app-pk="{{ application.pk }}"
+                            data-current-status="{{ application.status }}"
+                            class="input-field status-select">
+                        {% for value, label in application_statuses %}
+                            <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-xl border border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-file-pdf mr-2 text-red-500"></i> Documents
+                    </h2>
+                    {% if application.submitted_resume %}
+                        <p class="text-sm text-gray-600 mb-4">
+                            Resume uploaded: {{ application.submitted_resume.name|truncatechars:30 }}
+                        </p>
+                        <a href="{% url 'application_resume_download' application.pk %}" 
+                           class="btn-primary w-full inline-flex justify-center items-center bg-green-600 hover:bg-green-700">
+                            <i class="fas fa-download mr-2"></i> Download Resume ({{ application.submitted_resume.size|floatformat:0|intword }})
+                        </a>
+                    {% else %}
+                        <div class="p-4 bg-gray-100 rounded-lg text-gray-600">
+                            <i class="fas fa-exclamation-circle mr-2"></i> No resume file submitted.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="text-center mt-12">
+            <a href="{% url 'job_applications_moderator_list' application.job.slug %}" class="btn-secondary inline-flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Applications List
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('status-update-select');
+    const statusDisplay = document.getElementById('current-status-display');
+
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            const pk = this.dataset.appPk;
+            const newStatus = this.value;
+            const originalStatus = this.dataset.currentStatus;
+            const newStatusText = this.options[this.selectedIndex].text;
+
+            if (!confirm(`Are you sure you want to change the status to "${newStatusText}"?`)) {
+                this.value = originalStatus;
+                return;
+            }
+            
+            this.disabled = true;
+
+            fetch(`/moderator/applications/${pk}/update_status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}', 
+                },
+                body: new URLSearchParams({
+                    'status': newStatus,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                })
+            })
+            .then(response => {
+                this.disabled = false;
+                
+                if (response.ok) {
+                    this.dataset.currentStatus = newStatus;
+                    statusDisplay.textContent = newStatusText;
+                    statusDisplay.classList.remove('text-red-600', 'text-yellow-600', 'text-green-600');
+                    
+                    // Simple color update based on status (customize as needed)
+                    if (newStatus === 'Rejected') {
+                        statusDisplay.classList.add('text-red-600');
+                    } else if (newStatus === 'Interview') {
+                        statusDisplay.classList.add('text-yellow-600');
+                    } else if (newStatus === 'Hired') {
+                        statusDisplay.classList.add('text-green-600');
+                    }
+                    console.log('Status updated successfully.');
+                    // Display success message via Django messages if possible, or use a fade-in element
+                } else {
+                    response.json().then(data => {
+                        alert('Error updating status: ' + data.message);
+                    }).catch(() => {
+                        alert('An unknown error occurred on the server.');
+                    });
+                    this.value = originalStatus;
+                }
+            })
+            .catch(error => {
+                this.disabled = false;
+                alert('Network error: Could not reach the server.');
+                this.value = originalStatus;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
