@@ -1,217 +1,237 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load widget_tweaks %}
+
 {% block title %}{{ job.title }} at {{ job.company_name }} - Remote Ready With Tess{% endblock %}
 
 {% block content %}
-    <style>
-        /* Basic styling for the new AI card (Updated colors to purple/yellow) */
-        .analyzer-card {
-            border: 1px solid #D1D5DB; /* border-gray-300 */
-            border-radius: 0.75rem; /* rounded-xl */
-            background: linear-gradient(135deg, #F9FAFB 0%, #FEFCE8 100%); /* Light background with yellow touch */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-        }
-        .analyzer-card-icon {
-            background-color: #EDE9FE; /* bg-purple-100 */
-            color: #6D28D9; /* text-purple-700 */
-            border-radius: 9999px; /* rounded-full */
-            width: 3.5rem; /* w-14 */
-            height: 3.5rem; /* h-14 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .analyzer-card-btn {
-            background-color: #6D28D9; /* bg-purple-700 */
-            color: white;
-            padding: 0.625rem 1.25rem; /* px-5 py-2.5 */
-            font-weight: 600; /* font-semibold */
-            border-radius: 0.5rem; /* rounded-lg */
-            transition: background-color 0.3s;
-            text-align: center;
-        }
-        .analyzer-card-btn:hover {
-            background-color: #4C1D95; /* Darker Purple */
-        }
-        /* Custom styling for form inputs (Focus state updated to purple) */
-        .input-field {
-            /* Using @apply requires a working Tailwind installation, assuming base.html's CSS applies the input-field styles correctly */
-            /* We will ensure focus ring is purple, consistent with base.html */
-            @apply block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-150;
-        }
-        select.input-field {
-            @apply appearance-none;
-        }
-        textarea.input-field {
-            @apply resize-y;
-        }
-        input[type="file"].input-field {
-            @apply border-none p-0;
-        }
-    </style>
+<style>
+    /* Styles for the Resume Analyzer Card (Already updated to Purple/Yellow) */
+    .analyzer-card {
+        border: 1px solid #D1D5DB;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, #F9FAFB 0%, #FEFCE8 100%);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+    .analyzer-card-icon {
+        background-color: #EDE9FE;
+        color: #6D28D9;
+        border-radius: 9999px;
+        width: 3.5rem;
+        height: 3.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .analyzer-card-btn {
+        background-color: #6D28D9;
+        color: white;
+        padding: 0.625rem 1.25rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        transition: background-color 0.3s;
+        text-align: center;
+    }
+    .analyzer-card-btn:hover {
+        background-color: #4C1D95;
+    }
+    /* Custom styling for form inputs */
+    .input-field {
+        /* This class is already defined in base.html for focus styles */
+        @apply block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-150;
+    }
 
-    <div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
-        <div class="container mx-auto max-w-5xl"> 
+    /* New sticky styling for the action column on large screens */
+    @media (min-width: 1024px) {
+        .sticky-action-bar {
+            position: sticky;
+            top: 100px; /* Adjust based on your header height */
+            align-self: flex-start;
+        }
+    }
+    
+    /* Ensure the prose styling is applied correctly */
+    .prose h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #1F2937;
+        border-bottom: 2px solid #EEE;
+        padding-bottom: 5px;
+    }
+</style>
+
+<div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
+    <div class="container mx-auto max-w-7xl"> 
+        
+        {# --- 1. HEADER SECTION --- #}
+        <div class="bg-white rounded-lg p-6 md:p-8 card-shadow border border-gray-200 relative mb-8">
+            <a href="{% url 'job_list' %}" class="text-purple-600 hover:underline mb-4 inline-flex items-center font-medium text-sm">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Job Listings
+            </a>
             
-            <div class="bg-white rounded-lg p-8 md:p-12 card-shadow border border-gray-200 relative mb-12">
-                {# Django Messages Section (Updated 'info' message to purple) #}
-                {% if messages %}
-                    <div class="mb-6 space-y-3">
-                        {% for message in messages %}
-                            <div class="p-4 rounded-lg flex items-center
-                                {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400{% endif %}
-                                {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400{% endif %}
-                                {% if message.tags == 'info' %}bg-purple-100 text-purple-700 border border-purple-400{% endif %}
-                                {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
-                            " role="alert">
-                                {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-3 text-lg"></i>{% endif %}
-                                {% if message.tags == 'error' %}<i class="fas fa-exclamation-circle mr-3 text-lg"></i>{% endif %}
-                                {% if message.tags == 'info' %}<i class="fas fa-info-circle mr-3 text-lg"></i>{% endif %}
-                                {% if message.tags == 'warning' %}<i class="fas fa-exclamation-triangle mr-3 text-lg"></i>{% endif %}
-                                <div>{{ message }}</div>
+            {% if job.is_hot_job %}
+                <span class="absolute top-0 right-0 mt-4 mr-4 bg-red-500 text-white text-xs font-bold uppercase px-3 py-1 rounded-full shadow-md flex items-center transform rotate-3 origin-top-right">
+                    <i class="fas fa-fire mr-1 text-sm"></i> Hot!
+                </span>
+            {% endif %}
+
+            <h1 class="text-3xl md:text-5xl font-extrabold text-gray-900 mt-4 mb-2 flex items-center leading-tight">
+                <i class="fas fa-briefcase text-purple-600 mr-4 text-3xl hidden sm:inline-block"></i> {{ job.title }}
+            </h1>
+            <p class="text-xl md:text-2xl text-purple-600 font-semibold mb-1">{{ job.company_name }}</p>
+            <p class="text-gray-600 mb-6 text-lg"><i class="fas fa-map-marker-alt mr-2"></i> {{ job.location }}</p>
+
+            {# --- BADGES ROW --- #}
+            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                <span class="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full font-medium">
+                    <i class="fas fa-briefcase mr-1"></i> {{ job.job_type }}
+                </span>
+                {% if job.category %}
+                    <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full font-medium">
+                        <i class="fas fa-tag mr-1"></i> {{ job.category.name }}
+                    </span>
+                {% endif %}
+                <span class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-medium">
+                    <i class="fas fa-calendar-alt mr-1"></i> Posted: {{ job.date_posted|date:"M d, Y" }}
+                </span>
+                {% if job.job_expiry_date %}
+                    <span class="inline-flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full font-medium">
+                        <i class="fas fa-hourglass-end mr-1"></i> Expires: {{ job.job_expiry_date|date:"M d, Y" }}
+                    </span>
+                {% endif %}
+            </div>
+            
+            {# Django Messages Section #}
+            {% if messages %}
+                <div class="mt-8 space-y-3">
+                    {% for message in messages %}
+                        <div class="p-4 rounded-lg flex items-center
+                            {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400{% endif %}
+                            {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400{% endif %}
+                            {% if message.tags == 'info' %}bg-purple-100 text-purple-700 border border-purple-400{% endif %}
+                            {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
+                        " role="alert">
+                            <div class="mr-3">
+                                {% if message.tags == 'success' %}<i class="fas fa-check-circle"></i>{% endif %}
+                                {% if message.tags == 'error' %}<i class="fas fa-exclamation-circle"></i>{% endif %}
+                                {% if message.tags == 'info' %}<i class="fas fa-info-circle"></i>{% endif %}
+                                {% if message.tags == 'warning' %}<i class="fas fa-exclamation-triangle"></i>{% endif %}
                             </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-
-                <a href="{% url 'job_list' %}" class="text-purple-600 hover:underline mb-6 inline-flex items-center font-medium">
-                    <i class="fas fa-arrow-left mr-2"></i> Back to Job Listings
-                </a>
-
-                {# Hot Job Banner #}
-                {% if job.is_hot_job %}
-                    <span class="absolute top-0 right-0 mt-4 mr-4 bg-red-500 text-white text-xs font-bold uppercase px-3 py-1 rounded-full shadow-md flex items-center transform rotate-3 origin-top-right">
-                        <i class="fas fa-fire mr-1 text-sm"></i> Hot!
-                    </span>
-                {% endif %}
-
-                <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-4 mb-4 flex items-center">
-                    <i class="fas fa-briefcase text-purple-600 mr-3"></i> {{ job.title }}
-                </h1>
-                <p class="text-xl text-purple-600 mb-4">{{ job.company_name }} <span class="text-gray-600">| {{ job.location }}</span></p>
-
-                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-8">
-                    <span class="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full font-medium">
-                        <i class="fas fa-briefcase mr-1"></i> {{ job.job_type }}
-                    </span>
-                    {% if job.category %}
-                        <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full font-medium">
-                            <i class="fas fa-tag mr-1"></i> {{ job.category.name }}
-                        </span>
-                    {% endif %}
-                    <span class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-medium">
-                        <i class="fas fa-calendar-alt mr-1"></i> Posted: {{ job.date_posted|date:"M d, Y" }}
-                    </span>
-                    {% if job.job_expiry_date %}
-                        <span class="inline-flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full font-medium">
-                            <i class="fas fa-hourglass-end mr-1"></i> Expires: {{ job.job_expiry_date|date:"M d, Y" }}
-                        </span>
-                    {% else %}
-                        <span class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full font-medium">
-                            <i class="fas fa-calendar-times mr-1"></i> No Expiry Date
-                        </span>
-                    {% endif %}
+                            <div>{{ message }}</div>
+                        </div>
+                    {% endfor %}
                 </div>
+            {% endif %}
+        </div>
+        {# END: HEADER SECTION #}
 
-                <div classid="job-description-content" class="prose max-w-none text-gray-700 leading-relaxed mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Job Description</h2>
+
+        {# --- 2. MAIN CONTENT GRID (Job Description & Action Bar) --- #}
+        <div class="lg:grid lg:grid-cols-3 lg:gap-8 xl:gap-12">
+            
+            {# LEFT COLUMN: JOB DESCRIPTION (Expanded to 2/3 width) #}
+            <div class="lg:col-span-2 bg-white rounded-lg p-8 md:p-10 shadow-xl border border-gray-200 mb-8 lg:mb-0">
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-4">Job Details</h2>
+                
+                <div id="job-description-content" class="prose max-w-none text-gray-700 leading-relaxed">
                     {{ job.description|safe }}
                 </div>
-                
-                {% if user.is_authenticated and user.is_applicant %}
-                <div class="analyzer-card p-6 my-10">
-                    <div class="flex flex-col sm:flex-row items-center gap-6">
-                        <div class="analyzer-card-icon">
-                            <i class="fas fa-file-invoice text-3xl"></i>
-                        </div>
-                        <div class="flex-grow text-center sm:text-left">
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">Resume Analyzer</h3>
-                            <p class="text-gray-600">
-                                Scan your resume with this job description to know if it’s a good fit for the role.
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 w-full sm:w-auto">
-                            <a href="{% url 'resume_analyzer' job.slug %}" class="analyzer-card-btn block">
-                                Check Score
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-                {# UPDATED APPLY BUTTON SECTION #}
-                <div class="flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4 mt-8">
-                    {% if user.is_authenticated and user.is_applicant %}
-                        {# Save/Unsave Job Button #}
-                        {% if is_saved %}
-                            <a href="{% url 'unsave_job' job.slug %}" class="btn-secondary bg-gray-200 text-gray-700 hover:bg-gray-300 inline-flex items-center justify-center w-full sm:w-auto">
-                                <i class="fas fa-bookmark mr-2"></i> Saved
-                            </a>
-                        {% else %}
-                            <a href="{% url 'save_job' job.slug %}" class="btn-secondary bg-purple-100 text-purple-700 hover:bg-purple-200 inline-flex items-center justify-center w-full sm:w-auto">
-                                <i class="far fa-bookmark mr-2"></i> Save Job
-                            </a>
-                        {% endif %}
+            </div>
 
-                        {# Apply Button & Form Trigger #}
-                        {% if has_applied %}
-                            <div class="bg-purple-50 border-l-4 border-purple-400 text-purple-700 p-4 rounded-lg flex items-center w-full sm:w-auto" role="alert">
-                                <i class="fas fa-info-circle text-xl mr-3"></i>
-                                <div>
-                                    <p class="font-bold">Already Applied!</p>
-                                    <p class="text-sm">Check your <a href="{% url 'applicant_dashboard' %}" class="font-semibold underline">dashboard</a>.</p>
-                                </div>
-                            </div>
-                        {% else %}
-                            {% if job.application_method == 'External' %}
-                                {% if job.external_application_url %}
-                                    <a href="{% url 'job_apply_redirect' job.slug %}" class="btn-primary inline-flex w-full sm:w-auto" target="_blank" rel="noopener noreferrer">
-                                        <i class="fas fa-external-link-alt mr-2"></i> Apply
+            {# RIGHT COLUMN: ACTION BAR (Sticky on desktop) #}
+            <div class="lg:col-span-1">
+                <div class="sticky-action-bar flex flex-col space-y-6">
+
+                    {# APPLICATION/SAVE BUTTONS #}
+                    <div class="bg-white rounded-lg p-6 shadow-xl border border-purple-200">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-cloud-upload-alt text-purple-600 mr-2"></i> Ready to Apply?
+                        </h3>
+                        
+                        {# Action Buttons / Login Prompt #}
+                        <div class="flex flex-col gap-3">
+                            {% if user.is_authenticated and user.is_applicant %}
+                                
+                                {# Save/Unsave Job Button #}
+                                {% if is_saved %}
+                                    <a href="{% url 'unsave_job' job.slug %}" class="btn-secondary bg-gray-200 text-gray-700 hover:bg-gray-300 inline-flex items-center justify-center w-full">
+                                        <i class="fas fa-bookmark mr-2"></i> Saved
                                     </a>
                                 {% else %}
-                                    {# External required but URL missing #}
-                                    <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 rounded-lg flex items-center w-full sm:w-auto" role="alert">
-                                        <i class="fas fa-exclamation-triangle text-xl mr-3"></i>
-                                        <div>
-                                            <p class="font-bold">Application Not Available</p>
-                                            <p class="text-sm">No external link configured.</p>
-                                        </div>
-                                    </div>
+                                    <a href="{% url 'save_job' job.slug %}" class="btn-secondary bg-purple-100 text-purple-700 hover:bg-purple-200 inline-flex items-center justify-center w-full">
+                                        <i class="far fa-bookmark mr-2"></i> Save Job
+                                    </a>
                                 {% endif %}
-                            
-                            {% elif job.application_method == 'Internal' %}
-                                <button type="button" id="scroll-to-apply-form" class="btn-primary inline-flex w-full sm:w-auto">
-                                    <i class="fas fa-file-alt mr-2"></i> Apply
-                                </button>
-                            
+
+                                {# Apply Button Logic #}
+                                {% if has_applied %}
+                                    <button class="btn-primary w-full opacity-70 cursor-not-allowed bg-green-600" disabled>
+                                        <i class="fas fa-check-circle mr-2"></i> Application Sent!
+                                    </button>
+                                {% else %}
+                                    {% if job.application_method == 'External' and job.external_application_url %}
+                                        <a href="{% url 'job_apply_redirect' job.slug %}" class="btn-primary w-full inline-flex justify-center">
+                                            <i class="fas fa-external-link-alt mr-2"></i> Apply on External Site
+                                        </a>
+                                    {% elif job.application_method == 'Internal' %}
+                                        <button type="button" id="scroll-to-apply-form" class="btn-primary w-full inline-flex justify-center">
+                                            <i class="fas fa-file-alt mr-2"></i> Apply Via Form
+                                        </button>
+                                    {% else %}
+                                        <div class="bg-yellow-50 text-yellow-700 p-3 rounded-lg text-sm font-medium text-center">
+                                            Application link missing.
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+
                             {% else %}
-                                {# Fallback if method is missing or invalid #}
-                                <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 rounded-lg flex items-center w-full sm:w-auto" role="alert">
-                                    <i class="fas fa-question-circle text-xl mr-3"></i>
-                                    <p class="font-bold">Application Method Undefined</p>
+                                {# Login to Interact logic #}
+                                <div class="bg-purple-50 border-l-4 border-purple-400 text-purple-700 p-4 rounded-lg text-center font-medium">
+                                    <p class="mb-2">Please log in to apply or save.</p>
+                                    <a href="{% url 'login' %}" class="text-purple-600 hover:underline font-bold">Login Now</a>
                                 </div>
                             {% endif %}
-                        {% endif %}
+                        </div>
+                    </div>
 
-                    {% else %}
-                        <div class="bg-purple-50 border-l-4 border-purple-400 text-purple-700 p-4 rounded-lg flex items-center w-full" role="alert">
-                            <i class="fas fa-sign-in-alt text-xl mr-3"></i>
-                            <div>
-                                <p class="font-bold">Login to Interact</p>
-                                <p>Please <a href="{% url 'login' %}" class="font-semibold underline">login</a> or <a href="{% url 'register' %}" class="font-semibold underline">register</a> to save or apply for jobs.</p>
+
+                    {# RESUME ANALYZER CARD #}
+                    {% if user.is_authenticated and user.is_applicant %}
+                        <div class="analyzer-card p-6">
+                            <div class="flex flex-col sm:flex-row items-center gap-4">
+                                <div class="analyzer-card-icon">
+                                    <i class="fas fa-microchip text-3xl"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-1">AI Resume Match</h3>
+                                    <p class="text-gray-600 text-sm">
+                                        Scan your resume against this job description to optimize your application.
+                                    </p>
+                                </div>
                             </div>
+                            <a href="{% url 'resume_analyzer' job.slug %}" class="analyzer-card-btn block mt-4">
+                                <i class="fas fa-calculator mr-2"></i> Check Score
+                            </a>
                         </div>
                     {% endif %}
                 </div>
             </div>
-            
-            {% if job.application_method == 'Internal' and user.is_authenticated and user.is_applicant and not has_applied %}
+            {# END: ACTION BAR #}
+
+        </div>
+        {# END: MAIN CONTENT GRID #}
+
+
+        {# --- 3. INTERNAL APPLICATION FORM SECTION --- #}
+        {% if job.application_method == 'Internal' and user.is_authenticated and user.is_applicant and not has_applied %}
             <div id="application-form-section" class="bg-white rounded-lg p-8 md:p-12 card-shadow border border-purple-200 mt-12">
                 <h2 class="text-3xl font-extrabold text-purple-700 mb-6 flex items-center">
                     <i class="fas fa-clipboard-list mr-3"></i> Job Application Form
                 </h2>
-                <p class="text-gray-600 mb-8">Please fill in your details and attach your resume to apply for this role.</p>
+                <p class="text-gray-600 mb-8">Please fill in your details and attach your resume to apply for this role. Your information is kept confidential.</p>
 
                 <form action="{% url 'job_apply_redirect' job.slug %}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     {% csrf_token %}
@@ -224,7 +244,7 @@
                     {% endif %}
 
                     {# --- 1. Personal Information Section --- #}
-                    <fieldset class="border p-6 rounded-lg space-y-4">
+                    <fieldset class="border border-gray-200 p-6 rounded-lg space-y-4">
                         <legend class="text-xl font-bold text-gray-800 px-2">Personal Information</legend>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {% for field in application_form %}
@@ -237,12 +257,11 @@
                                     </div>
                                 {% endif %}
                             {% endfor %}
-                            
                         </div>
                     </fieldset>
 
                     {# --- 2. Resume / Documents Section --- #}
-                    <fieldset class="border p-6 rounded-lg space-y-4">
+                    <fieldset class="border border-gray-200 p-6 rounded-lg space-y-4">
                         <legend class="text-xl font-bold text-gray-800 px-2">Resume & Expectations</legend>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {% for field in application_form %}
@@ -278,8 +297,10 @@
             {% endif %}
             {# END: Internal Application Form Section #}
 
+
+            {# --- 4. RELATED JOBS SECTION --- #}
             {% if related_jobs %}
-                <section class="mt-16">
+                <section class="mt-16 lg:col-span-3">
                     <h2 class="text-3xl font-bold text-gray-900 mb-8 flex items-center">
                         <i class="fas fa-hand-holding-heart text-purple-600 mr-3"></i> You Might Also Like
                     </h2>
@@ -320,13 +341,14 @@
         const scrollToApplyFormBtn = document.getElementById('scroll-to-apply-form');
         const formSection = document.getElementById('application-form-section');
 
+        // Handles smooth scroll to the application form
         if (scrollToApplyFormBtn && formSection) {
             scrollToApplyFormBtn.addEventListener('click', () => {
                 formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         }
     
-        // Scroll to form section if there are errors (form redisplayed)
+        // Scrolls to the form section if errors occurred during submission
         {% if application_form and application_form.errors %}
             if (formSection) {
                  formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
