@@ -55,6 +55,16 @@ urlpatterns = [
     path('moderator/reports/', views.moderator_report_view, name='moderator_reports'),
     path('jobs/bulk-delete/', views.job_bulk_delete, name='job_bulk_delete'),
 
+    # Moderator Application Management
+    path('moderator/jobs/<slug:job_slug>/applications/', 
+         views.job_applications_moderator_list, 
+         name='job_applications_moderator_list'),
+    
+    # Application Status Update (AJAX endpoint)
+    path('moderator/applications/<int:pk>/update_status/', 
+         views.application_status_update, 
+         name='application_status_update'),
+
     # Category Management URLs
     path('moderator/categories/', views.manage_categories, name='manage_categories'),
     path('moderator/categories/<slug:slug>/edit-delete/', views.category_update_delete, name='category_update_delete'),

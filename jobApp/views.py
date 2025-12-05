@@ -7,8 +7,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse
 from django.db import IntegrityError, models
-from django.db.models.functions import TruncDay
+from django.db.models.functions import TruncDay, Cast
 from datetime import timedelta
+from django.db.models import DateField
 import csv, io
 from django.contrib import messages 
 from django.template.loader import render_to_string
@@ -41,6 +42,7 @@ import json
 import requests
 from decouple import config
 from django.core.files.storage import default_storage
+from django.utils.safestring import mark_safe
 
 # ----------------------------
 # Role-based Access Decorators
@@ -507,7 +509,10 @@ def applicant_email_change(request):
 # ----------------------------
 @moderator_required
 def moderator_dashboard(request):
-
+    recent_jobs_with_apps = Job.objects.filter(is_active=True).annotate(
+        app_count=models.Count('applications')
+    ).order_by('-date_posted')
+    
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         subscribers_context = get_subscribers_context(request)
         return render(request, 'staff/subscribers_table.html', subscribers_context)
@@ -517,6 +522,7 @@ def moderator_dashboard(request):
         'total_applicants': CustomUser.objects.filter(is_applicant=True).count(),
         'applications_24hrs': Application.objects.count(),
         'verified_users': CustomUser.objects.filter(is_active=True, is_staff=False, is_moderator=False).count(),
+        'recent_jobs_with_apps': recent_jobs_with_apps,
     }
 
     recent_jobs = Job.objects.select_related('posted_by').order_by('-date_posted')[:5]
@@ -613,23 +619,22 @@ def job_update_delete(request, slug):
 @moderator_required
 def moderator_report_view(request):
 
-    # Retrieve raw signup data as before
+    # Retrieve raw signup data, converting TruncDay to DateField
     signups_raw = CustomUser.objects.filter(is_applicant=True).annotate(
-        date=TruncDay('date_joined')
+        date=Cast(TruncDay('date_joined'), output_field=DateField())
     ).values('date').annotate(count=models.Count('id')).order_by('date')
 
     if signups_raw:
-        start_date = signups_raw.first()['date'].date()
-        end_date = signups_raw.last()['date'].date()
+        start_date = signups_raw.first()['date']
+        end_date = signups_raw.last()['date']
     else:
-        # Handle case with no signups
         start_date = date.today()
         end_date = date.today()
 
-    # Create a dictionary for quick lookup of signup counts
-    signups_dict = {str(item['date'].date()): item['count'] for item in signups_raw}
+    # Create lookup dictionary: {"2025-12-04": 3}
+    signups_dict = {str(item['date']): item['count'] for item in signups_raw}
 
-    # Generate a list of all dates in the range
+    # Generate continuous date list
     continuous_signups_data = []
     current_date = start_date
     while current_date <= end_date:
@@ -649,19 +654,20 @@ def moderator_report_view(request):
         application_count=models.Count('applications')
     ).values('title', 'application_count').order_by('-application_count')[:5]
 
-    # Debugging data (not used in the chart itself, but useful to keep)
+    # Debugging data
     applicant_details = CustomUser.objects.filter(is_applicant=True).values(
         'first_name', 'last_name', 'date_joined'
     ).order_by('date_joined')
 
     context = {
-        'signups_data_json': json.dumps(continuous_signups_data),
-        'jobs_by_category_json': json.dumps(list(jobs_by_category), default=str),
-        'top_jobs_applied_json': json.dumps(list(top_jobs_applied), default=str),
+        'signups_data_json': mark_safe(json.dumps(continuous_signups_data)),
+        'jobs_by_category_json': mark_safe(json.dumps(list(jobs_by_category))), 
+        'top_jobs_applied_json': mark_safe(json.dumps(list(top_jobs_applied))), 
         'applicant_details': list(applicant_details),
     }
 
     return render(request, 'moderator/moderator_reports.html', context)
+
 
 # ----------------------------
 # Staff Views
@@ -1704,3 +1710,84 @@ def delete_account_view(request: HttpRequest) -> HttpResponse:
         messages.error(request, 'Confirmation text was incorrect. Your account has not been deleted.')
         return redirect('applicant_dashboard')
     
+
+
+# ----------------------------
+# Moderator Application Management Views
+# ----------------------------
+
+@moderator_required
+def job_applications_moderator_list(request, job_slug):
+    """
+    Displays a list of all applications (Internal submissions and External clicks)
+    for a specific job, allowing moderators to review and filter.
+    """
+    job = get_object_or_404(Job, slug=job_slug)
+    applications_list = Application.objects.filter(job=job).select_related('applicant').order_by('-application_date')
+
+    status_filter = request.GET.get('status')
+    if status_filter and status_filter != 'All':
+        applications_list = applications_list.filter(status=status_filter)
+
+    query = request.GET.get('q')
+    if query:
+        applications_list = applications_list.filter(
+            Q(applicant__username__icontains=query) |
+            Q(applicant__email__icontains=query) |
+            Q(cover_letter__icontains=query) |
+            Q(full_name__icontains=query)
+        )
+
+    # Pagination
+    paginator = Paginator(applications_list, 15)
+    page_number = request.GET.get('page')
+    try:
+        applications = paginator.page(page_number)
+    except PageNotAnInteger:
+        applications = paginator.page(1)
+    except EmptyPage:
+        applications = paginator.page(paginator.num_pages)
+        
+    # Calculate counts for reporting/filters
+    total_applications = Application.objects.filter(job=job).count()
+    
+    # Count of Internal submissions (where data is available)
+    internal_submissions = Application.objects.filter(job=job, status='Submitted').count()
+    
+    # Calculate external clicks
+    external_clicks = total_applications - internal_submissions
+
+    context = {
+        'job': job,
+        'applications': applications,
+        'total_applications': total_applications,
+        'internal_submissions': internal_submissions,
+        'external_clicks': external_clicks,
+        'application_statuses': Application.STATUS_CHOICES,
+        'current_status': status_filter,
+        'query': query,
+    }
+    return render(request, 'moderator/job_applications_list.html', context)
+
+
+@moderator_required
+def application_status_update(request, pk):
+    """
+    API-like endpoint to quickly update the status of an application.
+    Assumes an AJAX POST request.
+    """
+    application = get_object_or_404(Application, pk=pk)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        valid_statuses = [choice[0] for choice in Application.STATUS_CHOICES]
+        
+        if new_status and new_status in valid_statuses:
+            application.status = new_status
+            application.save()
+            messages.success(request, f'Status for application by {application.applicant.username} updated to "{new_status}".')
+            return JsonResponse({'status': 'success', 'new_status': new_status})
+        
+        return JsonResponse({'status': 'error', 'message': 'Invalid status provided.'}, status=400)
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
