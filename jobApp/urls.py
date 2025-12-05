@@ -31,7 +31,7 @@ urlpatterns = [
     # -------------------- Job Listings --------------------
     path('jobs/', views.job_list_view, name='job_list'),
     path('jobs/<slug:slug>/', views.job_detail_view, name='job_detail'),
-    path('jobs/<slug:slug>/apply-redirect/', views.job_apply_link_redirect, name='job_apply_redirect'),
+    path('jobs/<slug:slug>/apply/', views.job_apply_view, name='job_apply_redirect'),
     path('jobs/<slug:slug>/save/', views.save_job, name='save_job'),
     path('jobs/<slug:slug>/unsave/', views.unsave_job, name='unsave_job'),
     

@@ -21,6 +21,7 @@ django-ckeditor-5==0.2.18
 django-sendgrid-v5==1.3.0
 django-storages==1.14.6
 django-timezone-field==7.1
+django-widget-tweaks==1.5.0
 django_celery_results==2.6.0
 docx2txt==0.9
 exceptiongroup==1.3.1

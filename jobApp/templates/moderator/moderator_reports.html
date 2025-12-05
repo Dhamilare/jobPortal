@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Reports - JobPortal{% endblock %}
+{% block title %}Reports - RRWT{% endblock %}
 
 {% block extra_head %}
-    <!-- Chart.js & Luxon for time-based charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/luxon@3.x/build/global/luxon.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.x/dist/chartjs-adapter-luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.com/npm/luxon@3.x/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.com/npm/chartjs-adapter-luxon@1.x/dist/chartjs-adapter-luxon.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -18,7 +17,6 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
 
-            <!-- Chart 1: Applicant Sign-ups -->
             <div class="bg-white rounded-xl p-6 shadow-xl border border-gray-200">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-800 flex items-center">
@@ -33,7 +31,6 @@
                 </div>
             </div>
 
-            <!-- Chart 2: Jobs by Category -->
             <div class="bg-white rounded-xl p-6 shadow-xl border border-gray-200">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-800 flex items-center">
@@ -48,11 +45,10 @@
                 </div>
             </div>
 
-            <!-- Chart 3: Top Jobs -->
             <div class="bg-white rounded-xl p-6 shadow-xl border border-gray-200 col-span-full">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-800 flex items-center">
-                        <i class="fas fa-chart-bar text-red-600 mr-2"></i> Top Jobs by Application Clicks
+                        <i class="fas fa-chart-bar text-red-600 mr-2"></i> Top Jobs by Application Activity (Submitted & Clicked)
                     </h2>
                     <button id="downloadTopJobsCsv" class="text-sm text-blue-600 hover:underline inline-flex items-center transition-colors duration-200">
                         <i class="fas fa-download mr-1"></i> Download CSV
@@ -212,14 +208,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('jobsByCategoryContainer').innerHTML = "<p class='text-center text-gray-500 py-4'>No job category data available.</p>";
     }
 
-    // ---------- Chart 3: Top Jobs ----------
+    // ---------- Chart 3: Top Jobs (Updated JavaScript Labels) ----------
     if (topJobsAppliedData.length > 0) {
         new Chart(document.getElementById('topJobsAppliedChart'), {
             type: 'bar',
             data: {
                 labels: topJobsAppliedData.map(item => item.title),
                 datasets: [{
-                    label: 'Application Clicks',
+                    // CHANGED: Reflects both submissions (Internal) and clicks (External)
+                    label: 'Application Activity', 
                     data: topJobsAppliedData.map(item => item.application_count),
                     backgroundColor: '#60A5FA', // blue-400
                     borderColor: '#3B82F6', // blue-500
@@ -253,7 +250,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     y: {
                         beginAtZero: true,
-                        title: { display: true, text: 'Clicks', font: { size: 14, weight: 'bold' } },
+                        // CHANGED: Use a neutral term for combined metrics
+                        title: { display: true, text: 'Activity Count', font: { size: 14, weight: 'bold' } }, 
                         grid: { color: '#e2e8f0' } // Light horizontal grid lines
                     }
                 },

@@ -113,7 +113,7 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = [
             'title', 'company_name', 'location', 'job_type',
-            'category', 'external_application_url', 'description', 'job_expiry_date', 'is_active'
+            'category', 'application_method', 'external_application_url', 'description', 'job_expiry_date', 'is_active'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., Senior Software Engineer'}),
@@ -121,6 +121,7 @@ class JobForm(forms.ModelForm):
             'location': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., Remote, New York, London'}),
             'job_type': forms.Select(attrs={'class': 'input-field'}),
             'category': forms.Select(attrs={'class': 'input-field'}),
+            'application_method': forms.Select(attrs={'class': 'input-field'}),
             'external_application_url': forms.URLInput(attrs={'class': 'input-field', 'placeholder': 'https://example.com/apply'}),
             'job_expiry_date': forms.DateTimeInput(attrs={'class': 'input-field', 'type': 'datetime-local'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'})
@@ -131,6 +132,91 @@ class JobForm(forms.ModelForm):
         self.fields['category'].queryset = Category.objects.all()
         self.fields['category'].empty_label = "Select a Category"
 
+    def clean(self):
+        cleaned_data = super().clean()
+        method = cleaned_data.get('application_method')
+        external_url = cleaned_data.get('external_application_url')
+        
+        # Validation: If application is external, the URL must be provided.
+        if method == 'External' and not external_url:
+            self.add_error('external_application_url', 
+                           "An external URL is required when the application method is External.")
+            
+        # Validation: If application is internal, the URL should be empty.
+        if method == 'Internal' and external_url:
+             self.add_error('external_application_url', 
+                            "The external URL should be left empty for Internal Form Applications.")
+
+        return cleaned_data
+    
+
+# ==============================
+# Internal Job Application Form
+# ==============================
+class InternalApplicationForm(forms.ModelForm):
+    """
+    Form for applicants to submit detailed information for internal job applications.
+    """
+    
+    full_name = forms.CharField(
+        max_length=255, 
+        label="Full Name",
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Enter your full name'})
+    )
+    email_address = forms.EmailField(
+        label="Email Address",
+        widget=forms.EmailInput(attrs={'class': 'input-field', 'placeholder': 'your@example.com'})
+    )
+    phone_number = forms.CharField(
+        max_length=20, 
+        required=False,
+        label="Phone Number",
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., +1234567890'})
+    )
+    address = forms.CharField(
+        required=False,
+        label="Address",
+        widget=forms.Textarea(attrs={'class': 'input-field', 'rows': 3, 'placeholder': 'Your current address'})
+    )
+    
+    submitted_resume = forms.FileField(
+        label="Upload Resume/CV (PDF or DOCX)",
+        required=True,
+        widget=forms.FileInput(attrs={'class': 'block w-full text-sm'})
+    )
+    
+    availability_notice_period = forms.CharField(
+        max_length=255, 
+        required=False,
+        label="Availability / Notice Period",
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., 2 weeks notice / Immediate'})
+    )
+    
+    expected_salary = forms.CharField(
+        max_length=255, 
+        required=False,
+        label="Expected Salary / Range",
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., €50,000 or €45k - €55k'})
+    )
+    
+    cover_letter = forms.CharField(
+        required=False,
+        label="Cover Letter",
+        widget=forms.Textarea(attrs={'class': 'input-field', 'rows': 5, 'placeholder': 'Write your cover letter here...'})
+    )
+
+
+    class Meta:
+        model = Application
+        fields = [
+            'full_name', 'email_address', 'phone_number', 'address', 'gender', 
+            'submitted_resume', 'availability_notice_period', 'expected_salary', 
+            'cover_letter'
+        ]
+        
+        widgets = {
+            'gender': forms.Select(attrs={'class': 'input-field'}),
+        }
 
 # ==============================
 # Applicant Profile Update

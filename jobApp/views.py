@@ -337,6 +337,10 @@ def job_detail_view(request, slug):
     has_applied = False
     is_saved = False
 
+    application_form = None
+    if job.application_method == 'Internal':
+        application_form = InternalApplicationForm()
+
     # Check if the job is "hot" (posted within the last 24 hours)
     now = timezone.now()
     time_since_posted = now - job.date_posted
@@ -362,24 +366,63 @@ def job_detail_view(request, slug):
         'has_applied': has_applied,
         'is_saved': is_saved,
         'related_jobs': related_jobs,
+        'application_form': application_form,
     }
 
     return render(request, 'job_detail.html', context)
 
 @login_required
 @applicant_required
-def job_apply_link_redirect(request, slug):
+@require_http_methods(["GET", "POST"]) 
+def job_apply_view(request, slug): 
     job = get_object_or_404(Job, slug=slug)
-    if not job.external_application_url:
-        messages.error(request, 'This job does not currently have an external application link configured by the employer.')
-        return redirect('job_detail', slug=job.slug) # Redirect back to job detail with error
 
-    try:
-        Application.objects.create(applicant=request.user, job=job)
-        messages.success(request, f'You have successfully marked your interest in "{job.title}". Redirecting to external application site.')
-    except IntegrityError:
+    if Application.objects.filter(applicant=request.user, job=job).exists():
         messages.info(request, f'You have already applied for "{job.title}".')
-    return redirect(job.external_application_url)
+        return redirect('job_detail', slug=job.slug)
+
+    if job.application_method == 'External':
+        if not job.external_application_url:
+            messages.error(request, 'This job does not have an external application link configured.')
+            return redirect('job_detail', slug=job.slug)
+        try:
+            Application.objects.create(applicant=request.user, job=job, status='Clicked Apply Link') # Use 'Clicked Apply Link' status
+            messages.success(request, f'You have successfully marked your interest in "{job.title}". Redirecting to external application site.')
+        except IntegrityError:
+            messages.info(request, f'Application log already exists for "{job.title}". Redirecting.')
+
+        return redirect(job.external_application_url)
+
+    elif job.application_method == 'Internal':
+        if request.method == 'POST':
+            form = InternalApplicationForm(request.POST, request.FILES)
+            
+            if form.is_valid():
+                application = form.save(commit=False)
+                application.applicant = request.user
+                application.job = job
+                application.status = 'Submitted'
+                
+                try:
+                    application.save()
+                    messages.success(request, f'Successfully submitted your application for "{job.title}"!')
+                    return redirect('applicant_applications_list')
+                except IntegrityError:
+                    messages.error(request, 'You have already submitted an application for this job.')
+                    return redirect('job_detail', slug=job.slug)
+            else:
+                
+                messages.error(request, 'Please correct the errors in the application form.')
+                return redirect('job_detail', slug=job.slug) 
+        
+        else: 
+            messages.info(request, 'Please complete the form below to apply.')
+            return redirect('job_detail', slug=job.slug)
+
+    else:
+        messages.error(request, 'Invalid application method configured for this job.')
+        return redirect('job_detail', slug=job.slug)
+
 
 # ----------------------------
 # Applicant Views
@@ -797,7 +840,7 @@ def job_bulk_upload_csv(request):
 
         expected_headers = [
             'title', 'company name', 'location', 'job type',
-            'category name', 'external application url',
+            'category name', 'application method', 'external application url',
             'description', 'is active', 'job expiry date'
         ]
         header_map = {
@@ -806,12 +849,15 @@ def job_bulk_upload_csv(request):
             'location': 'location',
             'job type': 'job_type',
             'category name': 'category',
+            'application method': 'application_method',
             'external application url': 'external_application_url',
             'description': 'description',
             'is active': 'is_active',
             'job expiry date': 'job_expiry_date',
         }
         job_type_choices = [choice[0].lower() for choice in Job.JOB_TYPE_CHOICES]
+
+        application_method_choices = [choice[0].lower() for choice in Job.APPLICATION_METHOD_CHOICES]
 
         headers = []
         for i, row in enumerate(csv_reader):
@@ -878,6 +924,18 @@ def job_bulk_upload_csv(request):
                                 )
                     else:
                         job_data['job_expiry_date'] = None
+                
+                elif model_field == 'application_method': 
+                    if value and value.lower() in application_method_choices:
+                        job_data['application_method'] = value
+                    elif value:
+                        row_errors.append(
+                            f"Row {i+1}: Invalid application method '{value}'. Must be one of: "
+                            f"{', '.join(application_method_choices)}"
+                        )
+                    else:
+                        url = row_data.get('external application url', '').strip()
+                        job_data['application_method'] = 'External' if url else 'Internal'
 
                 elif model_field == 'external_application_url':
                     if value and not (value.startswith('http://') or value.startswith('https://')):
@@ -901,6 +959,7 @@ def job_bulk_upload_csv(request):
                     defaults={
                         'job_type': job_data['job_type'],
                         'category': job_data['category'],
+                        'application_method': job_data['application_method'],
                         'external_application_url': job_data['external_application_url'],
                         'description': job_data['description'],
                         'is_active': job_data['is_active'],
@@ -945,7 +1004,7 @@ def job_bulk_upload_csv_sample(request):
     writer = csv.writer(response)
     headers = [
         'Title', 'Company Name', 'Location', 'Job Type',
-        'Category Name', 'External Application URL', 'Description', 'Is Active',
+        'Category Name', 'Application Method', 'External Application URL', 'Description', 'Is Active',
         'Job Expiry Date'
     ]
     writer.writerow(headers)
@@ -957,7 +1016,7 @@ def job_bulk_upload_csv_sample(request):
     ])
     writer.writerow([
         'Marketing Specialist', 'Global Brands', 'New York, NY', 'Full-time',
-        'Marketing', 'https://globalbrands.com/jobs/marketing-specialist',
+        'Marketing', 'Internal', '',
         'Execute marketing campaigns and analyze performance.', 'True', '17/09/2025'
     ])
     writer.writerow([

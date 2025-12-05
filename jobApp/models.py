@@ -89,6 +89,11 @@ class Job(models.Model):
         ('Remote', 'Remote'),
     ]
 
+    APPLICATION_METHOD_CHOICES = [
+        ('Internal', 'Internal Form Application'),
+        ('External', 'External Link Application'),
+    ]
+
     title = models.CharField(max_length=200)
     description = CKEditor5Field(config_name='default')
     company_name = models.CharField(max_length=150)
@@ -102,7 +107,14 @@ class Job(models.Model):
     external_application_url = models.URLField(
         max_length=500,
         blank=True,
-        help_text="External link for job application if not processed internally."
+        null=True,
+        help_text="External link for job application. Required if Application Method is External."
+    )
+    application_method = models.CharField(
+        max_length=50,
+        choices=APPLICATION_METHOD_CHOICES,
+        default='Internal',
+        help_text="Choose the method applicants use to apply for this job."
     )
     slug = models.SlugField(unique=True, max_length=200, null=True, blank=True)
 
@@ -119,6 +131,7 @@ class Job(models.Model):
 # -------------------------------
 class Application(models.Model):
     STATUS_CHOICES = [
+        ('Submitted', 'Application Submitted'),
         ('Clicked Apply Link', 'Clicked Apply Link'),
         ('Reviewed', 'Reviewed'),
         ('Interview', 'Interview Scheduled'),
@@ -131,6 +144,22 @@ class Application(models.Model):
     application_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Clicked Apply Link')
     cover_letter = models.TextField(blank=True, null=True)
+
+    # Personal Information
+    full_name = models.CharField(max_length=255, help_text="Applicant's full name.")
+    email_address = models.EmailField(help_text="Applicant's primary email address.")
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('O', 'Other'), ('P', 'Prefer not to say')]
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
+
+    # Resume/Supporting Documents (File fields for CV/Resume)
+    submitted_resume = models.FileField(
+        upload_to='job_applications/resumes/%Y/%m/',
+        help_text="Applicant's submitted resume/CV file.",
+        blank=True,
+        null=True
+    )
 
     class Meta:
         unique_together = ('applicant', 'job')

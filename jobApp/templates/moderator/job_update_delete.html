@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit Job: {{ job.title }} - JobPortal{% endblock %}
+{% block title %}Edit Job: {{ job.title }} - Remote Ready With Tess{% endblock %}
 
 {% block content %}
     <div class="bg-gray-100 flex items-center justify-center py-12 px-4">
         <div class="w-full max-w-4xl bg-white rounded-lg p-8 md:p-10 card-shadow">
-            <h1 class="text-3xl font-extrabold text-center text-blue-700 mb-8 flex items-center justify-center">
+            <h1 class="text-3xl font-extrabold text-center text-purple-700 mb-8 flex items-center justify-center">
                 <i class="fas fa-edit text-4xl mr-3"></i> Edit Job: {{ job.title }}
             </h1>
             <p class="text-center text-gray-600 mb-6">Update the details for this job listing.</p>
 
-            {# Django Messages Section #}
+            {# Django Messages Section (Updated 'info' message to purple) #}
             {% if messages %}
                 <div class="mb-6 space-y-3">
                     {% for message in messages %}
                         <div class="p-4 rounded-lg flex items-center
                             {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400{% endif %}
                             {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400{% endif %}
-                            {% if message.tags == 'info' %}bg-blue-100 text-blue-700 border border-blue-400{% endif %}
+                            {% if message.tags == 'info' %}bg-purple-100 text-purple-700 border border-purple-400{% endif %}
                             {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
                         " role="alert">
                             {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-3 text-lg"></i>{% endif %}
@@ -79,11 +79,28 @@
                     </label>
                     {{ form.category }}
                 </div>
+
                 <div>
-                    <label for="{{ form.external_application_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        <i class="fas fa-link mr-2 text-gray-500"></i>{{ form.external_application_url.label }}
+                    <label for="{{ form.application_method.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-handshake mr-2 text-gray-500"></i>{{ form.application_method.label }}
                     </label>
-                    {{ form.external_application_url }}
+                    {{ form.application_method }}
+                    {% if form.application_method.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.application_method.help_text }}</p>{% endif %}
+                    {% for error in form.application_method.errors %}
+                        <p class="text-sm text-red-600 mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div id="external-url-container">
+                    <div>
+                        <label for="{{ form.external_application_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-link mr-2 text-gray-500"></i>{{ form.external_application_url.label }}
+                        </label>
+                        {{ form.external_application_url }}
+                        {% if form.external_application_url.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.external_application_url.help_text }}</p>{% endif %}
+                        {% for error in form.external_application_url.errors %}
+                            <p class="text-sm text-red-600 mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div>
                     <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
@@ -92,6 +109,15 @@
                     {{ form.media }}
                     {{ form.description }}
                 </div>
+                
+                <div class="block">
+                    <label for="{{ form.job_expiry_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-calendar-times mr-2 text-gray-500"></i>{{ form.job_expiry_date.label }}
+                    </label>
+                    {{ form.job_expiry_date }}
+                    {% if form.job_expiry_date.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.job_expiry_date.help_text }}</p>{% endif %}
+                </div>
+                
                 <div class="flex items-center">
                     {{ form.is_active }}
                     <label for="{{ form.is_active.id_for_label }}" class="ml-2 block text-sm font-medium text-gray-900">
@@ -103,17 +129,63 @@
                     <button type="submit" class="btn-primary flex-grow">
                         <i class="fas fa-save mr-2"></i> Update Job
                     </button>
-                    <button type="submit" name="delete" class="btn-secondary bg-red-500 text-white hover:bg-red-600 flex-grow">
+                    <button type="button" id="delete-job-btn" class="btn-secondary bg-red-600 hover:bg-red-700 text-white flex-grow"> 
                         <i class="fas fa-trash-alt mr-2"></i> Delete Job
                     </button>
                 </div>
             </form>
 
             <div class="mt-6 text-center">
-                <a href="{% url 'job_list_create' %}" class="text-blue-600 hover:underline font-medium inline-flex items-center">
+                <a href="{% url 'job_list_create' %}" class="text-purple-600 hover:underline font-medium inline-flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back to Job Management
                 </a>
             </div>
         </div>
     </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Dual Application Logic ---
+        const applicationMethodSelect = document.getElementById('{{ form.application_method.id_for_label }}');
+        const externalUrlContainer = document.getElementById('external-url-container');
+        
+        // This function determines whether to show or hide the external URL field
+        function toggleExternalUrlVisibility() {
+            // Check if the selected option value is 'External' (case-sensitive to model choice)
+            if (applicationMethodSelect.value === 'External') {
+                externalUrlContainer.classList.remove('hidden');
+            } else {
+                // Hide for 'Internal' or any other value
+                externalUrlContainer.classList.add('hidden');
+            }
+        }
+
+        // Attach event listener to the dropdown
+        if (applicationMethodSelect) {
+            applicationMethodSelect.addEventListener('change', toggleExternalUrlVisibility);
+            
+            // Initial run on load to set visibility based on current job data
+            toggleExternalUrlVisibility();
+        }
+        
+        // --- Delete Confirmation Logic ---
+        const deleteButton = document.getElementById('delete-job-btn');
+        if (deleteButton) {
+            deleteButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                const confirmation = confirm(`Are you sure you want to permanently delete the job "{{ job.title }}"? This action cannot be undone.`);
+                
+                if (confirmation) {
+                    // Create a hidden input field to signal the 'delete' action to the Django view
+                    const form = deleteButton.closest('form');
+                    const deleteInput = document.createElement('input');
+                    deleteInput.type = 'hidden';
+                    deleteInput.name = 'delete';
+                    deleteInput.value = 'true';
+                    form.appendChild(deleteInput);
+                    form.submit();
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
