@@ -1,98 +1,68 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Job Listings - JobPortal{% endblock %}
+{% block title %}Job List - Remote Ready With Tess{% endblock %}
 
 {% block content %}
 <style>
-    .card-shadow {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease-in-out;
-    }
+    /* --- Base styles are inherited from base.html. Only overrides/additions are here. --- */
 
-    .card-shadow:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
+    /* Card Shadows: Using the definition from base.html (card-shadow) */
 
+    /* Primary Button (Overriding base.html for specificity, updating color to Purple) */
     .btn-primary {
-        background-color: #3b82f6; /* Tailwind blue-500 */
+        background: linear-gradient(to right, #6D28D9, #8B5CF6); /* Purple Gradient */
         color: white;
         font-weight: 600;
         border-radius: 0.5rem;
         padding: 0.75rem 1.5rem;
-        transition: background-color 0.2s, transform 0.2s;
+        transition: all 0.2s, transform 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
     }
 
     .btn-primary:hover {
-        background-color: #2563eb; /* Tailwind blue-600 */
+        background: linear-gradient(to right, #4C1D95, #6D28D9); /* Darker Purple */
         transform: translateY(-1px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
     }
 
+    /* Input Field Focus (Overriding base.html for specificity, updating color to Purple) */
     .input-field {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #d1d5db; /* Tailwind gray-300 */
-        border-radius: 0.5rem;
-        outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        /* Inherited styles from base.html */
     }
 
     .input-field:focus {
-        border-color: #2563eb; /* Tailwind blue-600 */
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        /* Inherited focus styles from base.html (Purple focus) */
+        border-color: #6D28D9;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.5); /* Lighter Purple Shadow */
     }
 
+    /* Pagination (Using classes from base.html) */
     .pagination-nav-btn, .pagination-page-btn, .pagination-disabled-nav-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        font-weight: 500;
-        transition: all 0.2s;
+        /* These styles will use the definitions from base.html */
     }
 
-    .pagination-nav-btn, .pagination-page-btn {
-        background-color: white;
-        color: #4b5563; /* Tailwind gray-700 */
-        border: 1px solid #d1d5db;
-    }
-
-    .pagination-nav-btn:hover, .pagination-page-btn:hover {
-        background-color: #f3f4f6; /* Tailwind gray-100 */
-    }
-
+    /* Pagination Active (Using class from base.html) */
     .pagination-page-btn-active {
-        background-color: #2563eb;
-        color: white;
-        border: 1px solid #2563eb;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        font-weight: 600;
+        /* This style uses the purple definition from base.html */
     }
 
-    .pagination-disabled-nav-btn {
-        background-color: #e5e7eb;
-        color: #9ca3af;
-        cursor: not-allowed;
-    }
 </style>
 
 <div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen lg:pt-20">
     <div class="container mx-auto">
         <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center flex items-center justify-center">
-            <i class="fas fa-search-plus text-blue-600 mr-3"></i> Explore Job Opportunities
+            <i class="fas fa-search-plus text-purple-600 mr-3"></i> Explore Job Opportunities
         </h1>
 
-        {# Django Messages Section #}
+        {# Django Messages Section (Updated 'info' message to purple) #}
         {% if messages %}
             <div class="mb-6 space-y-3">
                 {% for message in messages %}
                     <div class="p-4 rounded-lg flex items-center
                         {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400{% endif %}
                         {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400{% endif %}
-                        {% if message.tags == 'info' %}bg-blue-100 text-blue-700 border border-blue-400{% endif %}
+                        {% if message.tags == 'info' %}bg-purple-100 text-purple-700 border border-purple-400{% endif %}
                         {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
                     " role="alert">
                         {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-3 text-lg"></i>{% endif %}
@@ -108,8 +78,8 @@
         <div class="lg:flex lg:space-x-8">
 
             {# Search and Filter Section (Sidebar on desktop, collapses on mobile) #}
-            <div class="w-full lg:w-1/4 mb-6 lg:mb-0 lg:sticky lg:top-8 lg:self-start">
-                <button id="toggle-filters-btn" class="lg:hidden w-full flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mb-4 hover:bg-blue-700 transition-colors duration-200">
+            <div class="w-full lg:w-1/4 mb-6 lg:mb-0 lg:sticky lg:top-24 lg:self-start">
+                <button id="toggle-filters-btn" class="lg:hidden w-full flex items-center justify-center bg-purple-600 text-white font-bold py-3 px-4 rounded-lg mb-4 hover:bg-purple-700 transition-colors duration-200">
                     <i class="fas fa-filter mr-2"></i> Show Filters
                 </button>
                 
@@ -166,11 +136,11 @@
                                 {% endif %}
 
                                 <h2 class="text-xl font-bold text-gray-900 mb-2 mt-2">{{ job.title }}</h2>
-                                <p class="text-blue-600 font-semibold mb-2">{{ job.company_name }}</p>
+                                <p class="text-purple-600 font-semibold mb-2">{{ job.company_name }}</p>
                                 <p class="text-gray-600 text-sm mb-4"><i class="fas fa-map-marker-alt mr-1"></i> {{ job.location }}</p>
 
                                 <div class="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full font-medium">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full font-medium">
                                         <i class="fas fa-briefcase mr-1"></i> {{ job.job_type }}
                                     </span>
                                     {% if job.category %}
@@ -203,7 +173,7 @@
                         {% endfor %}
                     </div>
 
-                    {# Updated Pagination Section #}
+                    {# Pagination Section - Uses classes defined in base.html #}
                     <div class="mt-12 flex justify-center items-center space-x-2">
                         {% if jobs.has_previous %}
                             <a href="?page={{ jobs.previous_page_number }}{% if request.GET.urlencode and not request.GET.page %}&{{ request.GET.urlencode }}{% elif request.GET.urlencode and request.GET.page and request.GET.urlencode|length > 6 %}&{{ request.GET.urlencode|cut:'&page='|cut:request.GET.page }}{% endif %}"
@@ -242,7 +212,7 @@
                     </div>
                 {% else %}
                     <div class="bg-white rounded-lg p-8 card-shadow text-center text-gray-600 border border-gray-200">
-                        <i class="fas fa-exclamation-circle text-5xl text-yellow-500 mb-4"></i>
+                        <i class="fas fa-exclamation-circle text-5xl text-purple-500 mb-4"></i>
                         <p class="text-xl font-semibold">No jobs found matching your criteria.</p>
                         <p class="mt-2">Try adjusting your search filters or check back later!</p>
                     </div>
@@ -261,13 +231,13 @@
             const isHidden = filterFormContainer.classList.contains('hidden');
             if (isHidden) {
                 filterFormContainer.classList.remove('hidden');
-                toggleBtn.classList.remove('bg-blue-600');
+                toggleBtn.classList.remove('bg-purple-600');
                 toggleBtn.classList.add('bg-gray-600');
                 toggleBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Hide Filters';
             } else {
                 filterFormContainer.classList.add('hidden');
                 toggleBtn.classList.remove('bg-gray-600');
-                toggleBtn.classList.add('bg-blue-600');
+                toggleBtn.classList.add('bg-purple-600');
                 toggleBtn.innerHTML = '<i class="fas fa-filter mr-2"></i> Show Filters';
             }
         });

@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Login - Job Application Portal{% endblock %}
+{% block title %}Login - Remote Ready With Tess{% endblock %}
 
 {% block content %}
 <div class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4">
     <div class="w-full max-w-md bg-white rounded-lg p-8 md:p-10 shadow-lg">
-        <h1 class="text-3xl font-extrabold text-center text-blue-700 mb-6 flex items-center justify-center">
+        <h1 class="text-3xl font-extrabold text-center text-purple-700 mb-6 flex items-center justify-center">
             <i class="fas fa-user-circle text-4xl mr-2"></i> Welcome Back!
         </h1>
         <p class="text-center text-gray-600 mb-6">Log in to your account to continue your job search.</p>
@@ -15,7 +15,7 @@
                 <div class="mb-4 px-4 py-3 rounded relative 
                     {% if message.tags == 'success' %}bg-green-100 border border-green-400 text-green-700
                     {% elif message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700
-                    {% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}">
+                    {% else %}bg-purple-100 border border-purple-400 text-purple-700{% endif %}">
                     <span class="block sm:inline">{{ message }}</span>
                 </div>
             {% endfor %}
@@ -54,10 +54,10 @@
             </div>
             <div class="flex items-center justify-between text-sm">
                 <div class="flex items-center">
-                    <input id="remember-me" name="remember-me" type="checkbox" class="form-checkbox h-4 w-4 text-blue-600">
+                    <input id="remember-me" name="remember-me" type="checkbox" class="form-checkbox h-4 w-4 text-purple-600">
                     <label for="remember-me" class="ml-2 text-gray-900">Remember me</label>
                 </div>
-                <a href="{% url 'custom_password_reset' %}" class="text-blue-600 hover:underline font-medium">Forgot password?</a>
+                <a href="{% url 'custom_password_reset' %}" class="text-purple-600 hover:underline font-medium">Forgot password?</a>
             </div>
             <div>
                 <button type="submit" class="btn-primary w-full flex items-center justify-center">
@@ -68,7 +68,7 @@
 
         <div class="mt-6 text-center text-sm text-gray-600">
             <p>Don't have an account?
-                <a href="{% url 'register' %}" class="text-blue-600 hover:underline font-medium">Register here</a>
+                <a href="{% url 'register' %}" class="text-purple-600 hover:underline font-medium">Register here</a>
             </p>
         </div>
     </div>

@@ -4,13 +4,8 @@
 {% block title %}Home - Remote Ready With Tess{% endblock %}
 
 {% block content %}
-    <!-- Custom CSS for animations and shadows -->
-    <!-- This block ensures the custom styles are available when this template is rendered -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        /* Base font-family should be inherited from base.html (Century Gothic) */
         .card-shadow {
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
@@ -33,8 +28,7 @@
         }
     </style>
 
-    <!-- Hero Section -->
-    <section class="hero-section bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20 px-6 sm:px-10 lg:px-20 text-center relative overflow-hidden rounded-lg shadow-lg">
+    <section class="hero-section bg-gradient-to-r from-purple-700 to-indigo-600 text-white py-20 px-6 sm:px-10 lg:px-20 text-center relative overflow-hidden rounded-lg shadow-lg">
         <div class="absolute inset-0 z-0 opacity-10" style="background-image: url('https://tse4.mm.bing.net/th/id/OIP.JvN5qVqJujCT4wJhkeC0rgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3'); background-size: cover; background-position: center;"></div>
         <div class="container mx-auto relative z-10">
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 animate-fade-in-up">
@@ -44,11 +38,11 @@
                 We connect you with trusted job opportunities while giving you the tools to prepare, apply, and land your next role
             </p>
             <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4 animate-fade-in-up delay-400">
-                <a href="{% url 'job_list' %}" class="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center">
+                <a href="{% url 'job_list' %}" class="bg-white text-purple-700 px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center">
                     <i class="fas fa-briefcase mr-2"></i> Browse Jobs
                 </a>
                 {% if not user.is_authenticated %}
-                <a href="{% url 'register' %}" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center">
+                <a href="{% url 'register' %}" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-purple-700 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center">
                     <i class="fas fa-user-plus mr-2"></i> Register Now
                 </a>
                 {% endif %}
@@ -56,11 +50,10 @@
         </div>
     </section>
 
-    <!-- Verified Jobs Section (Grid Layout) -->
     <section class="py-16 px-6 md:px-8 lg:px-12 bg-gray-50">
         <div class="container mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center">
-                <i class="fas fa-search text-blue-600 mr-3"></i> Explore Remote Opportunities
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center text-purple-700">
+                <i class="fas fa-search text-purple-700 mr-3"></i> Explore Remote Opportunities
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% if verified_jobs %}
@@ -68,7 +61,7 @@
                         <div class="bg-white rounded-lg p-6 card-shadow h-full flex flex-col justify-between transform transition-transform duration-300 hover:scale-105 relative overflow-hidden">
                             {# Hot Job Banner #}
                             {% if job.is_hot_job %}
-                                <span class="absolute top-0 right-0 mt-3 mr-3 bg-red-500 text-white text-xs font-bold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center transform rotate-3 origin-top-right">
+                                <span class="absolute top-0 right-0 mt-3 mr-3 bg-yellow-500 text-purple-900 text-xs font-bold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center transform rotate-3 origin-top-right">
                                     <i class="fas fa-fire mr-1 text-sm"></i> Hot!
                                 </span>
                             {% endif %}
@@ -81,22 +74,22 @@
 
                             <div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2 mt-2 flex items-center">
-                                    <i class="fas fa-building text-blue-600 mr-2"></i> {{ job.title }}
+                                    <i class="fas fa-building text-purple-700 mr-2"></i> {{ job.title }}
                                 </h3>
-                                <p class="text-blue-600 mb-2 flex items-center">
+                                <p class="text-purple-600 mb-2 flex items-center">
                                     <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i> {{ job.company_name }} - {{ job.location }}
                                 </p>
                                 <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ job.description }}</p>
                             </div>
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-gray-500 mt-auto">
                                 <div class="flex flex-wrap gap-2 mb-2 sm:mb-0">
-                                    <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                    <span class="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
                                         <i class="fas fa-clock mr-1"></i> {{ job.job_type }}
                                     </span>
-                                    {% if job.category %}<span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                    {% if job.category %}<span class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
                                         <i class="fas fa-folder-open mr-1"></i> {{ job.category.name }}
                                     </span>{% endif %}
-                                    <span class="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                                    <span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
                                         <i class="fas fa-calendar-alt mr-1"></i> Posted: {{ job.date_posted|date:"M d, Y" }}
                                     </span>
                                     {# Job Expiry Date on list #}
@@ -111,10 +104,9 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            <!-- Divider and "View Job" Button -->
                             <hr class="my-4 border-gray-200">
                             <div class="text-center">
-                                <a href="{% url 'job_detail' job.slug %}" class="bg-blue-600 text-white px-6 py-2 w-full font-semibold shadow-lg hover:bg-blue-700 transition-all duration-300 inline-flex items-center justify-center">
+                                <a href="{% url 'job_detail' job.slug %}" class="bg-purple-700 text-white px-6 py-2 w-full font-semibold shadow-lg hover:bg-purple-800 transition-all duration-300 inline-flex items-center justify-center">
                                     <i class="fas fa-eye mr-2"></i> View Job
                                 </a>
                             </div>
@@ -127,39 +119,35 @@
                 {% endif %}
             </div>
             <div class="text-center mt-12">
-                <a href="{% url 'job_list' %}" class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 inline-flex items-center">
+                <a href="{% url 'job_list' %}" class="bg-purple-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-purple-800 transition-all duration-300 transform hover:scale-105 inline-flex items-center">
                     <i class="fas fa-list-alt mr-2"></i> View All Jobs
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Testimonial Section -->
     <section class="py-16 px-6 md:px-8 lg:px-12 bg-white">
         <div class="container mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center">
-                <i class="fas fa-quote-left text-blue-600 mr-3"></i> What Our Users Say
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center text-purple-700">
+                <i class="fas fa-quote-left text-purple-700 mr-3"></i> What Our Users Say
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Testimonial Card 1 -->
                 <div class="bg-gray-50 rounded-lg p-6 card-shadow border border-gray-200">
                     <p class="text-gray-700 italic mb-4 text-center">"Finally, a job portal I can trust. No fake offers, just real jobs and real results."</p>
                     <div class="flex flex-col items-center">
-                        <img src="https://placehold.co/64x64/F0F0F0/888888?text=TO" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-blue-300">
+                        <img src="https://placehold.co/64x64/F0F0F0/888888?text=TO" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-purple-300">
                         <p class="font-semibold text-gray-900">Tunde O.</p>
                         <p class="text-sm text-gray-600">Software Developer</p>
                     </div>
                 </div>
-                <!-- Testimonial Card 2 -->
                 <div class="bg-gray-50 rounded-lg p-6 card-shadow border border-gray-200">
                     <p class="text-gray-700 italic mb-4 text-center">"This platform helped me land my first job after graduation. The process was smooth, and I felt confident every step of the way"</p>
                     <div class="flex flex-col items-center">
-                        <img src="https://placehold.co/64x64/F0F0F0/888888?text=GA" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-green-300">
+                        <img src="https://placehold.co/64x64/F0F0F0/888888?text=GA" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-yellow-300">
                         <p class="font-semibold text-gray-900">Grace A.</p>
                         <p class="text-sm text-gray-600">Customer Service Executive</p>
                     </div>
                 </div>
-                <!-- Testimonial Card 3 -->
                 <div class="bg-gray-50 rounded-lg p-6 card-shadow border border-gray-200">
                     <p class="text-gray-700 italic mb-4 text-center">"Finding relevant jobs was never easier. The powerful search functionality saved me so much time. Thank you, JobPortal!"</p>
                     <div class="flex flex-col items-center">
@@ -172,30 +160,27 @@
         </div>
     </section>
 
-    <!-- FAQ Section with Accordion -->
     <section class="py-16 px-6 md:px-8 lg:px-12 bg-gray-100">
         <div class="container mx-auto max-w-3xl">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center">
-                <i class="fas fa-question-circle text-blue-600 mr-3"></i> Frequently Asked Questions
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center text-purple-700">
+                <i class="fas fa-question-circle text-purple-700 mr-3"></i> Frequently Asked Questions
             </h2>
             <div class="space-y-4">
-                <!-- FAQ Item 1 -->
                 <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> How do I apply for a job?
+                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> How do I apply for a job?
                         </h3>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
-                        <p>To apply for a job, you must first register and log in. Once logged in, navigate to the job listing you are interested in and click the "Apply Now" button which will redirect you to the company's external application page.</p>
+                        <p>To apply for a job, you must first register and log in. Once logged in, navigate to the job listing you are interested in and click the "**Apply Now**" button which will redirect you to the company's external application page.</p>
                     </div>
                 </div>
-                <!-- FAQ Item 2 -->
                 <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> Is email verification required?
+                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Is email verification required?
                         </h3>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
                     </div>
@@ -203,11 +188,10 @@
                         <p>Yes, email verification is required for all new registrations. After signing up, a verification link will be sent to your registered email address. Please click the link to activate your account before attempting to log in.</p>
                     </div>
                 </div>
-                <!-- FAQ Item 3 -->
                 <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> How can I track my applications?
+                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> How can I track my applications?
                         </h3>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
                     </div>
@@ -215,11 +199,10 @@
                         <p>Once logged in, you can visit your personal dashboard where you will find a summary of all the jobs for which you've clicked the 'Apply' link and options to manage your profile.</p>
                     </div>
                 </div>
-                <!-- FAQ Item 4 -->
                 <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> Can I update my profile information?
+                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Can I update my profile information?
                         </h3>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
                     </div>
@@ -227,11 +210,10 @@
                         <p>Absolutely! From your applicant dashboard, you can access your profile settings to update your personal details, change your password, and modify your email address.</p>
                     </div>
                 </div>
-                <!-- FAQ Item 5 -->
                 <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> Is it free to use?
+                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Is it free to use?
                         </h3>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
                     </div>
@@ -239,11 +221,10 @@
                         <p>Yes, our platform is completely free to use. You can create an account and apply for jobs without any cost.</p>
                     </div>
                 </div>
-                <!-- FAQ Item 6 -->
                 <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> Are the jobs verified?
+                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Are the jobs verified?
                         </h3>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
                     </div>
@@ -251,11 +232,10 @@
                         <p>Yes, every single job listing is carefully screened and approved by our team before it goes live on the site. We are committed to providing only legitimate and verified opportunities.</p>
                     </div>
                 </div>
-                <!-- FAQ Item 7 -->
                 <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-blue-500 mr-3"></i> Do you offer career support?
+                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Do you offer career support?
                         </h3>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
                     </div>
@@ -267,11 +247,10 @@
         </div>
     </section>
 
-    <!-- Blog Section -->
     <section class="py-16 px-6 md:px-8 lg:px-12 bg-white">
         <div class="container mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center">
-                <i class="fas fa-rss-square text-blue-600 mr-3"></i> Latest Blog Posts
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center text-purple-700">
+                <i class="fas fa-rss-square text-purple-700 mr-3"></i> Latest Blog Posts
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% if blog_posts %}
@@ -280,13 +259,13 @@
                             {% if post.image %}
                                 <img src="{{ post.image.url }}" alt="{{ post.title }}" class="rounded-lg w-full h-48 object-cover mb-4">
                             {% else %}
-                                <div class="w-full h-48 bg-gray-300 flex items-center justify-center rounded-lg mb-4">
-                                    <i class="fas fa-blog text-gray-500 text-6xl"></i>
+                                <div class="w-full h-48 bg-purple-100 flex items-center justify-center rounded-lg mb-4">
+                                    <i class="fas fa-blog text-purple-500 text-6xl"></i>
                                 </div>
                             {% endif %}
                             <div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2 mt-2 flex items-center">
-                                    <i class="fas fa-newspaper text-blue-600 mr-2"></i> {{ post.title }}
+                                    <i class="fas fa-newspaper text-purple-700 mr-2"></i> {{ post.title }}
                                 </h3>
                                 <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ post.description }}</p>
                             </div>
@@ -295,14 +274,14 @@
                                     <span class="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
                                         <i class="fas fa-calendar-alt mr-1"></i> Posted: {{ post.created_at|date:"M d, Y" }}
                                     </span>
-                                    <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                    <span class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
                                         <i class="fas fa-user-circle mr-1"></i> By: {{ post.author.get_full_name|default:post.author.username }}
                                     </span>
                                 </div>
                             </div>
                             <hr class="my-4 border-gray-200">
                             <div class="text-center">
-                                <a href="{% url 'blog_detail' post.slug %}" class="bg-blue-600 text-white px-6 py-2 w-full font-semibold shadow-lg hover:bg-blue-700 transition-all duration-300 inline-flex items-center justify-center">
+                                <a href="{% url 'blog_detail' post.slug %}" class="bg-purple-700 text-white px-6 py-2 w-full font-semibold shadow-lg hover:bg-purple-800 transition-all duration-300 inline-flex items-center justify-center">
                                     <i class="fas fa-book-reader mr-2"></i> Read
                                 </a>
                             </div>
@@ -315,7 +294,7 @@
                 {% endif %}
             </div>
             <div class="text-center mt-12">
-                <a href="{% url 'blog_list' %}" class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 inline-flex items-center">
+                <a href="{% url 'blog_list' %}" class="bg-purple-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-purple-800 transition-all duration-300 transform hover:scale-105 inline-flex items-center">
                     <i class="fas fa-book mr-2"></i> View All Posts
                 </a>
             </div>

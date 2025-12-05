@@ -6,7 +6,7 @@
 {% block content %}
 <style>
     /* Define the animations
-      We'll add/remove the 'is-visible' class with JavaScript
+       We'll add/remove the 'is-visible' class with JavaScript
     */
     .animate-on-scroll {
         opacity: 0;
@@ -25,9 +25,9 @@
     .delay-300 { transition-delay: 0.3s; }
     .delay-400 { transition-delay: 0.4s; }
 
-    /* Hero background image */
+    /* Hero background image - Updated overlay to purple/indigo */
     .hero-bg {
-        background-image: linear-gradient(rgba(29, 78, 216, 0.7), rgba(30, 27, 75, 0.8)), 
+        background-image: linear-gradient(rgba(109, 40, 217, 0.7), rgba(49, 46, 129, 0.8)), 
                           url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1784&q=80');
         background-size: cover;
         background-position: center;
@@ -35,46 +35,33 @@
     }
 </style>
 
-<!-- 
-  SECTION 1: HERO
-  A full-width, high-impact hero section
--->
 <header class="hero-bg w-full text-white">
     <div class="container mx-auto max-w-7xl flex flex-col items-center justify-center text-center px-6" style="min-height: 75vh;">
         <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-4 animate-on-scroll">
             Remote Ready With Tess
         </h1>
-        <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-blue-100 animate-on-scroll delay-100">
+        <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-purple-100 animate-on-scroll delay-100">
             We're not just a job board. We're your partners in building a successful remote career.
         </p>
     </div>
 </header>
 
-<!-- 
-  SECTION 2: INTRODUCTION
-  A clean, simple intro on a white background.
--->
 <section class="w-full bg-white py-20 md:py-32">
     <div class="container mx-auto max-w-3xl text-center px-6 animate-on-scroll">
         <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
             We're Redefining Remote Work.
         </h2>
         <p class="text-lg md:text-xl text-gray-700 leading-relaxed">
-            Welcome to Remote Ready With Tess! We understand the challenges of finding legitimate remote jobs in a competitive market. That's why we created a space where job seekers can access verified listings, essential tools, and resources to succeed in the new world of work.
+            Welcome to Remote Ready With Tess! We understand the challenges of finding legitimate remote jobs in a competitive market. That's why we created a space where job seekers can access **verified listings**, essential tools, and resources to succeed in the new world of work.
         </p>
     </div>
 </section>
 
-<!-- 
-  SECTION 3: OUR MISSION
-  A split-grid layout on a light gray background.
--->
 <section class="w-full bg-gray-50 py-20 md:py-32 overflow-hidden">
     <div class="container mx-auto max-w-7xl px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <!-- Text Content -->
             <div class="animate-on-scroll">
-                <span class="text-sm font-bold uppercase text-blue-600 mb-2 block">Our Mission</span>
+                <span class="text-sm font-bold uppercase text-purple-600 mb-2 block">Our Mission</span>
                 <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
                     Connect Talent with Opportunity
                 </h2>
@@ -82,47 +69,36 @@
                     To connect talented individuals with opportunities that align with their skills and aspirations, enabling them to work remotely and achieve their career goals. We bridge the gap between ambitious professionals and forward-thinking companies.
                 </p>
             </div>
-            <!-- Image Content -->
             <div class="animate-on-scroll delay-100">
                 <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" 
-                     alt="A team collaborating on a mission"
-                     class="rounded-2xl shadow-2xl w-full h-full object-cover">
+                    alt="A team collaborating on a mission"
+                    class="rounded-2xl shadow-2xl w-full h-full object-cover">
             </div>
         </div>
     </div>
 </section>
 
-<!-- 
-  SECTION 4: OUR VISION
-  A reversed split-grid layout.
--->
 <section class="w-full bg-white py-20 md:py-32 overflow-hidden">
     <div class="container mx-auto max-w-7xl px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <!-- Image Content (Reversed) -->
             <div class="animate-on-scroll md:order-2">
-                <span class="text-sm font-bold uppercase text-blue-600 mb-2 block">Our Vision</span>
+                <span class="text-sm font-bold uppercase text-purple-600 mb-2 block">Our Vision</span>
                 <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
                     A Career Without Borders
                 </h2>
                 <p class="text-lg text-gray-700 leading-relaxed">
-                    We envision a world where every individual can easily discover and secure a fulfilling career path, and where every company can effortlessly find the perfect candidates. RRWT aims to be the most trusted and innovative platform for career development and talent acquisition worldwide.
+                    We envision a world where every individual can easily discover and secure a fulfilling career path, and where every company can effortlessly find the perfect candidates. RRWT aims to be the most **trusted and innovative platform** for career development and talent acquisition worldwide.
                 </p>
             </div>
-            <!-- Text Content (Reversed) -->
             <div class="animate-on-scroll delay-100 md:order-1">
                  <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" 
-                     alt="A diverse group of professionals working remotely"
-                     class="rounded-2xl shadow-2xl w-full h-full object-cover">
+                    alt="A diverse group of professionals working remotely"
+                    class="rounded-2xl shadow-2xl w-full h-full object-cover">
             </div>
         </div>
     </div>
 </section>
 
-<!-- 
-  SECTION 5: WHAT WE OFFER
-  A dark, high-contrast section with a 4-column feature grid.
--->
 <section class="w-full bg-gray-900 text-white py-20 md:py-32">
     <div class="container mx-auto max-w-7xl px-6">
         <div class="text-center max-w-3xl mx-auto">
@@ -135,27 +111,23 @@
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <!-- Feature 1 -->
             <div class="bg-gray-800 p-8 rounded-2xl shadow-lg animate-on-scroll delay-100">
-                <i class="fas fa-file-alt text-4xl text-blue-400 mb-6"></i>
+                <i class="fas fa-file-alt text-4xl text-yellow-500 mb-6"></i>
                 <h3 class="text-xl font-bold mb-3">Resume Reviews</h3>
                 <p class="text-gray-300">Get tailored feedback to make your resume shine for remote-first employers.</p>
             </div>
-            <!-- Feature 2 -->
             <div class="bg-gray-800 p-8 rounded-2xl shadow-lg animate-on-scroll delay-200">
-                <i class="fas fa-microphone-alt text-4xl text-blue-400 mb-6"></i>
+                <i class="fas fa-microphone-alt text-4xl text-yellow-500 mb-6"></i>
                 <h3 class="text-xl font-bold mb-3">Interview Prep</h3>
                 <p class="text-gray-300">Practice with experts so you enter virtual interviews with confidence.</p>
             </div>
-            <!-- Feature 3 -->
             <div class="bg-gray-800 p-8 rounded-2xl shadow-lg animate-on-scroll delay-300">
-                <i class="fas fa-chalkboard-teacher text-4xl text-blue-400 mb-6"></i>
+                <i class="fas fa-chalkboard-teacher text-4xl text-yellow-500 mb-6"></i>
                 <h3 class="text-xl font-bold mb-3">Career Counselling</h3>
                 <p class="text-gray-300">Personalized one-on-one guidance for your unique remote career journey.</p>
             </div>
-            <!-- Feature 4 -->
             <div class="bg-gray-800 p-8 rounded-2xl shadow-lg animate-on-scroll delay-400">
-                <i class="fas fa-graduation-cap text-4xl text-blue-400 mb-6"></i>
+                <i class="fas fa-graduation-cap text-4xl text-yellow-500 mb-6"></i>
                 <h3 class="text-xl font-bold mb-3">Practical Courses</h3>
                 <p class="text-gray-300">Learn the exact skills employers are looking for in today's remote hires.</p>
             </div>
@@ -163,10 +135,6 @@
     </div>
 </section>
 
-<!-- 
-  SECTION 6: WHY CHOOSE US
-  A 2-column value proposition section.
--->
 <section class="w-full bg-white py-20 md:py-32">
     <div class="container mx-auto max-w-7xl px-6">
         <div class="text-center max-w-3xl mx-auto">
@@ -175,33 +143,29 @@
             </h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
-            <!-- Value 1 -->
             <div class="flex items-start animate-on-scroll">
-                <i class="fas fa-check-circle text-4xl text-blue-600 mr-6 flex-shrink-0"></i>
+                <i class="fas fa-check-circle text-4xl text-purple-600 mr-6 flex-shrink-0"></i>
                 <div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-2">Verified Jobs Only</h3>
                     <p class="text-lg text-gray-700 leading-relaxed">Every single listing is reviewed and approved by our team to ensure it's legitimate, high-quality, and 100% remote.</p>
                 </div>
             </div>
-            <!-- Value 2 -->
             <div class="flex items-start animate-on-scroll delay-100">
-                <i class="fas fa-tools text-4xl text-blue-600 mr-6 flex-shrink-0"></i>
+                <i class="fas fa-tools text-4xl text-purple-600 mr-6 flex-shrink-0"></i>
                 <div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-2">360° Career Resources</h3>
                     <p class="text-lg text-gray-700 leading-relaxed">From AI-powered resume analyzers to one-on-one prep, we’ve got you covered with the tools you actually need to succeed.</p>
                 </div>
             </div>
-            <!-- Value 3 -->
             <div class="flex items-start animate-on-scroll delay-200">
-                <i class="fas fa-users text-4xl text-blue-600 mr-6 flex-shrink-0"></i>
+                <i class="fas fa-users text-4xl text-purple-600 mr-6 flex-shrink-0"></i>
                 <div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-2">A Focus on Community</h3>
                     <p class="text-lg text-gray-700 leading-relaxed">Join a growing network of successful applicants, mentors, and coaches who are all focused on thriving in the remote economy.</p>
                 </div>
             </div>
-            <!-- Value 4 -->
             <div class="flex items-start animate-on-scroll delay-300">
-                <i class="fas fa-trophy text-4xl text-blue-600 mr-6 flex-shrink-0"></i>
+                <i class="fas fa-trophy text-4xl text-purple-600 mr-6 flex-shrink-0"></i>
                 <div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-2">Real, Tangible Results</h3>
                     <p class="text-lg text-gray-700 leading-relaxed">We measure our success by your success. Our platform is built to get you hired, not just to get your clicks.</p>
@@ -211,10 +175,6 @@
     </div>
 </section>
 
-<!-- 
-  SECTION 7: MEET THE FOUNDER
-  A clean, trust-building section.
--->
 <section class="w-full bg-gray-50 py-20 md:py-32">
     <div class="container mx-auto max-w-3xl text-center px-6 animate-on-scroll">
         <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-8">
@@ -222,9 +182,9 @@
         </h2>
         <img src="{% static 'img/sonowo.jpeg' %}"
              alt="Testimony Sonowo" 
-             class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full mx-auto mb-6 shadow-xl ring-4 ring-white">
+             class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full mx-auto mb-6 shadow-xl ring-4 ring-purple-500">
         <h3 class="text-3xl font-bold text-gray-900 mb-2">Testimony Sonowo</h3>
-        <p class="text-xl text-blue-600 font-medium mb-6">Founder of RRWT</p>
+        <p class="text-xl text-purple-600 font-medium mb-6">Founder of RRWT</p>
         <p class="text-lg md:text-xl text-gray-700 leading-relaxed">
             Passionate about people, Testimony started RRWT with one goal: to make remote work opportunities accessible to everyone, no matter their background. She believes that with the right support, anyone can land a remote job and change their life.
         </p>
@@ -242,15 +202,14 @@ document.addEventListener('DOMContentLoaded', function() {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
-                // Optional: Unobserve after it's visible so it doesn't re-animate
-                // observer.unobserve(entry.target); 
+                
             }
         });
     }, {
-        threshold: 0.1 // Trigger when 10% of the element is visible
+        threshold: 0.1 
     });
 
-    // Find all elements to animate
+
     const targets = document.querySelectorAll('.animate-on-scroll');
     targets.forEach(target => {
         observer.observe(target);

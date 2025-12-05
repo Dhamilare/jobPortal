@@ -6,39 +6,33 @@
 {% block content %}
 <div class="py-16 px-4 md:px-8 lg:px-12 bg-gray-50 min-h-screen font-sans flex items-center justify-center relative">
     <div class="container mx-auto max-w-4xl text-center">
-        <!-- Main Heading -->
         <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-            <i class="fas fa-book-open text-blue-600 mr-3"></i> Our Courses
+            <i class="fas fa-book-open text-purple-600 mr-3"></i> Our Courses
         </h1>
         
-        <!-- Subtitle and Description -->
         <p class="text-lg md:text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl mx-auto">
             We are hard at work creating high-quality courses to help you master new skills. Get ready to learn from industry experts!
         </p>
         
-        <!-- Courses Grid (Placeholder) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            <!-- Course Card 1: Programming -->
             <div class="bg-white rounded-lg shadow-lg p-6 transform hover:scale-105 transition-transform duration-300 border border-gray-200">
-                <div class="text-5xl text-blue-500 mb-4">
+                <div class="text-5xl text-purple-600 mb-4">
                     <i class="fas fa-code"></i>
                 </div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Web Development</h3>
                 <p class="text-gray-500">Learn to build dynamic and responsive websites.</p>
             </div>
             
-            <!-- Course Card 2: Data Science -->
             <div class="bg-white rounded-lg shadow-lg p-6 transform hover:scale-105 transition-transform duration-300 border border-gray-200">
-                <div class="text-5xl text-green-500 mb-4">
+                <div class="text-5xl text-yellow-500 mb-4">
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Data Science & AI</h3>
                 <p class="text-gray-500">Dive into data analysis, machine learning, and AI.</p>
             </div>
             
-            <!-- Course Card 3: Design -->
             <div class="bg-white rounded-lg shadow-lg p-6 transform hover:scale-105 transition-transform duration-300 border border-gray-200">
-                <div class="text-5xl text-purple-500 mb-4">
+                <div class="text-5xl text-indigo-600 mb-4">
                     <i class="fas fa-paint-brush"></i>
                 </div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">UI/UX Design</h3>
@@ -46,12 +40,10 @@
             </div>
         </div>
         
-        <!-- Call to Action -->
-        <div class="bg-blue-100 p-8 rounded-lg border border-blue-200">
+        <div class="bg-purple-100 p-8 rounded-lg border border-purple-200">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Be the first to know!</h2>
             <p class="text-gray-600 mb-6">Enter your email below to get notified as soon as our courses go live.</p>
             
-            <!-- Email Form -->
             <form id="newsletter-form" action="{% url 'courses_coming_soon' %}" method="POST" class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                 {% csrf_token %}
                 <input 
@@ -59,12 +51,12 @@
                     id="email-input"
                     name="email"
                     placeholder="Your email address" 
-                    class="w-full sm:w-80 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full sm:w-80 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
                     required
                 >
                 <button 
                     type="submit" 
-                    class="btn-primary w-full sm:w-auto bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
+                    class="btn-primary w-full sm:w-auto bg-purple-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out"
                 >
                     <i class="fas fa-paper-plane mr-2"></i> Notify Me
                 </button>
@@ -74,7 +66,6 @@
         
     </div>
     
-    <!-- The Modal -->
     <div id="success-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0 hidden">
         <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm mx-4 transform transition-transform duration-300 scale-95">
             <div class="text-center">
@@ -85,7 +76,7 @@
                 <p class="text-gray-600 mb-6">
                     Thanks for showing interest. We'll send you an email as soon as our courses are ready.
                 </p>
-                <button id="close-modal-btn" class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
+                <button id="close-modal-btn" class="bg-purple-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out">
                     Close
                 </button>
             </div>

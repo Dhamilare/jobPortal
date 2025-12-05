@@ -5,46 +5,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- SEO & Social Media Meta Tags -->
     <title>{% block title %}Remote Ready With Tess{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}We connect you with trusted job opportunities while giving you the tools to prepare, apply, and land your next role.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
 
-    <!-- Open Graph Tags: For rich social media previews -->
     <meta property="og:title" content="{% block og_title %}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{% endblock %}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
 
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for social media icons and general icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <!-- Custom Styles -->
     <style>
-        /* Base styles: Apply Inter font and a subtle light background */
+        /* Base styles: Apply Century Gothic font and a subtle white background with a purple-yellow gradient touch */
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(to bottom right, #F0F9FF, #F8F4FF);
-            color: #374151;
+            font-family: 'Poppins', sans-serif;
+            /* Changed base background to white with a very subtle purple-yellow gradient */
+            background: linear-gradient(to bottom right, #FFFFFF, #FEFCE8); /* White to very pale yellow */
+            color: #1F2937; /* Dark text for contrast */
             line-height: 1.6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* General Link Styling */
+        /* General Link Styling (Purple) */
         a {
-            color: #2563EB;
+            color: #6D28D9; /* Deep Purple */
             transition: color 0.2s ease-in-out;
             text-decoration: none;
         }
         a:hover {
-            color: #1D4ED8;
+            color: #4C1D95; /* Darker Purple on hover */
         }
 
-        /* Card Shadows: Enhanced for depth and modern Material Design feel */
+        /* Card Shadows: Enhanced for depth and modern feel - No color change, but kept for context */
         .card-shadow {
             box-shadow: 10px 15px -3px rgba(0, 0, 0, 0.1),
                         0 4px 6px -2px rgba(0, 0, 0, 0.05),
@@ -57,7 +53,7 @@
                         0 6px 8px -3px rgba(0, 0, 0, 0.08);
         }
 
-        /* Input Fields: Clean, well-defined, and responsive focus states */
+        /* Input Fields: Clean, well-defined, and responsive focus states (Purple focus) */
         .input-field {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -73,18 +69,19 @@
         }
         .input-field:focus {
             outline: none;
-            border-color: #3B82F6;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            border-color: #8B5CF6; /* Lighter Purple Focus */
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
-        /* Primary Button: Bold, gradient, with interactive press effect */
+        /* Primary Button: Bold, gradient (Purple dominant, Yellow accent) */
         .btn-primary {
             width: 100%;
             padding: 0.75rem 1.5rem;
             font-weight: 600;
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-            background: linear-gradient(to right, #4F46E5, #6366F1);
+            /* Purple to Slightly Lighter Purple Gradient */
+            background: linear-gradient(to right, #6D28D9, #8B5CF6);
             color: white;
             border: none;
             cursor: pointer;
@@ -96,24 +93,26 @@
             gap: 0.5rem;
         }
         .btn-primary:hover {
-            background: linear-gradient(to right, #4338CA, #4F46E5);
+            /* Darker Purple Hover */
+            background: linear-gradient(to right, #4C1D95, #6D28D9);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
             transform: translateY(-2px);
         }
         .btn-primary:active {
-            background: linear-gradient(to right, #3730A3, #4338CA);
+            /* Very Dark Purple Active */
+            background: linear-gradient(to right, #39116F, #4C1D95);
             transform: translateY(1px);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Secondary Button: Clean, subtle, with a gentle hover effect */
+        /* Secondary Button: Clean, subtle (Gray with Purple hover) */
         .btn-secondary {
             width: 100%;
             padding: 0.75rem 1.5rem;
             font-weight: 600;
             border-radius: 0.5rem;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
-            background-color: #E5E7EB;
+            background-color: #F3F4F6; /* Light Gray */
             color: #374151;
             border: 1px solid #D1D5DB;
             cursor: pointer;
@@ -124,19 +123,20 @@
             gap: 0.5rem;
         }
         .btn-secondary:hover {
-            background-color: #D1D5DB;
+            background-color: #E5E7EB; /* Slightly Darker Gray on hover */
             color: #1F2937;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .btn-secondary:active {
-            background-color: #9CA3AF;
+            background-color: #D1D5DB; /* Darker Gray on active */
             transform: translateY(1px);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
-        /* Hero Section: More dynamic background and prominent text */
+        /* Hero Section: More dynamic background (Purple dominant) and prominent text */
         .hero-section {
-            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            /* Deep Purple Gradient for the Hero */
+            background: linear-gradient(135deg, #6D28D9 0%, #8B5CF6 100%);
             padding: 5rem 1.5rem;
             text-align: center;
             position: relative;
@@ -155,7 +155,7 @@
         @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* FAQ Accordion: Smoother transitions and clearer active state */
+        /* FAQ Accordion: Smoother transitions and clearer active state (Purple/Yellow active) */
         .accordion-item {
             border: 1px solid #E5E7EB;
             border-radius: 0.5rem;
@@ -164,7 +164,7 @@
             transition: all 0.3s ease-in-out;
         }
         .accordion-item.active {
-            border-color: #60A5FA;
+            border-color: #FDE047; /* Yellow Accent Border */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
         }
         .accordion-header {
@@ -185,9 +185,9 @@
             background-color: #F3F4F6;
         }
         .accordion-item.active .accordion-header {
-            background-color: #EFF6FF;
-            color: #2563EB;
-            border-bottom-color: #60A5FA;
+            background-color: #FEFCE8; /* Pale Yellow Background */
+            color: #6D28D9; /* Deep Purple Text */
+            border-bottom-color: #FDE047; /* Yellow Accent Line */
         }
         .accordion-content {
             padding: 0 1.5rem 1rem 1.5rem;
@@ -211,7 +211,7 @@
             transform: rotate(180deg);
         }
 
-        /* Pagination Buttons (Corrected from @apply) */
+        /* Pagination Buttons (Purple/Yellow Hover) */
         .pagination-nav-btn {
             padding-left: 1.25rem;
             padding-right: 1.25rem;
@@ -228,8 +228,9 @@
             transform: translateY(0);
         }
         .pagination-nav-btn:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
-            background-image: linear-gradient(to right, #60A5FA, #3B82F6);
+            box-shadow: 0 20px 25px -5p x rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+            /* Purple Gradient on hover */
+            background-image: linear-gradient(to right, #8B5CF6, #6D28D9);
             color: #FFFFFF;
             transform: translateY(-2px);
         }
@@ -250,8 +251,9 @@
         }
         .pagination-page-btn:hover {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-            background-color: #EFF6FF;
-            color: #2563EB;
+            /* Pale Yellow/Purple on hover */
+            background-color: #FEFCE8; 
+            color: #6D28D9;
             transform: scale(1.1);
         }
         .pagination-page-btn-active {
@@ -263,7 +265,8 @@
             font-size: 0.875rem;
             font-weight: 700;
             color: #FFFFFF;
-            background-color: #2563EB;
+            /* Active Purple */
+            background-color: #6D28D9;
             border-radius: 9999px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
             transform: scale(1.1);
@@ -287,7 +290,8 @@
             border: 2px solid #D1D5DB;
             border-radius: 0.75rem;
             padding: 2.5rem;
-            background: linear-gradient(to right, #F0F9FF, #F8F4FF);
+            /* Subtle Purple-Yellow-White Gradient for the Banner */
+            background: linear-gradient(to right, #F3F4F6, #FFFFFF, #FEFCE8); 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
         }
         .remote-work-banner h1 {
@@ -309,14 +313,14 @@
             object-fit: cover;
         }
 
-        /* Specific style for Django's checkbox input for is_active */
+        /* Specific style for Django's checkbox input for is_active (Purple) */
         input[type="checkbox"].form-checkbox {
             height: 1.25rem;
             width: 1.25rem;
-            color: #2563EB;
+            color: #6D28D9; /* Deep Purple */
             border-radius: 0.25rem;
             border-color: #D1D5DB;
-            --tw-ring-color: #3B82F6;
+            --tw-ring-color: #8B5CF6; /* Lighter Purple Ring */
             transition: all 0.15s ease-in-out;
         }
 
@@ -335,21 +339,16 @@
     {% endblock %}
 </head>
 <body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
-    <!-- Header/Navigation - Fixed at the top -->
     <header class="fixed top-0 left-0 w-full bg-white shadow-sm py-4 px-6 md:px-8 lg:px-12 z-50">
         <nav class="container mx-auto flex justify-between items-center">
-            <a href="{% url 'home' %}" class="text-2xl font-bold text-blue-600">Remote Ready With Tess</a>
-            <div class="hidden md:flex space-x-6 items-center">
-                <a href="{% url 'home' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                    <i class="fas fa-home mr-2"></i> Home
+            <a href="{% url 'home' %}" class="text-2xl font-bold text-purple-700">Remote Ready With Tess</a> <div class="hidden md:flex space-x-6 items-center">
+                <a href="{% url 'home' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-home mr-2"></i> Home
                 </a>
                 <a href="{% url 'blog_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                     <i class="fas fa-blog mr-2"></i> Blog
                 </a>
-                <!-- New Dropdown for About Us -->
                 <div class="relative">
-                    <a href="#" id="about-us-dropdown-toggle" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                        <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-2 text-xs transition-transform duration-300 transform" id="dropdown-icon"></i>
+                    <a href="#" id="about-us-dropdown-toggle" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-2 text-xs transition-transform duration-300 transform" id="dropdown-icon"></i>
                     </a>
                     <div id="about-us-dropdown-menu" class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
                         <a href="{% url 'about' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">About Us</a>
@@ -357,43 +356,32 @@
                         <a href="{% url 'courses_coming_soon' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
                     </div>
                 </div>
-                <!-- End of New Dropdown -->
-                <a href="{% url 'job_list' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                    <i class="fas fa-briefcase mr-2"></i> Jobs
+                <a href="{% url 'job_list' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-briefcase mr-2"></i> Jobs
                 </a>
                 {% if user.is_authenticated %}
                 {% if user.is_applicant %}
-                <a href="{% url 'applicant_dashboard' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                <a href="{% url 'applicant_dashboard' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
                 </a>
                 {% elif user.is_moderator or user.is_staff %}
-                <a href="{% url 'moderator_dashboard' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                    <i class="fas fa-chart-line mr-2"></i> Dashboard
+                <a href="{% url 'moderator_dashboard' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-chart-line mr-2"></i> Dashboard
                 </a>
                 {% endif %}
                 <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center">
                     <i class="fas fa-sign-out-alt mr-2"></i> Logout
                 </a>
                 {% else %}
-                <a href="{% url 'login' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                <a href="{% url 'login' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-sign-in-alt mr-2"></i> Login
                 </a>
-                <a href="{% url 'post_job' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
-                    <i class="fas fa-cloud-upload-alt mr-2"></i> Post a Job
+                <a href="{% url 'post_job' %}" class="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors duration-200 flex items-center"> <i class="fas fa-cloud-upload-alt mr-2"></i> Post a Job
                 </a>
-                <!-- <a href="{% url 'register' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
-                    <i class="fas fa-user-plus mr-2"></i> Register
-                </a> -->
                 {% endif %}
             </div>
-            <!-- Mobile Menu Button -->
             <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
         </nav>
-        <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
             <a href="{% url 'home' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-home mr-2"></i> Home
@@ -401,7 +389,6 @@
             <a href="{% url 'blog_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-blog mr-2"></i> Blog
             </a>
-            <!-- Mobile Dropdown for About Us -->
             <div class="nav-dropdown-mobile">
                 <a href="javascript:void(0)" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center" id="mobile-about-us-toggle">
                     <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-auto text-xs transition-transform duration-300 transform" id="mobile-dropdown-icon"></i>
@@ -412,7 +399,6 @@
                     <a href="{% url 'courses_coming_soon' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
                 </div>
             </div>
-            <!-- End of Mobile Dropdown -->
             <a href="{% url 'job_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-briefcase mr-2"></i> Jobs
             </a>
@@ -433,12 +419,9 @@
             <a href="{% url 'login' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                 <i class="fas fa-sign-in-alt mr-2"></i> Login
             </a>
-            <a href="{% url 'post_job' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
+            <a href="{% url 'post_job' %}" class="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors duration-200 flex items-center">
                 <i class="fas fa-cloud-upload-alt mr-2"></i> Post a Job
             </a>
-            <!-- <a href="{% url 'register' %}" class="block px-4 py-2 bg-blue-600 text-white rounded-lg text-center flex items-center justify-center">
-                <i class="fas fa-user-plus mr-2"></i> Register
-            </a> -->
             {% endif %}
         </div>
     </header>
@@ -448,27 +431,20 @@
         {% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8 px-6 md:px-8 lg:px-12 mt-auto">
+   <footer class="bg-purple-900 text-white py-8 px-6 md:px-8 lg:px-12 mt-auto">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="mb-4 md:mb-0">
                 Copyright &copy; {% now "Y" %} Remote Ready With Tess
             </div>
             <div class="flex space-x-6">
-                <a href="https://www.instagram.com/i.am.testimonysonowo?igsh=MTk1emV4ZWYwMjB0Mg==" class="text-gray-400 hover:text-white transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram text-xl"></i></a>
-                <a href="https://www.linkedin.com/company/remote-ready-with-tess-rrwt/" class="text-gray-400 hover:text-white transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in text-xl"></i></a>
-                <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200"><i class="fab fa-tiktok text-xl"></i></a>
-                <a href="https://chat.whatsapp.com/Hc3Zti3TROhAifML88ANao?mode=ems_copy_t" class="text-gray-400 hover:text-green-500 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp text-xl"></i></a>
+                <a href="https://www.instagram.com/i.am.testimonysonowo?igsh=MTk1emV4ZWYwMjB0Mg==" class="text-gray-400 hover:text-purple-400 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram text-xl"></i></a> <a href="https://www.linkedin.com/company/remote-ready-with-tess-rrwt/" class="text-gray-400 hover:text-purple-400 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in text-xl"></i></a> <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors duration-200"><i class="fab fa-tiktok text-xl"></i></a> <a href="https://chat.whatsapp.com/Hc3Zti3TROhAifML88ANao?mode=ems_copy_t" class="text-gray-400 hover:text-green-500 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp text-xl"></i></a>
             </div>
         </div>
     </footer>
 
-    <!-- Cookie Consent Modal -->
     <div id="cookie-consent-modal" class="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 transition-transform duration-500 ease-out transform translate-y-full opacity-0">
-        <div class="container mx-auto bg-white rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-8 border-t-4 border-blue-600">
-            <div class="flex-grow text-sm md:text-base text-gray-700 text-center md:text-left">
-                <p>This website uses cookies to ensure you get the best experience on our site. By continuing to use this site, you agree to our <a href="#" class="text-blue-600 hover:underline font-semibold">Privacy Policy</a>.</p>
-            </div>
+        <div class="container mx-auto bg-white rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-8 border-t-4 border-purple-700"> <div class="flex-grow text-sm md:text-base text-gray-700 text-center md:text-left">
+                <p>This website uses cookies to ensure you get the best experience on our site. By continuing to use this site, you agree to our <a href="#" class="text-purple-700 hover:underline font-semibold">Privacy Policy</a>.</p> </div>
             <div class="flex-shrink-0 w-full md:w-auto">
                 <button id="accept-cookies-btn" class="w-full btn-primary px-6 py-2.5 text-base md:text-sm">
                     Accept Cookies
@@ -477,7 +453,6 @@
         </div>
     </div>
 
-    <!-- Main JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Mobile menu toggle
@@ -546,7 +521,6 @@
                 });
             }
 
-            // --- NEW: About Us Dropdown Logic ---
             // For desktop dropdown
             const aboutUsToggle = document.getElementById('about-us-dropdown-toggle');
             const aboutUsMenu = document.getElementById('about-us-dropdown-menu');

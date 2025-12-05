@@ -1,60 +1,67 @@
 {% extends 'base.html' %}
 {% load static %}
+
+{% block title %}Post Your Job - Remote Ready With Tess{% endblock %}
+
 {% block content %}
 <div class="bg-gray-50 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
     <div class="max-w-6xl w-full space-y-8 md:space-y-0 md:flex md:gap-8 lg:gap-12 items-stretch">
 
-        <!-- Left Column: RRWT Information -->
-        <div class="bg-white p-8 lg:p-12 rounded-2xl shadow-xl border border-gray-200 flex-1 md:flex md:flex-col md:justify-between order-2 md:order-1">
-            <div>
-                <!-- <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 leading-tight">Post Your Next Job Here</h1>
-                <p class="text-base text-gray-600 mb-8">
+        <div class="bg-purple-700 p-8 lg:p-12 rounded-2xl shadow-xl border border-purple-800 flex-1 md:flex md:flex-col md:justify-between order-2 md:order-1 text-white relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJ0aWxlIiBwYXR0ZXJuV2lkdGg9IjEwIiBwYXR0ZXJuSGVpZ2h0PSIxMCIgeD0iMCIgeT0iMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjdGlsZSkiLz48L3N2ZyI=');"></div>
+            
+            <div class="relative z-10">
+                <h2 class="text-3xl font-extrabold text-white mb-2 leading-tight">Post Your Next Job Here</h2>
+                <p class="text-purple-100 mb-8">
                     To start posting jobs, please register first. A verification email will be sent to the company email you provide to ensure a trusted community.
-                </p> -->
+                </p>
 
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Finding the right people for your remote roles doesn’t have to be stressful.</h2>
-                <p class="text-gray-600 mb-6">
+                <h2 class="text-2xl font-bold mb-4 text-yellow-300">Finding the right people for your remote roles doesn’t have to be stressful.</h2>
+                <p class="text-purple-100 mb-6">
                     At <span class="font-bold">RRWT</span> (Remote Ready With Tess), we connect companies, HR professionals, and recruitment agencies with skilled, verified, and remote-ready candidates who are prepared to excel.
                 </p>
 
-                <div class="space-y-4 mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800">Why Partner With RRWT?</h3>
-                    <ul class="space-y-2 text-gray-700" >
-                        <li class="flex items-center">
-                            Pre-Verified Candidates - Every job seeker goes through checks to ensure credibility.
+                <div class="space-y-4 mb-8">
+                    <h3 class="text-xl font-semibold text-white flex items-center">
+                        <i class="fas fa-check-circle text-yellow-300 mr-2"></i> Why Partner With RRWT?
+                    </h3>
+                    <ul class="space-y-3 text-purple-100 font-medium" >
+                        <li class="flex items-start">
+                            <i class="fas fa-star text-yellow-400 mr-3 mt-1 flex-shrink-0"></i> 
+                            <div><strong class="text-white">Pre-Verified Candidates</strong> - Every job seeker goes through checks to ensure credibility.</div>
                         </li>
-                        <li class="flex items-center">
-                            
-                            Skilled Talent Pool - Candidates trained in remote work essentials, including communication, productivity tools, and adaptability.
+                        <li class="flex items-start">
+                            <i class="fas fa-graduation-cap text-yellow-400 mr-3 mt-1 flex-shrink-0"></i> 
+                            <div><strong class="text-white">Skilled Talent Pool</strong> - Candidates trained in remote work essentials, including communication, productivity tools, and adaptability.</div>
                         </li>
-                        <li class="flex items-center">
-                            
-                            Faster Hiring – Save time by accessing applicants who are already screened and career-ready.
+                        <li class="flex items-start">
+                            <i class="fas fa-rocket text-yellow-400 mr-3 mt-1 flex-shrink-0"></i> 
+                            <div><strong class="text-white">Faster Hiring</strong> – Save time by accessing applicants who are already screened and career-ready.</div>
                         </li>
-                        <li class="flex items-center">
-                          
-                            Global Reach – Whether you’re hiring locally or internationally, we help you connect with the right people.
+                        <li class="flex items-start">
+                            <i class="fas fa-globe-americas text-yellow-400 mr-3 mt-1 flex-shrink-0"></i> 
+                            <div><strong class="text-white">Global Reach</strong> – Whether you’re hiring locally or internationally, we help you connect with the right people.</div>
                         </li>
                     </ul>
                 </div>
 
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800">Who We Work With</h3>
-                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                <div class="p-4 bg-purple-800 rounded-lg">
+                    <h3 class="text-lg font-semibold text-yellow-300 mb-2">Who We Work With</h3>
+                    <ul class="list-disc list-inside space-y-1 text-purple-200">
                         <li>Recruitment agencies looking to place candidates quickly</li>
                         <li>Independent HR professionals managing multiple clients</li>
                         <li>Companies that are constantly hiring and need reliable remote talent</li>
                     </ul>
                 </div>
             </div>
-           
+            
         </div>
 
-        <!-- Right Column: Registration Form -->
         <div class="p-8 lg:p-12 bg-white shadow-xl rounded-2xl border border-gray-200 flex-1 order-1 md:order-2">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Create Your Recruiter Account</h2>
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
+                <i class="fas fa-id-card text-purple-600 mr-3"></i> Create Your Recruiter Account
+            </h2>
 
-            <!-- Display Django messages -->
             {% if messages %}
                 <ul class="mb-4">
                 {% for message in messages %}
@@ -62,6 +69,7 @@
                         {% if message.tags == 'success' %} bg-green-100 text-green-800 border border-green-200
                         {% elif message.tags == 'error' %} bg-red-100 text-red-800 border border-red-200
                         {% elif message.tags == 'warning' %} bg-yellow-100 text-yellow-800 border border-yellow-200
+                        {% else %} bg-purple-100 text-purple-800 border border-purple-200
                         {% endif %}">
                         {{ message }}
                     </li>
@@ -72,7 +80,6 @@
             <form method="post" action="{% url 'post_job' %}" class="space-y-6">
                 {% csrf_token %}
 
-                <!-- Personal Information Section -->
                 <div class="grid md:grid-cols-2 md:gap-4">
                     <div>
                         <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">First Name</label>
@@ -90,7 +97,6 @@
                     </div>
                 </div>
 
-                <!-- Email and Password -->
                 <div>
                     <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email</label>
                     {{ form.email }}
@@ -115,7 +121,6 @@
                     </div>
                 </div>
 
-                <!-- Company Information -->
                 <div>
                     <label for="{{ form.company_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Company Name</label>
                     {{ form.company_name }}
@@ -138,30 +143,18 @@
                         {% endif %}
                     </div>
 
-                    <!-- Submit Button -->
                     <div class="mt-6">
-                        <button type="submit" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
+                        <button type="submit" class="btn-primary w-full">
                             <i class="fas fa-plus-circle mr-2"></i>
                             Register and Post a Job
                         </button>
                     </div>
                 </form>
+
+                <div class="mt-6 text-center text-sm text-gray-600">
+                    Already have an account? <a href="{% url 'login' %}" class="text-purple-600 hover:underline font-medium">Log in to post a job</a>
+                </div>
             </div>
         </div>
     </div>
-    <!-- Load Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
 {% endblock content %}
