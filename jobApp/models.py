@@ -161,6 +161,20 @@ class Application(models.Model):
         null=True
     )
 
+    availability_notice_period = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        help_text="e.g., '2 weeks notice' or 'Immediate'"
+    )
+    
+    expected_salary = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        help_text="e.g., '€50,000'"
+    )
+
     class Meta:
         unique_together = ('applicant', 'job')
         ordering = ['-application_date']

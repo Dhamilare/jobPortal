@@ -195,7 +195,6 @@
                         {% endif %}
 
                     {% else %}
-                        {# Login to Interact logic (Updated to purple) #}
                         <div class="bg-purple-50 border-l-4 border-purple-400 text-purple-700 p-4 rounded-lg flex items-center w-full" role="alert">
                             <i class="fas fa-sign-in-alt text-xl mr-3"></i>
                             <div>
@@ -238,17 +237,7 @@
                                     </div>
                                 {% endif %}
                             {% endfor %}
-                            {# Address is full width #}
-                            {% for field in application_form %}
-                                {% if field.name == 'address' %}
-                                    <div class="md:col-span-2">
-                                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
-                                        {{ field|add_class:"input-field" }}
-                                        {% if field.help_text %}<p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>{% endif %}
-                                        {% for error in field.errors %}<p class="text-sm text-red-600 mt-1">{{ error }}</p>{% endfor %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
+                            
                         </div>
                     </fieldset>
 
