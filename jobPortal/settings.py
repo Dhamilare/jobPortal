@@ -209,7 +209,7 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
-BASE_URL = 'http://172.191.226.183'
+BASE_URL = 'http://readyremotejob.com'
 
 GEMINI_API_KEY = config("GEMINI_API_KEY")
 
@@ -250,7 +250,8 @@ GEMINI_API_KEY = config("GEMINI_API_KEY")
 # AZURE_OVERWRITE_FILES = False
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://172.191.226.183"
+    # "https://readyremotejob.com",
+    "http://readyremotejob.com",
 ]
 
 

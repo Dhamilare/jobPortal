@@ -204,7 +204,7 @@ def applicant_register(request):
             reverse('email_verification_confirm', args=[token.token])
         )
 
-        subject = 'Verify your JobPortal account'
+        subject = 'Verify Your Account'
         from_email = settings.DEFAULT_FROM_EMAIL
         to_email = user.email
         current_year = datetime.now().year
