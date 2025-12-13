@@ -92,7 +92,7 @@ class CustomUserAdmin(UserAdmin):
 class JobAdmin(admin.ModelAdmin):
     form = JobAdminForm
     list_display = ('title', 'slug', 'company_name', 'location', 'job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date', 'posted_by') # Added job_expiry_date
-    list_filter = ('job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date') # Added job_expiry_date
+    list_filter = ('job_type', 'category', 'is_active', 'date_posted', 'job_expiry_date')
     search_fields = ('title', 'company_name', 'location', 'description')
     raw_id_fields = ('category', 'posted_by')
     date_hierarchy = 'date_posted'
@@ -111,7 +111,7 @@ class JobAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
     )
-    readonly_fields = ('date_posted','slug',) # date_posted should typically be auto_now_add
+    readonly_fields = ('date_posted','slug',)
 
     def make_active(self, request, queryset):
         queryset.update(is_active=True)
@@ -169,13 +169,13 @@ class EmailVerificationTokenAdmin(admin.ModelAdmin):
     readonly_fields = ('token', 'created_at', 'expires_at')
 
 
-# NEW: Admin for SavedJob model
+# Admin for SavedJob model
 @admin.register(SavedJob)
 class SavedJobAdmin(admin.ModelAdmin):
     list_display = ('user', 'job', 'saved_at')
     list_filter = ('saved_at',)
     search_fields = ('user__username', 'job__title', 'job__company_name')
-    raw_id_fields = ('user', 'job') # Use raw_id_fields for FKs
+    raw_id_fields = ('user', 'job')
 
 
 @admin.register(JobAlert)
@@ -183,15 +183,13 @@ class JobAlertAdmin(admin.ModelAdmin):
     list_display = ('user', 'alert_name', 'keywords_display', 'locations', 'job_types_display', 'frequency', 'is_active', 'created_at', 'last_sent')
     list_filter = ('frequency', 'is_active', 'created_at', 'last_sent')
     search_fields = ('user__username', 'alert_name', 'keywords', 'locations', 'job_types')
-    raw_id_fields = ('user',) # Use raw_id_fields for FKs
-    filter_horizontal = ('categories',) # For ManyToMany field, provides a nice interface
+    raw_id_fields = ('user',) 
+    filter_horizontal = ('categories',) 
 
-    # Custom method to display categories nicely in list_display
     def keywords_display(self, obj):
         return obj.keywords or '-'
     keywords_display.short_description = 'Keywords'
 
-    # Custom method to display job types nicely in list_display
     def job_types_display(self, obj):
         return obj.job_types or '-'
     job_types_display.short_description = 'Job Types'
@@ -293,7 +291,7 @@ class CommentAdmin(admin.ModelAdmin):
 
 
 # ---------------------------------
-# --- NEW: ApplicantProfile Inline ---
+# ---ApplicantProfile Inline ---
 # ---------------------------------
 class ApplicantProfileInline(admin.StackedInline):
     """
@@ -301,17 +299,14 @@ class ApplicantProfileInline(admin.StackedInline):
     CustomUser admin page for easy editing.
     """
     model = ApplicantProfile
-    can_delete = False # A user should always have a profile
+    can_delete = False
     verbose_name_plural = 'Applicant Profile'
     fk_name = 'user'
     
-    # Make the AI-parsed fields read-only in the admin
     readonly_fields = ('resume_text', 'parsed_skills', 'parsed_experience', 'parsed_summary')
     
-    # Control the field order
     fields = ('resume', 'resume_text', 'parsed_skills', 'parsed_summary', 'parsed_experience')
     
-    # Show only one profile (since it's OneToOne)
     max_num = 1
     min_num = 1
 
@@ -321,11 +316,9 @@ class ApplicantProfileInline(admin.StackedInline):
         """
         if obj and obj.is_applicant:
             return super().get_formset(request, obj, **kwargs)
-        # If the user is not an applicant, don't show the profile form
         return super().get_formset(request, obj, **kwargs)
         
     def has_add_permission(self, request, obj=None):
-        # Prevent adding a new profile if one already exists
         if obj and hasattr(obj, 'applicant_profile'):
              return False
         return True
@@ -342,15 +335,11 @@ class ApplicantProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'get_resume_filename', 'last_updated')
     search_fields = ('user__email', 'user__username', 'user__first_name')
     
-    # Make AI fields read-only
     readonly_fields = ('resume_text', 'parsed_skills', 'parsed_experience', 'parsed_summary', 'last_updated')
-    
-    # Use a popup search box for the user field for better performance
     raw_id_fields = ('user',)
 
     def get_resume_filename(self, obj):
         if obj.resume:
-            # Return just the filename, not the full path
             return obj.resume.name.split('/')[-1]
         return "No resume"
     get_resume_filename.short_description = "Resume File"

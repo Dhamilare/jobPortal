@@ -173,11 +173,6 @@ class InternalApplicationForm(forms.ModelForm):
         label="Phone Number",
         widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'e.g., +1234567890'})
     )
-    address = forms.CharField(
-        required=False,
-        label="Address",
-        widget=forms.Textarea(attrs={'class': 'input-field', 'rows': 3, 'placeholder': 'Your current address'})
-    )
     
     submitted_resume = forms.FileField(
         label="Upload Resume/CV (PDF or DOCX)",
@@ -209,7 +204,7 @@ class InternalApplicationForm(forms.ModelForm):
     class Meta:
         model = Application
         fields = [
-            'full_name', 'email_address', 'phone_number', 'address', 'gender', 
+            'full_name', 'email_address', 'phone_number', 'gender', 
             'submitted_resume', 'availability_notice_period', 'expected_salary', 
             'cover_letter'
         ]

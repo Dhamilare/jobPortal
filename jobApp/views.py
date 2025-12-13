@@ -44,7 +44,8 @@ from decouple import config
 from django.core.files.storage import default_storage
 from django.utils.safestring import mark_safe
 from django.http import FileResponse
-import mimetypes  
+import mimetypes
+from django.contrib.sites.models import Site
 
 # ----------------------------
 # Role-based Access Decorators
@@ -200,9 +201,11 @@ def applicant_register(request):
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         token = EmailVerificationToken.objects.create(user=user)
-        verification_link = request.build_absolute_uri(
-            reverse('email_verification_confirm', args=[token.token])
-        )
+
+        site = Site.objects.get_current()
+        protocol = 'http' 
+
+        verification_link = f"{protocol}://{site.domain}{reverse('email_verification_confirm', args=[token.token])}"
 
         subject = 'Verify Your Account'
         from_email = settings.DEFAULT_FROM_EMAIL

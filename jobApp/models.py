@@ -149,7 +149,6 @@ class Application(models.Model):
     full_name = models.CharField(max_length=255, help_text="Applicant's full name.")
     email_address = models.EmailField(help_text="Applicant's primary email address.")
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
     GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('O', 'Other'), ('P', 'Prefer not to say')]
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
 
