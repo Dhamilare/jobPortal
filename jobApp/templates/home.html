@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home - Remote Ready With Tess{% endblock %}
+{% block title %}Home - Remote Ready Jobs{% endblock %}
 
 {% block content %}
     <style>
@@ -29,7 +29,11 @@
     </style>
 
     <section class="hero-section bg-gradient-to-r from-purple-700 to-indigo-600 text-white py-20 px-6 sm:px-10 lg:px-20 text-center relative overflow-hidden rounded-lg shadow-lg">
-        <div class="absolute inset-0 z-0 opacity-10" style="background-image: url('https://tse4.mm.bing.net/th/id/OIP.JvN5qVqJujCT4wJhkeC0rgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3'); background-size: cover; background-position: center;"></div>
+       <div
+            class="absolute inset-0 z-0 opacity-50"
+            style="background-image: url('{% static 'img/banner.jpg' %}'); background-size:cover;background-position:center;">
+        </div>
+
         <div class="container mx-auto relative z-10">
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 animate-fade-in-up">
                 Find Verified Remote Jobs<br>Build Your Career
