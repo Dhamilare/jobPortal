@@ -1860,3 +1860,66 @@ def application_resume_download(request, pk):
         messages.error(request, "The resume file could not be found on the server.")
         return redirect('application_detail_view', pk=pk)
 
+
+
+@login_required
+@applicant_required
+def request_resume_template_view(request, job_slug: str) -> HttpResponse:
+    """
+    Sends a resume template Word document (.docx) to the applicant's email address
+    using the centralized send_templated_email utility function.
+    """
+    if not request.user.is_applicant:
+        messages.error(request, "This feature is for applicants only.")
+        return redirect('job_list')
+    
+    job = get_object_or_404(Job, slug=job_slug, is_active=True)
+    applicant_email = request.user.email
+    
+    template_dir = os.path.join(settings.BASE_DIR, 'static', 'resume_template')
+    template_filename = 'Resume-Template.docx'
+    template_path = os.path.join(template_dir, template_filename)
+    
+    if not os.path.exists(template_path):
+        messages.error(request, "The resume template file is currently unavailable.")
+        return redirect('resume_analyzer_view', job_slug=job_slug)
+        
+    try:
+        with open(template_path, 'rb') as f:
+            file_content = f.read()
+        
+        attachments = [
+            (
+                template_filename,
+                file_content,
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            )
+        ]
+        
+        email_context = {
+            'user': request.user,
+            'job': job,
+            'company_name': 'Remote Ready Jobs', 
+           
+        }
+        
+        email_sent = send_templated_email(
+            template_name='emails/resume_template_email.html',
+            subject=f"Your Resume Template for the {job.title} Role",
+            recipient_list=[applicant_email],
+            context=email_context,
+            attachments=attachments
+        )
+        
+        if email_sent:
+            messages.success(request, f"The resume template (Word Document) has been sent to your email: {applicant_email}")
+        else:
+            messages.error(request, "Failed to send the resume template email. Please check server logs.")
+
+    except Exception as e:
+        messages.error(request, f"An unexpected error occurred while preparing the email: {e}")
+        # Log the error for debugging
+        print(f"UNEXPECTED ERROR preparing resume template email for {applicant_email}: {e}")
+
+    return redirect('job_detail', slug=job_slug)
+

@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Resume Analysis for {{ job.title }}{% endblock %}
+{% block title %}Resume Analysis for {{ job.title }} - Remote Ready With Tess{% endblock %}
 
 {% block content %}
 <style>
-    /* --- Loading Spinner --- */
+    /* --- Loading Spinner (Updated to Purple) --- */
     .loader {
-        border: 8px solid #f3f4f6; /* bg-gray-100 */
-        border-top: 8px solid #3b82f6; /* text-blue-500 */
+        border: 8px solid #F3F4F6; /* bg-gray-100 */
+        border-top: 8px solid #6D28D9; /* Purple */
         border-radius: 50%;
         width: 80px;
         height: 80px;
@@ -30,8 +30,8 @@
         justify-content: center;
         font-weight: 800; /* extrabold */
         font-size: 3rem; /* text-5xl */
-        background-color: #f3f4f6; /* bg-gray-100 */
-        color: #1f2937; /* text-gray-800 */
+        background-color: #EDE9FE; /* bg-purple-100 */
+        color: #6D28D9; /* text-purple-700 */
         box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
     }
     /* Dynamic coloring for score */
@@ -76,25 +76,25 @@
         background-color: #EF4444; /* bg-red-500 */
     }
 
-    /* --- Upload Form Styling --- */
+    /* --- Upload Form Styling (Updated to Purple) --- */
     .upload-box {
-        border: 2px dashed #9ca3af; /* border-gray-400 */
+        border: 2px dashed #9CA3AF; /* border-gray-400 */
         border-radius: 0.75rem; /* rounded-xl */
         padding: 2.5rem; /* p-10 */
         text-align: center;
-        background-color: #f9fafb; /* bg-gray-50 */
+        background-color: #F9FAFB; /* bg-gray-50 */
         transition: border-color 0.3s, background-color 0.3s;
     }
     .upload-box:hover, .upload-box.dragover { /* Added dragover state */
-        border-color: #3b82f6; /* border-blue-500 */
-        background-color: #eff6ff; /* bg-blue-50 */
+        border-color: #6D28D9; /* border-purple-700 */
+        background-color: #EDE9FE; /* bg-purple-50 */
     }
     .upload-box input[type="file"] {
         display: none; /* Hide the default input */
     }
     .upload-label {
         cursor: pointer;
-        color: #3b82f6; /* text-blue-500 */
+        color: #6D28D9; /* text-purple-700 */
         font-weight: 600; /* font-semibold */
     }
     .upload-label:hover {
@@ -105,31 +105,35 @@
         color: #9ca3af; /* text-gray-400 */
         margin-bottom: 1rem; /* mb-4 */
     }
+    
+    /* --- Modal Stability Fix --- */
+    .modal-open {
+        overflow: hidden; /* Prevents scrolling on the body */
+        padding-right: 17px; /* Compensates for the scrollbar width (typical browser default) */
+    }
 </style>
 
 <div class="py-12 px-6 md:px-8 lg:px-12 bg-gray-100 min-h-screen">
     <div class="container mx-auto max-w-4xl">
 
-        <!-- Header -->
         <div class="mb-8">
-            <a href="{% url 'job_detail' job.slug %}" class="text-blue-600 hover:underline mb-4 inline-flex items-center font-medium">
+            <a href="{% url 'job_detail' job.slug %}" class="text-purple-600 hover:underline mb-4 inline-flex items-center font-medium">
                 <i class="fas fa-arrow-left mr-2"></i> Back to Job Details
             </a>
             <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900">Resume Analysis</h1>
             <p class="text-xl text-gray-600 mt-2">
                 Comparing your profile against:
-                <span class="font-semibold text-blue-600">{{ job.title }}</span>
+                <span class="font-semibold text-purple-600">{{ job.title }}</span>
             </p>
         </div>
 
-        <!-- Django Messages (e.g., success after upload) -->
         {% if messages %}
             <div class="mb-6 space-y-3">
                 {% for message in messages %}
                     <div class="p-4 rounded-lg flex items-center
                         {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400{% endif %}
                         {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400{% endif %}
-                        {% if message.tags == 'info' %}bg-blue-100 text-blue-700 border border-blue-400{% endif %}
+                        {% if message.tags == 'info' %}bg-purple-100 text-purple-700 border border-purple-400{% endif %}
                         {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
                     " role="alert">
                         {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-3 text-lg"></i>{% endif %}
@@ -142,15 +146,9 @@
             </div>
         {% endif %}
 
-        <!-- Main Card -->
         <div class="bg-white rounded-lg p-8 md:p-12 card-shadow border border-gray-200">
             {% csrf_token %}
         
-            <!-- ============================== -->
-            <!-- == CONDITIONAL SECTIONS == -->
-            <!-- ============================== -->
-
-            <!-- 1. Needs Upload Form -->
             {% if needs_upload %}
             <div id="upload-state" class="text-center py-12">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Upload Your Resume</h2>
@@ -180,7 +178,6 @@
             </div>
             {% endif %}
 
-            <!-- 2. Is Processing Message -->
             {% if is_processing %}
             <div id="processing-state" class="text-center py-12">
                 <div class="loader"></div>
@@ -189,13 +186,12 @@
                     We're extracting the text from your uploaded resume. This might take a minute.
                     The analysis will be available here once processing is complete. Please refresh the page in a bit.
                 </p>
-                 <button onclick="window.location.reload();" class="btn-secondary w-full sm:w-auto mt-6 px-6 py-2">
-                    <i class="fas fa-sync-alt mr-2"></i> Refresh Now
-                 </button>
+                    <button onclick="window.location.reload();" class="btn-secondary w-full sm:w-auto mt-6 px-6 py-2">
+                        <i class="fas fa-sync-alt mr-2"></i> Refresh Now
+                    </button>
             </div>
             {% endif %}
 
-            <!-- 3. Analysis States (Loading, Error, Success) -->
             {% if not needs_upload and not is_processing %}
             <div id="loading-state" class="text-center py-12">
                 <div class="loader"></div>
@@ -211,9 +207,9 @@
                 <p id="error-message" class="text-gray-600 mt-2">
                     An error occurred. Please try again later.
                 </p>
-                 <button onclick="runAnalysis();" class="btn-secondary w-full sm:w-auto mt-6 px-6 py-2">
-                    <i class="fas fa-redo-alt mr-2"></i> Try Again
-                 </button>
+                    <button onclick="runAnalysis();" class="btn-secondary w-full sm:w-auto mt-6 px-6 py-2">
+                        <i class="fas fa-redo-alt mr-2"></i> Try Again
+                    </button>
             </div>
 
             <div id="success-state" class="hidden">
@@ -245,10 +241,64 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+                
+                <div class="text-center mt-10 border-t pt-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Improve Your Resume</h3>
+                    <p class="text-gray-600 mb-4 max-w-lg mx-auto">
+                        Use our professional template to incorporate the missing keywords and gaps identified in the analysis.
+                    </p>
+                    
+                    <button id="open-template-modal"
+                        type="button"
+                        class="inline-flex items-center text-base font-medium text-white bg-purple-600 hover:bg-purple-700 transition duration-150 ease-in-out py-3 px-6 rounded-lg shadow-md">
+                        <i class="fas fa-file-word mr-2"></i>
+                        Get Professional Resume Template (.docx)
+                    </button>
+                 </div>
+                 </div>
             {% endif %}
 
-        </div> <!-- End Main Card -->
+        </div> <div id="template-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div id="template-modal-overlay" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                        <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <i class="fas fa-paper-plane text-purple-600 text-lg"></i>
+                                </div>
+                                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                    <h3 class="text-lg font-semibold leading-6 text-gray-900" id="modal-title">Confirm Template Request</h3>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-gray-500">
+                                            A copy of our professional resume template (Word Document) will be sent to your registered email address:
+                                            <strong class="text-gray-700">{{ request.user.email }}</strong>.
+                                        </p>
+                                        <p class="text-xs text-red-500 mt-2">
+                                            *Please check your spam folder if the email does not arrive within a few minutes.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                            <a href="{% url 'request_resume_template' job_slug=job.slug %}"
+                               id="confirm-template-send"
+                               class="inline-flex w-full justify-center rounded-md bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 sm:ml-3 sm:w-auto">
+                                Yes, Send Template
+                            </a>
+                            <button type="button" 
+                                        id="cancel-template-send"
+                                        class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -274,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadInput.addEventListener('change', function() {
             if (this.files && this.files.length > 0) {
                 fileNameDisplay.textContent = `Selected: ${this.files[0].name}`;
-                fileNameDisplay.classList.remove('text-red-500'); // Remove error color if previously shown
+                fileNameDisplay.classList.remove('text-red-500'); 
             } else {
                 fileNameDisplay.textContent = '';
             }
@@ -319,9 +369,9 @@ document.addEventListener('DOMContentLoaded', function() {
                      uploadInput.value = '';
                      return;
                  }
-                uploadInput.files = files;
-                const event = new Event('change');
-                uploadInput.dispatchEvent(event);
+                 uploadInput.files = files;
+                 const event = new Event('change');
+                 uploadInput.dispatchEvent(event);
             }
         }
     }
@@ -335,18 +385,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Only set up analysis JS if needed ---
     if (!needsUpload && !isProcessing && loadingState) {
-        // API endpoint URL
-        const apiUrl = "{% url 'api_run_analysis' job.slug %}"; // Use namespaced URL
+        const apiUrl = "{% url 'api_run_analysis' job.slug %}";
 
-        // Function to get CSRF token - NOW IT WILL FIND THE TOKEN
         function getCsrfToken() {
             const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
-            // console.log("CSRF Token Found:", csrfInput ? csrfInput.value : 'Not Found'); // Debugging line
             return csrfInput ? csrfInput.value : null;
         }
 
-        // Function to populate the results
-        function showResults(data) { /* (Keep existing function body) */
+        function showResults(data) { 
             if (!successState) return;
             const scoreEl = document.getElementById('result-score');
             const scoreCircleEl = document.getElementById('result-score-circle');
@@ -354,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const prosList = document.getElementById('result-pros');
             const consList = document.getElementById('result-cons');
 
-            if (scoreEl && scoreCircleEl) { /* ... score logic ... */
+            if (scoreEl && scoreCircleEl) { 
                 scoreEl.textContent = data.score;
                 scoreCircleEl.classList.remove('score-low', 'score-mid', 'score-high');
                 if (data.score < 50) scoreCircleEl.classList.add('score-low');
@@ -362,12 +408,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 else scoreCircleEl.classList.add('score-high');
             }
             if (summaryEl) summaryEl.textContent = data.summary;
-            if (prosList) { /* ... pros list logic ... */
+            if (prosList) { 
                  prosList.innerHTML = data.pros && data.pros.length > 0
                     ? data.pros.map(pro => `<li>${escapeHtml(pro)}</li>`).join('')
                     : '<li>No specific matches found by the AI. Review manually.</li>';
             }
-             if (consList) { /* ... cons list logic ... */
+             if (consList) { 
                 consList.innerHTML = data.cons && data.cons.length > 0
                     ? data.cons.map(con => `<li>${escapeHtml(con)}</li>`).join('')
                     : '<li>No specific gaps identified by the AI!</li>';
@@ -378,8 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
             successState.classList.remove('hidden');
         }
 
-        // Function to show error
-        function showError(message) { /* (Keep existing function body) */
+        function showError(message) {
              if (!errorState || !errorMessage || !loadingState) return;
             errorMessage.textContent = message || 'An unknown error occurred.';
             loadingState.classList.add('hidden');
@@ -387,14 +432,12 @@ document.addEventListener('DOMContentLoaded', function() {
             errorState.classList.remove('hidden');
         }
 
-         // Helper to prevent basic HTML injection
-         function escapeHtml(unsafe) { /* (Keep existing function body) */
+        function escapeHtml(unsafe) {
              if (!unsafe) return '';
              return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-         }
+        }
 
-        // --- Main function to run the analysis ---
-        runAnalysis = async function() { /* (Keep existing function body) */
+        runAnalysis = async function() {
             if (loadingState) loadingState.classList.remove('hidden');
             if (successState) successState.classList.add('hidden');
             if (errorState) errorState.classList.add('hidden');
@@ -402,11 +445,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const csrfToken = getCsrfToken();
             if (!csrfToken) {
                 showError('Security token not found. Please refresh the page.');
-                // console.error("CSRF Token was null!"); // More debugging
-                return; // Stop execution if token is missing
+                return;
             }
 
-            // Show loading state when starting/retrying
             if (loadingState) loadingState.classList.remove('hidden');
 
             try {
@@ -418,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                 });
 
-                if (!response.ok) { /* ... error handling ... */
+                if (!response.ok) { 
                     let errorMsg = `Analysis service returned an error (Status: ${response.status}).`;
                     try { const errorData = await response.json(); if (errorData && errorData.error) { errorMsg = errorData.error; } }
                     catch (e) { errorMsg = `Analysis service error: ${response.statusText || response.status}. Please try again later.`; }
@@ -432,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 showResults(data);
 
-            } catch (err) { /* ... error handling ... */
+            } catch (err) { 
                 console.error('Analysis failed:', err);
                 let displayError = 'An error occurred during analysis. Please try again.';
                 if (err.message && !err.message.includes('Status:')) { displayError = err.message; }
@@ -441,10 +482,56 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Run the analysis automatically!
         runAnalysis();
-    } // End of conditional block for running analysis JS
+    } 
+    
+    // --- MODAL JAVASCRIPT LOGIC (FIXED) ---
+    
+    const templateModal = document.getElementById('template-modal');
+    const openModalButton = document.getElementById('open-template-modal');
+    const cancelButton = document.getElementById('cancel-template-send');
+    const overlay = document.getElementById('template-modal-overlay');
+
+    let modalOpen = false;
+
+    function showModal() {
+        if (!templateModal || modalOpen) return;
+        
+        modalOpen = true;
+        templateModal.classList.remove('hidden');
+        document.body.classList.add('modal-open');
+    }
+
+    function hideModal() {
+        if (!templateModal || !modalOpen) return;
+        
+        modalOpen = false;
+        templateModal.classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    }
+
+    // 1. Open Modal when main button is clicked
+    if (openModalButton) {
+        openModalButton.addEventListener('click', showModal);
+    }
+
+    // 2. Close Modal when cancel button is clicked
+    if (cancelButton) {
+        cancelButton.addEventListener('click', hideModal);
+    }
+    
+    // 3. Close modal if clicking on the explicit overlay
+    if (overlay) {
+        overlay.addEventListener('click', hideModal);
+    }
+
+    // 4. Close modal with ESC key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && templateModal && modalOpen) { 
+            hideModal();
+        }
+    });
+
 });
 </script>
 {% endblock %}
-

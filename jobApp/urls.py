@@ -105,6 +105,8 @@ urlpatterns = [
     path('job/<slug:job_slug>/analyze/', 
          views.resume_analyzer_view, 
          name='resume_analyzer'),
+    
+    path('analyze/<slug:job_slug>/template/', views.request_resume_template_view, name='request_resume_template'),
          
     # The API endpoint the page calls to get the AI result
     path('api/job/<slug:job_slug>/run_analysis/', 
