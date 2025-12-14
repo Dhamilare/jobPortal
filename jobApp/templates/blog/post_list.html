@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    Blog Posts - Remote Ready Jobs
+    Blog Posts - Remote Ready With Tess
 {% endblock %}
 
 {% block content %}
@@ -30,7 +30,7 @@
         transition: color 0.3s ease;
     }
     .post-card:hover .post-card-title {
-        color: #6D28D9; /* text-purple-700 - Updated from indigo-600 */
+        color: #6D28D9; /* text-purple-700 - Consistent */
     }
 
     /* --- Sticky Header Adjustment --- */
@@ -41,7 +41,7 @@
         z-index: 40;
     }
 
-    /* --- Pagination Buttons (Updated to Purple) --- */
+    /* --- Pagination Buttons (Updated to Purple - Consistent) --- */
     .pagination-btn {
         display: flex;
         align-items: center;
@@ -60,7 +60,7 @@
         border-color: #d1d5db; /* border-gray-300 */
     }
     .pagination-btn.active {
-        background-color: #6D28D9; /* bg-purple-700 - Updated from indigo-600 */
+        background-color: #6D28D9; /* bg-purple-700 - Consistent */
         color: #ffffff; /* text-white */
         border-color: #6D28D9;
         font-weight: 600;
@@ -88,7 +88,8 @@
     }
 
     .blog-hero-bg {
-        background-image: linear-gradient(to top right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        /* Ensuring the static path is correct for the banner image */
+        background-image: linear-gradient(to top right, rgba(76, 29, 148, 0.7), rgba(76, 29, 148, 0.7)),
         url("{% static 'img/blog_banner.jpg' %}");
         background-size: cover;
         background-position: center;
@@ -97,9 +98,9 @@
 </style>
 
 <section class="w-full relative blog-hero-bg py-20 md:py-28">
-        <div class="container mx-auto max-w-4xl text-center px-6 animate-on-scroll z-10 relative">
+    <div class="container mx-auto max-w-4xl text-center px-6 animate-on-scroll z-10 relative">
         <h1 class="text-4xl lg:text-5xl font-extrabold text-white mb-6 tracking-tight leading-tight">
-            Welcome to Remote ready Jobs Blog
+            Welcome to Remote Ready Jobs Blog
         </h1>
         <p class="text-lg text-white max-w-3xl mx-auto leading-relaxed opacity-90">
             Your go-to resource for remote work. We share expert tips, real success stories,
