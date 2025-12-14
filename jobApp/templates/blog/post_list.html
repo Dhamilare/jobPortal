@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    Blog Posts - Remote Ready With Tess
+    Blog Posts - Remote Ready Jobs
 {% endblock %}
 
 {% block content %}
@@ -87,19 +87,27 @@
         cursor: not-allowed;
     }
 
+    .blog-hero-bg {
+        background-image: linear-gradient(to top right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url("{% static 'img/blog_banner.jpg' %}");
+        background-size: cover;
+        background-position: center;
+    }
+
 </style>
 
-<section class="w-full bg-gradient-to-br from-purple-50 to-indigo-50 py-20 md:py-28">
-    <div class="container mx-auto max-w-4xl text-center px-6 animate-on-scroll">
-        <h1 class="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">
-            Welcome to the RRWT Blog
+<section class="w-full relative blog-hero-bg py-20 md:py-28">
+        <div class="container mx-auto max-w-4xl text-center px-6 animate-on-scroll z-10 relative">
+        <h1 class="text-4xl lg:text-5xl font-extrabold text-white mb-6 tracking-tight leading-tight">
+            Welcome to Remote ready Jobs Blog
         </h1>
-        <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
+        <p class="text-lg text-white max-w-3xl mx-auto leading-relaxed opacity-90">
             Your go-to resource for remote work. We share expert tips, real success stories,
             and practical guides to help you stand out in today’s competitive job market.
         </p>
     </div>
 </section>
+
 
 <section class="w-full bg-white py-6 shadow-sm border-b border-gray-200 sticky-bar">
     <div class="container mx-auto max-w-7xl px-6">
