@@ -46,6 +46,8 @@ from django.utils.safestring import mark_safe
 from django.http import FileResponse
 import mimetypes
 from django.contrib.sites.models import Site
+import time
+from requests.exceptions import HTTPError, RequestException
 
 # ----------------------------
 # Role-based Access Decorators
@@ -1585,10 +1587,14 @@ def handle_resume_upload_view(request: HttpRequest, job_slug: str) -> HttpRespon
 # --- AI ANALYSIS API ENDPOINT ---
 # -------------------------------------------------
 
+MAX_RETRIES = 5
+INITIAL_BACKOFF_DELAY = 4
+
 @login_required
 def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
     """
-    Calls Gemini API to analyze the applicant’s resume vs job description.
+    Calls Gemini API to analyze the applicant’s resume vs job description with 
+    retry logic for rate limiting (HTTP 429).
     """
     if not request.user.is_applicant:
         return JsonResponse({"error": "This feature is for applicants only."}, status=403)
@@ -1598,7 +1604,7 @@ def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
 
     try:
         job = get_object_or_404(Job, slug=job_slug)
-        profile = request.user.applicant_profile
+        profile = request.user.applicant_profile 
 
         if not profile.resume_text:
             return JsonResponse({"error": "Resume text not found. Please upload or re-process your resume."}, status=404)
@@ -1606,7 +1612,7 @@ def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
         resume_text = profile.resume_text
         job_description = strip_tags(job.description)
 
-        # AI system + user prompts
+        # AI system + user prompts (Defined once)
         system_prompt = (
             "You are an expert AI recruitment assistant specialized in the Nigerian job market. "
             "Analyze the candidate's resume against the job description and respond in JSON with keys: "
@@ -1649,10 +1655,64 @@ def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
         apiKey = config("GEMINI_API_KEY")
         model_name = "gemini-2.5-flash-preview-09-2025"
         apiUrl = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={apiKey}"
+        
+        # Initialize response before the loop
+        response = None 
 
-        response = requests.post(apiUrl, headers={'Content-Type': 'application/json'}, data=json.dumps(payload), timeout=60)
-        response.raise_for_status()
-        result = response.json()
+        # --- Implementation of Retry Loop with Exponential Backoff ---
+        for attempt in range(MAX_RETRIES):
+            try:
+                # 1. Attempt the API call
+                response = requests.post(
+                    apiUrl, 
+                    headers={'Content-Type': 'application/json'}, 
+                    data=json.dumps(payload), 
+                    timeout=60
+                )
+                
+                # 2. Check for 429 specifically before raising other errors
+                if response.status_code == 429:
+                    raise HTTPError("Rate Limit Exceeded (429)")
+
+                # 3. Raise an exception for other bad status codes (4xx, 5xx)
+                response.raise_for_status()
+                
+                # 4. If successful, break the loop and proceed to processing logic
+                break 
+
+            except HTTPError as e:
+                if response is not None and response.status_code == 429 and attempt < MAX_RETRIES - 1:
+                    wait_time = INITIAL_BACKOFF_DELAY * (2 ** attempt) + (time.time() * 0.1) % 1
+                    print(f"Rate limit hit. Retrying in {wait_time:.2f} seconds (Attempt {attempt + 1}/{MAX_RETRIES})")
+                    time.sleep(wait_time)
+                    continue 
+                else:
+                    print(f"Final API call failed after {attempt + 1} attempts: {e}")
+                    status_code = response.status_code if response is not None else 500
+                    return JsonResponse({
+                        "error": f"AI service failed to respond: {status_code} {getattr(response, 'reason', 'Unknown Reason')}"
+                    }, status=status_code)
+            
+            except RequestException as e:
+                if attempt < MAX_RETRIES - 1:
+                    wait_time = INITIAL_BACKOFF_DELAY * (2 ** attempt)
+                    print(f"Network error: {e}. Retrying in {wait_time:.2f} seconds (Attempt {attempt + 1}/{MAX_RETRIES})")
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    print(f"Final network failure after {attempt + 1} attempts: {e}")
+                    return JsonResponse({"error": "Failed to connect to the AI service after multiple retries. Try refreshing the page."}, status=503)
+        
+        else:
+             return JsonResponse({"error": "AI service rate limit exceeded after all retries. Please try again later."}, status=429)
+        # --- End of Retry Loop ---
+        
+        try:
+            result = response.json()
+        except json.JSONDecodeError:
+            print(f"AI response was not valid JSON: {response.text}")
+            return JsonResponse({"error": "AI service returned invalid data."}, status=500)
+
 
         if (
             result.get('candidates')
@@ -1661,12 +1721,18 @@ def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
         ):
             ai_part = result['candidates'][0]['content']['parts'][0]
             if 'text' not in ai_part:
-                return JsonResponse({"error": "Unexpected AI response format."}, status=500)
+                return JsonResponse({"error": "Unexpected AI response format (missing text part)."}, status=500)
 
-            ai_data = json.loads(ai_part['text'])
+            try:
+                ai_data = json.loads(ai_part['text'])
+            except json.JSONDecodeError:
+                print(f"AI attempted to return data but it was corrupted: {ai_part.get('text', 'No text found')}")
+                return JsonResponse({"error": "AI analysis data was corrupted (Invalid JSON structure)."}, status=500)
+
             if not all(k in ai_data for k in ["score", "summary", "pros", "cons"]):
-                return JsonResponse({"error": "AI response missing required keys."}, status=500)
+                return JsonResponse({"error": "AI response missing required analysis keys."}, status=500)
 
+            # --- Save the results to the profile (using appropriate update_fields) ---
             profile.parsed_summary = ai_data.get("summary", "")
             profile.parsed_skills = ai_data.get("pros", [])
             profile.parsed_experience = ai_data.get("cons", [])
@@ -1674,12 +1740,15 @@ def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
 
             return JsonResponse(ai_data, status=200)
 
-        return JsonResponse({"error": "Unexpected AI response structure."}, status=500)
+        # If the outer structure of the AI response is bad
+        return JsonResponse({"error": "Unexpected AI response structure (missing candidates)."}, status=500)
+        
+        # --- END: SUCCESSFUL RESPONSE PROCESSING ---
 
     except Exception as e:
-        print(f"ERROR in run_analysis_api_view: {str(e)}")
-        return JsonResponse({"error": f"Unexpected server error: {e}"}, status=500)
-    
+        # Catch any remaining critical errors
+        print(f"CRITICAL ERROR in run_analysis_api_view: {str(e)}")
+        return JsonResponse({"error": f"An unexpected critical error occurred: {e}"}, status=500)
 
 @login_required
 def delete_account_view(request: HttpRequest) -> HttpResponse:
