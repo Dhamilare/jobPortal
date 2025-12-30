@@ -263,8 +263,7 @@ GEMINI_API_KEY = config("GEMINI_API_KEY")
 # AZURE_OVERWRITE_FILES = False
 
 CSRF_TRUSTED_ORIGINS = [
-    # "https://readyremotejob.com",
-    "http://readyremotejob.com",
+     "https://readyremotejob.com"
 ]
 
 
