@@ -10,6 +10,7 @@ from django.db import IntegrityError, models
 from django.db.models.functions import TruncDay, Cast
 from datetime import timedelta
 from django.db.models import DateField
+from django.utils.timezone import now
 import csv, io
 from django.contrib import messages 
 from django.template.loader import render_to_string
@@ -205,7 +206,7 @@ def applicant_register(request):
         token = EmailVerificationToken.objects.create(user=user)
 
         site = Site.objects.get_current()
-        protocol = 'http' 
+        protocol = 'https' 
 
         verification_link = f"{protocol}://{site.domain}{reverse('email_verification_confirm', args=[token.token])}"
 
@@ -1427,7 +1428,7 @@ def add_comment_to_post(request, slug):
     """
     View to handle adding comments to a blog post. Requires applicant access.
     """
-    post = get_object_or_404(Post, slug=slug, status='published')
+    post = get_object_or_404(Post, slug=slug, publish_date__lte=now())
 
     if Comment.objects.filter(post=post, author=request.user).exists():
         return redirect('blog_detail', slug=post.slug)

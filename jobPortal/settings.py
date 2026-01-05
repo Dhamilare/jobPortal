@@ -13,16 +13,16 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
-import ssl
-import certifi
-import truststore
+# import ssl
+# import certifi
+# import truststore
 
-truststore.inject_into_ssl()
+# truststore.inject_into_ssl()
 
-CUSTOM_SSL_CONTEXT = ssl.create_default_context()
-CUSTOM_SSL_CONTEXT.load_verify_locations(certifi.where())
+# CUSTOM_SSL_CONTEXT = ssl.create_default_context()
+# CUSTOM_SSL_CONTEXT.load_verify_locations(certifi.where())
 
-EMAIL_SSL_CONTEXT = CUSTOM_SSL_CONTEXT
+# EMAIL_SSL_CONTEXT = CUSTOM_SSL_CONTEXT
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -217,12 +217,12 @@ CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_PORT = config("EMAIL_PORT", cast=int)
-EMAIL_USE_SSL = config('EMAIL_USE_SSL', cast=bool)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
-BASE_URL = 'http://readyremotejob.com'
+BASE_URL = 'https://readyremotejob.com'
 
 GEMINI_API_KEY = config("GEMINI_API_KEY")
 
