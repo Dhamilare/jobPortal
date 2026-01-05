@@ -92,6 +92,8 @@ ipython_config.py
 
 # celery beat schedule file
 celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 
 # SageMath parsed files
 *.sage.py
@@ -128,5 +130,6 @@ dmypy.json
 # production build of static files
 staticfiles
 mediafiles
+/media/
 
 .vscode/
