@@ -1993,3 +1993,27 @@ def request_resume_template_view(request, job_slug: str) -> HttpResponse:
 
     return redirect('job_detail', slug=job_slug)
 
+
+@staff_required
+def update_staff_bio(request):
+    profile, created = StaffProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        form = StaffBioForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated successfully.")
+            return redirect(reverse('blog_list'))
+    else:
+        form = StaffBioForm(instance=profile)
+    
+    return render(request, 'blog/edit_staff_profile.html', {'form': form})
+
+
+def author_posts(request, username):
+    author = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(author=author).order_by('-created_at')
+    return render(request, 'blog/blog_list.html', {
+        'posts': posts,
+        'author_filter': author
+    })

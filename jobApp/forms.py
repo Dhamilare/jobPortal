@@ -657,3 +657,18 @@ class CommentForm(forms.ModelForm):
         labels = {
             'content': 'Your Comment',
         }
+
+
+class StaffBioForm(forms.ModelForm):
+    class Meta:
+        model = StaffProfile
+        fields = ['job_title', 'bio', 'profile_picture']
+        widgets = {
+            'job_title': forms.TextInput(attrs={
+                'class': 'w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500'
+            }),
+            'bio': forms.Textarea(attrs={
+                'class': 'w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500',
+                'rows': 4
+            }),
+        }

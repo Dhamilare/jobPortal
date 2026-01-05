@@ -494,9 +494,32 @@ def create_or_update_applicant_profile(sender, instance, created, **kwargs):
     if instance.is_applicant and created:
         ApplicantProfile.objects.create(user=instance)
     elif instance.is_applicant:
-        # If user exists, just save their profile (in case of updates)
-        # Use hasattr to prevent errors if profile doesn't exist for some reason
         if hasattr(instance, 'applicant_profile'):
             instance.applicant_profile.save()
         else:
             ApplicantProfile.objects.create(user=instance)
+
+
+
+class StaffProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='staff_profile'
+    )
+    bio = models.TextField(max_length=500, blank=True)
+    job_title = models.CharField(max_length=100, default="Staff Writer")
+    profile_picture = models.ImageField(
+        upload_to='staff_pics/',
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"Staff Profile: {self.user.username}"
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_staff_profile(sender, instance, created, **kwargs):
+    if instance.is_staff:
+        StaffProfile.objects.get_or_create(user=instance)

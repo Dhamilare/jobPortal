@@ -117,4 +117,10 @@ urlpatterns = [
     path('job/<slug:job_slug>/analyze/upload/',
          views.handle_resume_upload_view,
          name='handle_resume_upload'),
+
+     # URL for staff to update their bio
+    path('author/edit-bio/', views.update_staff_bio, name='update_staff_bio'),
+    
+    # URL to see all posts by a specific author
+    path('author/<str:username>/', views.author_posts, name='author_posts'),
 ]

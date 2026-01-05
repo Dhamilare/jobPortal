@@ -325,7 +325,7 @@ class ApplicantProfileInline(admin.StackedInline):
     
 
 # ---------------------------------
-# --- ApplicantProfile Admin (Standalone) ---
+# --- ApplicantProfile
 # ---------------------------------
 @admin.register(ApplicantProfile)
 class ApplicantProfileAdmin(admin.ModelAdmin):
@@ -343,6 +343,47 @@ class ApplicantProfileAdmin(admin.ModelAdmin):
             return obj.resume.name.split('/')[-1]
         return "No resume"
     get_resume_filename.short_description = "Resume File"
+
+
+
+# ---------------------------------
+# --- StaffProfile
+# ---------------------------------
+
+@admin.register(StaffProfile)
+class StaffProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "job_title",
+    )
+
+    search_fields = (
+        "user__username",
+        "user__email",
+        "job_title",
+    )
+
+    list_filter = (
+        "job_title",
+    )
+
+    readonly_fields = (
+        "user",
+    )
+
+    fieldsets = (
+        ("User Information", {
+            "fields": ("user",)
+        }),
+        ("Profile Details", {
+            "fields": (
+                "job_title",
+                "bio",
+                "profile_picture",
+            )
+        }),
+    )
+
 
 
 
