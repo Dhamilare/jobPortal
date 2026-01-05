@@ -205,7 +205,7 @@
                             <div class="flex gap-4 bg-gray-50 p-6 rounded-xl border border-gray-200">
                                 <!-- Avatar -->
                                 <div class="flex-shrink-0 bg-blue-200 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
-                                    {{ comment.author.username.0|upper }}
+                                    {{ comment.author.first_name|default:comment.author.username|slice:":1"|upper }}
                                 </div>
                                 <!-- Comment Content -->
                                 <div class="flex-1">
