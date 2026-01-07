@@ -9,7 +9,6 @@
     <meta name="description" content="{% block meta_description %}We connect you with trusted job opportunities while giving you the tools to prepare, apply, and land your next role.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
     <meta name="google-adsense-account" content="ca-pub-9467498426364206">
-    <!-- Google AdSense verification code -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9467498426364206"
      crossorigin="anonymous">
     </script>
@@ -233,7 +232,7 @@
             transform: translateY(0);
         }
         .pagination-nav-btn:hover {
-            box-shadow: 0 20px 25px -5p x rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
             /* Purple Gradient on hover */
             background-image: linear-gradient(to right, #8B5CF6, #6D28D9);
             color: #FFFFFF;
@@ -440,10 +439,16 @@
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
             
             <div class="mb-4 md:mb-0">
-                Copyright &copy; {% now "Y" %} Remote Ready Jobs. All rights reserved.
-            </div> 
+                Copyright &copy; {% now "Y" %} Remote Ready Jobs.
+            </div>
+
+            <div class="flex space-x-6 mb-4 md:mb-0 text-sm">
+                <a href="{% url 'about' %}" class="text-gray-300 hover:text-purple-400 transition-colors">About Us</a>
+                <a href="{% url 'privacy_policy' %}" class="text-gray-300 hover:text-purple-400 transition-colors">Privacy Policy</a>
+            </div>
+            
             <div class="flex space-x-6">
-                <a href="https://www.instagram.com/i.am.testimonysonowo?igsh=MTk1emV4ZWYwMjB0Mg==" class="text-gray-400 hover:text-purple-400 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram text-xl"></i></a>
+                <a href="https://www.instagram.com/remotereadyjobs_?igsh=azZ5Nm5rM3J4cDJw" class="text-gray-400 hover:text-purple-400 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram text-xl"></i></a>
                 <a href="https://www.linkedin.com/company/remote-ready-with-tess-rrwt/" class="text-gray-400 hover:text-purple-400 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in text-xl"></i></a>
                 <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors duration-200"><i class="fab fa-tiktok text-xl"></i></a>
                 <a href="https://chat.whatsapp.com/Hc3Zti3TROhAifML88ANao?mode=ems_copy_t" class="text-gray-400 hover:text-green-500 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp text-xl"></i></a>
@@ -454,7 +459,7 @@
 
     <div id="cookie-consent-modal" class="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 transition-transform duration-500 ease-out transform translate-y-full opacity-0">
         <div class="container mx-auto bg-white rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-8 border-t-4 border-purple-700"> <div class="flex-grow text-sm md:text-base text-gray-700 text-center md:text-left">
-                <p>This website uses cookies to ensure you get the best experience on our site. By continuing to use this site, you agree to our <a href="#" class="text-purple-700 hover:underline font-semibold">Privacy Policy</a>.</p> </div>
+                <p>This website uses cookies to ensure you get the best experience on our site. By continuing to use this site, you agree to our <a href="{% url 'privacy_policy' %}" class="text-purple-700 hover:underline font-semibold">Privacy Policy</a>.</p> </div>
             <div class="flex-shrink-0 w-full md:w-auto">
                 <button id="accept-cookies-btn" class="w-full btn-primary px-6 py-2.5 text-base md:text-sm">
                     Accept Cookies
@@ -495,7 +500,7 @@
                 });
             });
 
-            // --- NEW: Cookie Consent Logic ---
+            // --- Cookie Consent Logic ---
             const cookieModal = document.getElementById('cookie-consent-modal');
             const acceptButton = document.getElementById('accept-cookies-btn');
 

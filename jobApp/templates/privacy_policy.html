@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy | Ready Remote Jobs{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Sleek Animation Keyframes */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .animate-slide-left {
+        animation: slideInLeft 0.6s ease-out forwards;
+    }
+
+    /* Scroll progress bar */
+    #progress-container {
+        position: fixed;
+        top: 64px; /* Adjust based on your header height */
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: transparent;
+        z-index: 40;
+    }
+
+    #progress-bar {
+        height: 100%;
+        background: linear-gradient(to right, #6D28D9, #FDE047);
+        width: 0%;
+        transition: width 0.1s ease;
+    }
+
+    /* Glassmorphism sidebar */
+    .glass-sidebar {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Custom Scrollbar for sleek look */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #8B5CF6; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6D28D9; }
+
+    html { scroll-behavior: smooth; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="progress-container">
+    <div id="progress-bar"></div>
+</div>
+
+<div class="bg-gray-50 min-h-screen">
+    <div class="hero-section py-16">
+        <div class="container mx-auto px-6 animate-fade-in-up">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Privacy Policy</h1>
+            <p class="text-purple-100 text-lg opacity-90">Last updated: {% now "F j, Y" %}</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6 -mt-10 pb-20">
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <aside class="lg:w-1/4">
+                <div class="sticky top-24 space-y-2 glass-sidebar p-6 rounded-2xl shadow-xl animate-slide-left">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Table of Contents</h3>
+                    <nav class="flex flex-col space-y-1">
+                        <a href="#intro" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Introduction</a>
+                        <a href="#collection" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Data Collection</a>
+                        <a href="#adsense" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Google AdSense</a>
+                        <a href="#logfiles" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Log Files</a>
+                        <a href="#rights" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">User Rights</a>
+                        <a href="#contact" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Contact Us</a>
+                    </nav>
+                </div>
+            </aside>
+
+            <main class="lg:w-3/4 bg-white rounded-3xl shadow-2xl p-8 md:p-16 animate-fade-in-up" style="animation-delay: 0.2s;">
+                
+                <section id="intro" class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-purple-100 rounded-lg"><i class="fas fa-shield-alt text-purple-700"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">Introduction</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Welcome to <strong>Remote Ready Jobs</strong>. Your privacy is paramount to us. This policy outlines how we handle your personal data when you use our platform at <span class="text-purple-700 font-semibold">{{ request.get_host }}</span>.
+                    </p>
+                </section>
+
+                <section id="collection" class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-yellow-100 rounded-lg"><i class="fas fa-database text-yellow-700"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">Information We Collect</h2>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="p-4 border border-gray-100 rounded-xl bg-gray-50">
+                            <h4 class="font-bold text-purple-800 mb-2">Registration Data</h4>
+                            <p class="text-sm text-gray-600">Email, name, and professional details when you create an account.</p>
+                        </div>
+                        <div class="p-4 border border-gray-100 rounded-xl bg-gray-50">
+                            <h4 class="font-bold text-purple-800 mb-2">Communication</h4>
+                            <p class="text-sm text-gray-600">Details provided during support inquiries or resume reviews.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="adsense" class="mb-12 p-6 bg-purple-50 rounded-2xl border-l-8 border-purple-700">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-white rounded-lg shadow-sm"><i class="fab fa-google text-blue-500"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">Google AdSense & Cookies</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        We use Google AdSense to serve advertisements. Google uses the <strong>DART cookie</strong> to serve ads based on your visit history across the internet.
+                    </p>
+                    <a href="https://policies.google.com/technologies/ads" target="_blank" class="inline-flex items-center text-purple-700 font-bold hover:gap-2 transition-all">
+                        Opt-out of DART cookies <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </section>
+
+                <section id="rights" class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-green-100 rounded-lg"><i class="fas fa-user-check text-green-700"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">Your Data Rights</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4">Under GDPR and other privacy laws, you have the following rights:</p>
+                    <ul class="grid md:grid-cols-2 gap-3">
+                        <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check-circle text-purple-500"></i> Right to be forgotten</li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check-circle text-purple-500"></i> Right to data portability</li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check-circle text-purple-500"></i> Right of access</li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check-circle text-purple-500"></i> Right to rectification</li>
+                    </ul>
+                </section>
+
+                <section id="contact" class="text-center py-10 border-t border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Have Questions?</h2>
+                    <p class="text-gray-600 mb-6">Our privacy team is here to help.</p>
+                    <a href="mailto:remotereadywithtess@gmail.com" class="btn-primary w-auto px-10">
+                        <i class="fas fa-envelope mr-2"></i> Contact Support
+                    </a>
+                </section>
+
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Scroll Progress Logic
+    window.onscroll = function() {
+        let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        let scrolled = (winScroll / height) * 100;
+        document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+
+    // Active Link Highlighting (Intersection Observer)
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const id = entry.target.getAttribute('id');
+            const link = document.querySelector(`.toc-link[href="#${id}"]`);
+            if (entry.isIntersecting) {
+                document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('bg-purple-100', 'text-purple-700', 'pl-4'));
+                link?.classList.add('bg-purple-100', 'text-purple-700', 'pl-4');
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('section[id]').forEach((section) => {
+        observer.observe(section);
+    });
+</script>
+{% endblock %}

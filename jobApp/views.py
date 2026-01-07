@@ -2017,3 +2017,6 @@ def author_posts(request, username):
         'posts': posts,
         'author_filter': author
     })
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')

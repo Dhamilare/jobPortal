@@ -123,4 +123,6 @@ urlpatterns = [
     
     # URL to see all posts by a specific author
     path('author/<str:username>/', views.author_posts, name='author_posts'),
+
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy')
 ]
