@@ -1309,7 +1309,9 @@ def post_list_view(request):
     View to display a list of all published blog posts with search and pagination.
     """
     query = request.GET.get('q')
-    posts_list = Post.objects.all().order_by('-publish_date')
+    posts_list = Post.objects.filter(
+            publish_date__lte=timezone.now()
+        ).order_by('-publish_date')
 
     if query:
         posts_list = posts_list.filter(
@@ -1335,9 +1337,16 @@ def post_list_view(request):
 def post_detail_view(request, slug):
     """
     View to display a single blog post and its comments.
+    Staff can preview scheduled posts, but regular users cannot.
     """
-    
+    # 1. Fetch the post
     post = get_object_or_404(Post, slug=slug)
+
+    # 2. Security Check: If the post is scheduled for the future and user isn't staff, hide it
+    if post.publish_date > timezone.now() and not request.user.is_staff:
+        from django.http import Http404
+        raise Http404("This post is scheduled for a later date.")
+
     comments = post.comments.all()
 
     has_commented = False
@@ -1347,18 +1356,15 @@ def post_detail_view(request, slug):
 
     comment_form = CommentForm()
 
-    related_posts = Post.objects.none()
+    # 3. Filter Related Posts so only currently 'live' posts appear
+    live_posts = Post.objects.filter(publish_date__lte=timezone.now())
 
     if post.category:
-        related_posts = Post.objects.filter(
+        related_posts = live_posts.filter(
             category=post.category  
-        ).exclude(
-            pk=post.pk          
-        ).order_by('-publish_date')[:3] 
+        ).exclude(pk=post.pk).order_by('-publish_date')[:3] 
     else:
-        related_posts = Post.objects.exclude(
-            pk=post.pk
-        ).order_by('-publish_date')[:3]
+        related_posts = live_posts.exclude(pk=post.pk).order_by('-publish_date')[:3]
 
     return render(request, 'blog/post_detail.html', {
         'post': post,
@@ -1367,6 +1373,7 @@ def post_detail_view(request, slug):
         'has_commented': has_commented,
         'related_posts': related_posts,
     })
+
 
 @staff_required
 def post_create_view(request):
@@ -2009,14 +2016,6 @@ def update_staff_bio(request):
     
     return render(request, 'blog/edit_staff_profile.html', {'form': form})
 
-
-def author_posts(request, username):
-    author = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author=author).order_by('-created_at')
-    return render(request, 'blog/blog_list.html', {
-        'posts': posts,
-        'author_filter': author
-    })
 
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')

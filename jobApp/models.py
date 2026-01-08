@@ -393,6 +393,9 @@ class Post(models.Model):
             self.slug = generate_unique_slug(self, self.title)
         super().save(*args, **kwargs)
 
+    def is_published(self):
+        return self.publish_date <= timezone.now()
+
 
 class Comment(models.Model):
     """

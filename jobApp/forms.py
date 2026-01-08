@@ -630,7 +630,7 @@ class RecruiterRegistrationForm(forms.Form):
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ('title', 'content', 'image', 'category')
+        fields = ('title', 'content', 'image', 'category', 'publish_date')
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -641,6 +641,11 @@ class PostForm(forms.ModelForm):
             'category': forms.Select(attrs={
                 'class': 'w-full p-2 border rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
             }),
+
+            'publish_date': forms.DateTimeInput(attrs={
+                'type': 'datetime-local',
+                'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
+            }, format='%Y-%m-%dT%H:%M'),
         }
 
 
