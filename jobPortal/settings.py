@@ -13,16 +13,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
-# import ssl
-# import certifi
-# import truststore
-
-# truststore.inject_into_ssl()
-
-# CUSTOM_SSL_CONTEXT = ssl.create_default_context()
-# CUSTOM_SSL_CONTEXT.load_verify_locations(certifi.where())
-
-# EMAIL_SSL_CONTEXT = CUSTOM_SSL_CONTEXT
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -87,33 +77,33 @@ WSGI_APPLICATION = 'jobPortal.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
   
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-
 # DATABASES = {
-
 #     'default': {
-
-#         'ENGINE': 'django.db.backends.postgresql',
-
-#         'NAME': 'postgres',
-
-#         'USER': 'postgres',
-
-#         'PASSWORD': 'Klassnics@1759',
-
-#         'HOST': 'localhost',
-
-#         'PORT': '5432',
-
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
-
 # }
+
+
+DATABASES = {
+
+    'default': {
+
+        'ENGINE': 'django.db.backends.postgresql',
+
+        'NAME': 'postgres',
+
+        'USER': 'postgres',
+
+        'PASSWORD': 'Klassnics@1759',
+
+        'HOST': 'localhost',
+
+        'PORT': '5432',
+
+    }
+
+}
 
 
 # Password validation
