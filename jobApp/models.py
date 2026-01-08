@@ -361,7 +361,7 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=250, unique=True, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blog_posts')
-    content = CKEditor5Field(config_name='default')
+    content = CKEditor5Field(config_name='extends')
     image = models.ImageField(
         upload_to='blog_images/',
         blank=True,

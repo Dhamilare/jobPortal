@@ -123,8 +123,10 @@ def home_view(request):
         if job.job_expiry_date and job.job_expiry_date < now:
             job.is_expired = True
 
-    # Fetch the 3 most recent published blog posts.
-    blog_posts = Post.objects.all().order_by('-publish_date')[:3]
+    # Fetch only the 3 most recent PUBLISHED blog posts (no future posts)
+    blog_posts = Post.objects.filter(
+        publish_date__lte=now
+    ).order_by('-publish_date')[:3]
 
     context = {
         'verified_jobs': verified_jobs,

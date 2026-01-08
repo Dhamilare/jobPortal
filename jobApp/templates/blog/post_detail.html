@@ -126,7 +126,9 @@
                     </div>
 
                     <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed mb-8">
-                        {{ post.content|safe }}
+                        <div class="ck-content">
+                            {{ post.content|safe }}
+                        </div>
                     </div>
 
                     <hr class="my-8 border-gray-200">
