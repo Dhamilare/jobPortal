@@ -1308,26 +1308,34 @@ def activate_account(request, uidb64, token):
 
 def post_list_view(request):
     """
-    View to display a list of all published blog posts with search and pagination.
+    View to display blog posts. 
+    Staff see all posts (including scheduled), 
+    while the public only sees published posts.
     """
     query = request.GET.get('q')
-    posts_list = Post.objects.filter(
-            publish_date__lte=timezone.now()
-        ).order_by('-publish_date')
+    posts_list = Post.objects.all()
 
+    # 2. If the user is NOT staff, filter out the future/scheduled posts
+    if not request.user.is_staff:
+        posts_list = posts_list.filter(publish_date__lte=timezone.now())
+
+    # 3. Apply search query if it exists
     if query:
         posts_list = posts_list.filter(
             Q(title__icontains=query) |
             Q(content__icontains=query)
         ).distinct()
+    
+    # 4. Order by date (Scheduled posts will appear at the top if they are future-dated)
+    posts_list = posts_list.order_by('-publish_date')
+
+    # Pagination logic
     paginator = Paginator(posts_list, 6) 
     page_number = request.GET.get('page')
     try:
         page_obj = paginator.get_page(page_number)
-    except PageNotAnInteger:
+    except (PageNotAnInteger, EmptyPage):
         page_obj = paginator.get_page(1)
-    except EmptyPage:
-        page_obj = paginator.get_page(paginator.num_pages)
     
     context = {
         'page_obj': page_obj,
