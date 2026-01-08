@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Failed - Remote Ready{% endblock %}
+
+{% block content %}
+<style>
+    .error-shake {
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(239, 68, 68, 0.1);
+    }
+</style>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-6">
+    <div class="max-w-md w-full glass-card rounded-3xl shadow-2xl p-10 text-center animate-fade-in-up">
+        
+        <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-8 error-shake">
+            <i class="fas fa-exclamation-triangle text-4xl text-red-600"></i>
+        </div>
+
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-4">Payment Unsuccessful</h1>
+        <p class="text-gray-600 mb-8">
+            We couldn't process your transaction. This might be due to insufficient funds, an expired card, or a temporary network issue with the payment gateway.
+        </p>
+
+        <div class="bg-red-50 rounded-2xl p-6 mb-8 text-left">
+            <h4 class="text-sm font-bold text-red-800 mb-3 uppercase tracking-tight">Quick Check:</h4>
+            <ul class="text-sm text-red-700 space-y-2">
+                <li class="flex items-start">
+                    <i class="fas fa-circle text-[6px] mt-2 mr-2"></i>
+                    Check if your card is enabled for online payments.
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-circle text-[6px] mt-2 mr-2"></i>
+                    Ensure you have sufficient balance.
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-circle text-[6px] mt-2 mr-2"></i>
+                    Verify your internet connection and try again.
+                </li>
+            </ul>
+        </div>
+
+        <div class="space-y-4">
+            <a href="{% url 'subscription_plans' %}" class="block w-full py-4 bg-purple-700 text-white rounded-2xl font-bold hover:bg-purple-800 transition-all transform hover:-translate-y-1 shadow-lg">
+                <i class="fas fa-redo mr-2"></i> Try Again
+            </a>
+            
+            <a href="{% url 'home' %}" class="block w-full py-4 bg-white text-gray-600 border border-gray-200 rounded-2xl font-bold hover:bg-gray-50 transition-colors">
+                Return to Homepage
+            </a>
+        </div>
+
+        <p class="mt-8 text-xs text-gray-400">
+            If you were charged but didn't receive an email, please contact support with your bank's transaction ID.
+        </p>
+    </div>
+</div>
+{% endblock %}

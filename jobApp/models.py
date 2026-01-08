@@ -526,3 +526,24 @@ class StaffProfile(models.Model):
 def create_staff_profile(sender, instance, created, **kwargs):
     if instance.is_staff:
         StaffProfile.objects.get_or_create(user=instance)
+
+
+class JobSubscription(models.Model):
+    PLAN_CHOICES = [
+        ('2_weeks', '2 Weeks - Intensive Search'),
+        ('1_month', '1 Month - Professional'),
+        ('3_months', '3 Months - Ultimate Career'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    plan_type = models.CharField(max_length=20, choices=PLAN_CHOICES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reference = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=20, default='pending') # pending, success, failed
+    created_at = models.DateTimeField(auto_now_add=True)
+    expiry_date = models.DateTimeField(null=True, blank=True)
+    whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
+    interest_category = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.plan_type}"

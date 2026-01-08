@@ -77,33 +77,33 @@ WSGI_APPLICATION = 'jobPortal.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
   
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
-
 DATABASES = {
-
     'default': {
-
-        'ENGINE': 'django.db.backends.postgresql',
-
-        'NAME': 'postgres',
-
-        'USER': 'postgres',
-
-        'PASSWORD': 'Klassnics@1759',
-
-        'HOST': 'localhost',
-
-        'PORT': '5432',
-
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
-
 }
+
+
+# DATABASES = {
+
+#     'default': {
+
+#         'ENGINE': 'django.db.backends.postgresql',
+
+#         'NAME': 'postgres',
+
+#         'USER': 'postgres',
+
+#         'PASSWORD': 'Klassnics@1759',
+
+#         'HOST': 'localhost',
+
+#         'PORT': '5432',
+
+#     }
+
+# }
 
 
 # Password validation
@@ -200,9 +200,11 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_TIME_LIMIT = 30 * 60 
 CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60
 
+PAYSTACK_PUBLIC_KEY=config("PAYSTACK_PUBLIC_KEY")
+PAYSTACK_SECRET_KEY=config("PAYSTACK_SECRET_KEY")
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config("EMAIL_HOST")

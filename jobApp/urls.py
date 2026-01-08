@@ -121,5 +121,14 @@ urlpatterns = [
      # URL for staff to update their bio
     path('author/edit-bio/', views.update_staff_bio, name='update_staff_bio'),
 
-    path('privacy-policy/', views.privacy_policy, name='privacy_policy')
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+
+    # Pricing Page
+    path('subscription/plans/', views.subscription_plans, name='subscription_plans'),
+    
+    # Initialization (Triggers Paystack)
+    path('subscription/pay/<str:plan_key>/', views.initialize_payment, name='initialize_payment'),
+    
+    # Callback (Where Paystack redirects after payment)
+    path('subscription/verify/', views.verify_payment, name='verify_payment'),
 ]

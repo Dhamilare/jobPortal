@@ -49,6 +49,9 @@ import mimetypes
 from django.contrib.sites.models import Site
 import time
 from requests.exceptions import HTTPError, RequestException
+from django.views.decorators.http import require_POST
+import hmac
+import hashlib
 
 # ----------------------------
 # Role-based Access Decorators
@@ -2029,3 +2032,152 @@ def update_staff_bio(request):
 
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')
+
+
+PLANS = {
+    '2_weeks': {'name': 'Intensive Search', 'price': 5000, 'days': 14, 'desc': 'Perfect for immediate needs.'},
+    '1_month': {'name': 'Professional', 'price': 9000, 'days': 30, 'desc': 'Our most popular career booster.'},
+    '3_months': {'name': 'Ultimate Career', 'price': 22000, 'days': 90, 'desc': 'Full long-term job support.'},
+}
+
+@login_required
+def subscription_plans(request):
+    return render(request, 'subscription/plans.html', {'plans': PLANS})
+
+@login_required
+def initialize_payment(request, plan_key):
+    plan = PLANS.get(plan_key)
+    if not plan:
+        return redirect('subscription_plans')
+    
+    reference = str(uuid.uuid4())
+
+    whatsapp = request.POST.get('whatsapp_number')
+    interest = request.POST.get('interest_category')
+    
+    # Save pending subscription
+    JobSubscription.objects.create(
+        user=request.user,
+        plan_type=plan_key,
+        amount=plan['price'],
+        reference=reference,
+        whatsapp_number=whatsapp, 
+        interest_category=interest
+    )
+
+    # Paystack API Initialization
+    url = "https://api.paystack.co/transaction/initialize"
+    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
+    data = {
+        "email": request.user.email,
+        "amount": plan['price'] * 100,
+        "reference": reference,
+        "callback_url": request.build_absolute_uri('/subscription/verify/')
+    }
+    
+    r = requests.post(url, headers=headers, json=data)
+    response = r.json()
+    if response['status']:
+        return redirect(response['data']['authorization_url'])
+    return redirect('subscription_plans')
+
+@login_required
+def verify_payment(request):
+    reference = request.GET.get('reference')
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
+    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
+    
+    r = requests.get(url, headers=headers)
+    response = r.json()
+
+    current_site = get_current_site(request)
+    domain = current_site.domain
+    
+    if response['status'] and response['data']['status'] == 'success':
+        sub = get_object_or_404(JobSubscription, reference=reference)
+        plan_info = PLANS[sub.plan_type]
+        
+        if sub.status != 'success':
+            sub.status = 'success'
+            sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
+            sub.save()
+        
+        # Send Templated Email
+        context = {
+            'user': request.user,
+            'plan_name': plan_info['name'],
+            'amount': sub.amount,
+            'expiry': sub.expiry_date,
+            'reference': reference,
+            'domain': domain,
+            'expiry': sub.expiry_date,
+            'protocol': 'https' if request.is_secure() else 'http',
+            'whatsapp_number': sub.whatsapp_number,
+            'interest_category': sub.interest_category,
+        }
+        send_templated_email(
+            'emails/subscription_confirmed.html',
+            'Your Job Subscription is Active!',
+            [request.user.email],
+            context
+        )
+        
+        return render(request, 'subscription/success.html', context)
+    
+    return render(request, 'subscription/failed.html')
+
+
+@csrf_exempt
+@require_POST
+def paystack_webhook(request):
+    payload = request.body
+    sig_header = request.headers.get('x-paystack-signature')
+    
+    if not sig_header:
+        return HttpResponse(status=400)
+
+    secret = settings.PAYSTACK_SECRET_KEY
+    hash = hmac.new(secret.encode('utf-8'), payload, hashlib.sha512).hexdigest()
+
+    if hash != sig_header:
+        return HttpResponse(status=401)
+
+    # Process the data
+    event_data = json.loads(payload)
+
+    current_site = get_current_site(request)
+    domain = current_site.domain
+    
+    if event_data['event'] == 'charge.success':
+        reference = event_data['data']['reference']
+        
+        try:
+            sub = JobSubscription.objects.get(reference=reference, status='pending')
+            
+            plan_key = sub.plan_type
+            plan_info = PLANS[plan_key]
+            
+            sub.status = 'success'
+            sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
+            sub.save()
+            
+            context = {
+                'user': sub.user,
+                'plan_name': plan_info['name'],
+                'amount': sub.amount,
+                'expiry_date': sub.expiry_date,
+                'reference': reference,
+                'domain': domain,
+                'protocol': 'https'
+            }
+            send_templated_email(
+                'emails/subscription_confirmation.html',
+                'Your Subscription is Active',
+                [sub.user.email],
+                context
+            )
+            
+        except JobSubscription.DoesNotExist:
+            pass
+
+    return HttpResponse(status=200)
