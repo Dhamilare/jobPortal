@@ -131,4 +131,6 @@ urlpatterns = [
     
     # Callback (Where Paystack redirects after payment)
     path('subscription/verify/', views.verify_payment, name='verify_payment'),
+
+    path('paystack/webhook/', views.paystack_webhook, name='paystack_webhook'),
 ]

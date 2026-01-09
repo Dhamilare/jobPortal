@@ -2046,84 +2046,73 @@ def subscription_plans(request):
 @login_required
 def initialize_payment(request, plan_key):
     plan = PLANS.get(plan_key)
-    if not plan:
+    if not plan or request.method != "POST":
         return redirect('subscription_plans')
     
     reference = str(uuid.uuid4())
-
     whatsapp = request.POST.get('whatsapp_number')
     interest = request.POST.get('interest_category')
     
-    # Save pending subscription
+    # 1. Create the local record first
     JobSubscription.objects.create(
         user=request.user,
         plan_type=plan_key,
         amount=plan['price'],
         reference=reference,
         whatsapp_number=whatsapp, 
-        interest_category=interest
+        interest_category=interest,
+        status='pending'
     )
 
-    # Paystack API Initialization
+    # 2. Prepare the callback URL
+    callback_url = request.build_absolute_uri(reverse('verify_payment'))
+
+    # 3. Paystack Initialization
     url = "https://api.paystack.co/transaction/initialize"
-    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
     data = {
         "email": request.user.email,
-        "amount": plan['price'] * 100,
+        "amount": int(plan['price'] * 100),
         "reference": reference,
-        "callback_url": request.build_absolute_uri('/subscription/verify/')
+        "callback_url": callback_url
     }
     
-    r = requests.post(url, headers=headers, json=data)
-    response = r.json()
-    if response['status']:
-        return redirect(response['data']['authorization_url'])
+    try:
+        r = requests.post(url, headers=headers, json=data, timeout=10)
+        response = r.json()
+        if response.get('status'):
+            return redirect(response['data']['authorization_url'])
+    except requests.exceptions.RequestException:
+        pass
+        
     return redirect('subscription_plans')
 
-@login_required
-def verify_payment(request):
-    reference = request.GET.get('reference')
-    url = f"https://api.paystack.co/transaction/verify/{reference}"
-    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
-    
-    r = requests.get(url, headers=headers)
-    response = r.json()
 
-    current_site = get_current_site(request)
-    domain = current_site.domain
-    
-    if response['status'] and response['data']['status'] == 'success':
-        sub = get_object_or_404(JobSubscription, reference=reference)
-        plan_info = PLANS[sub.plan_type]
-        
-        if sub.status != 'success':
-            sub.status = 'success'
-            sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
-            sub.save()
-        
-        # Send Templated Email
+def verify_payment(request):
+
+    reference = request.GET.get('reference')
+    if not reference:
+        return render(request, 'subscription/failed.html', {'error': 'No reference provided.'})
+
+    sub = get_object_or_404(JobSubscription, reference=reference)
+
+    if sub.status == 'success':
+        plan_info = PLANS.get(sub.plan_type)
         context = {
-            'user': request.user,
+            'user': sub.user,
             'plan_name': plan_info['name'],
             'amount': sub.amount,
-            'expiry': sub.expiry_date,
+            'expiry_date': sub.expiry_date,
             'reference': reference,
-            'domain': domain,
-            'expiry': sub.expiry_date,
-            'protocol': 'https' if request.is_secure() else 'http',
             'whatsapp_number': sub.whatsapp_number,
             'interest_category': sub.interest_category,
         }
-        send_templated_email(
-            'emails/subscription_confirmed.html',
-            'Your Job Subscription is Active!',
-            [request.user.email],
-            context
-        )
-        
         return render(request, 'subscription/success.html', context)
     
-    return render(request, 'subscription/failed.html')
+    return render(request, 'subscription/failed.html', {'error': 'Payment verification pending. Check your email shortly.'})
 
 
 @csrf_exempt
@@ -2141,21 +2130,17 @@ def paystack_webhook(request):
     if hash != sig_header:
         return HttpResponse(status=401)
 
-    # Process the data
     event_data = json.loads(payload)
 
-    current_site = get_current_site(request)
-    domain = current_site.domain
-    
     if event_data['event'] == 'charge.success':
         reference = event_data['data']['reference']
         
-        try:
-            sub = JobSubscription.objects.get(reference=reference, status='pending')
+        sub = JobSubscription.objects.filter(reference=reference).first()
+        
+        if sub and sub.status == 'pending':
+            plan_info = PLANS.get(sub.plan_type)
             
-            plan_key = sub.plan_type
-            plan_info = PLANS[plan_key]
-            
+            # Update Database
             sub.status = 'success'
             sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
             sub.save()
@@ -2164,19 +2149,19 @@ def paystack_webhook(request):
                 'user': sub.user,
                 'plan_name': plan_info['name'],
                 'amount': sub.amount,
-                'expiry_date': sub.expiry_date,
+                'expiry': sub.expiry_date,
                 'reference': reference,
-                'domain': domain,
-                'protocol': 'https'
+                'whatsapp_number': sub.whatsapp_number,
+                'interest_category': sub.interest_category,
+                'domain': getattr(settings, 'SITE_DOMAIN', ''),
+                'protocol': 'https',
+                'current_year': timezone.now().year
             }
             send_templated_email(
                 'emails/subscription_confirmation.html',
-                'Your Subscription is Active',
+                'Your Subscription is Active!',
                 [sub.user.email],
                 context
             )
-            
-        except JobSubscription.DoesNotExist:
-            pass
 
     return HttpResponse(status=200)
