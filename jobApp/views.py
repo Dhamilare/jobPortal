@@ -2043,6 +2043,51 @@ PLANS = {
 def subscription_plans(request):
     return render(request, 'subscription/plans.html', {'plans': PLANS, 'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY})
 
+
+def render_success(request, sub):
+    """
+    Helper function to render the success page with subscription details.
+    """
+    plan_info = PLANS.get(sub.plan_type)
+    context = {
+        'user': sub.user,
+        'plan_name': plan_info['name'],
+        'amount': sub.amount,
+        'expiry': sub.expiry_date,
+        'reference': sub.reference,
+        'whatsapp_number': sub.whatsapp_number,
+        'interest_category': sub.interest_category,
+    }
+    return render(request, 'subscription/success.html', context)
+
+def send_subscription_email(sub):
+    """Helper function to handle the email logic once"""
+    plan_info = PLANS.get(sub.plan_type)
+    context = {
+        'user': sub.user,
+        'plan_name': plan_info['name'],
+        'amount': sub.amount,
+        'expiry': sub.expiry_date,
+        'reference': sub.reference,
+        'whatsapp_number': sub.whatsapp_number,
+        'interest_category': sub.interest_category,
+        'domain': getattr(settings, 'SITE_DOMAIN'),
+        'protocol': 'https',
+        'current_year': timezone.now().year
+    }
+    try:
+        recipient_list = [str(sub.user.email)]
+        send_templated_email(
+            'emails/subscription_confirmed.html',
+            'Your Subscription is Active!',
+            recipient_list,
+            context
+        )
+        sub.is_notified = True
+        sub.save()
+    except Exception as e:
+        print(f"Email Error in verify_payment: {e}")
+
 @login_required
 def initialize_payment(request, plan_key):
     plan = PLANS.get(plan_key)
@@ -2113,8 +2158,8 @@ def verify_payment(request):
         # Safety check: if webhook succeeded but email failed, try sending here
         if not sub.is_notified:
             send_subscription_email(sub)
-        return render(request, sub)
-
+        return render_success(request, sub)
+    
     # 2. FALLBACK: If Webhook is slow, verify manually once
     url = f"https://api.paystack.co/transaction/verify/{reference}"
     headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
@@ -2131,12 +2176,11 @@ def verify_payment(request):
                 sub.status = 'success'
                 sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
                 sub.save()
-            
-            # Send email if it hasn't been sent yet
+
             if not sub.is_notified:
                 send_subscription_email(sub)
                 
-            return render(request, sub)
+            return render_success(request, sub)
             
     except Exception as e:
         print(f"Verification Error: {e}")
@@ -2144,34 +2188,6 @@ def verify_payment(request):
     return render(request, 'subscription/failed.html', {
         'error': 'Payment verification is taking longer than expected. Please check your email in a few minutes.'
     })
-
-def send_subscription_email(sub):
-    """Helper function to handle the email logic once"""
-    plan_info = PLANS.get(sub.plan_type)
-    context = {
-        'user': sub.user,
-        'plan_name': plan_info['name'],
-        'amount': sub.amount,
-        'expiry': sub.expiry_date,
-        'reference': sub.reference,
-        'whatsapp_number': sub.whatsapp_number,
-        'interest_category': sub.interest_category,
-        'domain': getattr(settings, 'SITE_DOMAIN'),
-        'protocol': 'https',
-        'current_year': timezone.now().year
-    }
-    try:
-        recipient_list = [str(sub.user.email)]
-        send_templated_email(
-            'emails/subscription_confirmed.html',
-            'Your Subscription is Active!',
-            recipient_list,
-            context
-        )
-        sub.is_notified = True
-        sub.save()
-    except Exception as e:
-        print(f"Email Error in verify_payment: {e}")
 
 
 @csrf_exempt
