@@ -539,6 +539,7 @@ class JobSubscription(models.Model):
     plan_type = models.CharField(max_length=20, choices=PLAN_CHOICES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     reference = models.CharField(max_length=100, unique=True)
+    is_notified = models.BooleanField(default=False)
     status = models.CharField(max_length=20, default='pending') # pending, success, failed
     created_at = models.DateTimeField(auto_now_add=True)
     expiry_date = models.DateTimeField(null=True, blank=True)

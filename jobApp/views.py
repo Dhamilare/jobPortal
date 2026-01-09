@@ -2091,7 +2091,8 @@ def initialize_payment(request, plan_key):
                 'status': 'success',
                 'access_code': response['data']['access_code'],
                 'reference': reference,
-                'amount_kobo': int(plan['price'] * 100)
+                'amount_kobo': int(plan['price'] * 100),
+                'email': request.user.email
             })
             
     except Exception as e:
@@ -2109,7 +2110,10 @@ def verify_payment(request):
 
     # 1. If Webhook already finished, just show success
     if sub.status == 'success':
-        return render_success(request, sub)
+        # Safety check: if webhook succeeded but email failed, try sending here
+        if not sub.is_notified:
+            send_subscription_email(sub)
+        return render(request, sub)
 
     # 2. FALLBACK: If Webhook is slow, verify manually once
     url = f"https://api.paystack.co/transaction/verify/{reference}"
@@ -2120,14 +2124,19 @@ def verify_payment(request):
         response = r.json()
 
         if response.get('status') and response['data']['status'] == 'success':
-            # Update local record if not already done
             plan_info = PLANS.get(sub.plan_type)
+            
+            # Update local record if status is not success
             if sub.status != 'success':
                 sub.status = 'success'
                 sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
                 sub.save()
+            
+            # Send email if it hasn't been sent yet
+            if not sub.is_notified:
+                send_subscription_email(sub)
                 
-            return render_success(request, sub)
+            return render(request, sub)
             
     except Exception as e:
         print(f"Verification Error: {e}")
@@ -2136,7 +2145,8 @@ def verify_payment(request):
         'error': 'Payment verification is taking longer than expected. Please check your email in a few minutes.'
     })
 
-def render_success(request, sub):
+def send_subscription_email(sub):
+    """Helper function to handle the email logic once"""
     plan_info = PLANS.get(sub.plan_type)
     context = {
         'user': sub.user,
@@ -2146,8 +2156,21 @@ def render_success(request, sub):
         'reference': sub.reference,
         'whatsapp_number': sub.whatsapp_number,
         'interest_category': sub.interest_category,
+        'domain': getattr(settings, 'SITE_DOMAIN'),
+        'protocol': 'https',
+        'current_year': timezone.now().year
     }
-    return render(request, 'subscription/success.html', context)
+    try:
+        send_templated_email(
+            'emails/subscription_confirmation.html',
+            'Your Subscription is Active!',
+            [sub.user.email],
+            context
+        )
+        sub.is_notified = True
+        sub.save()
+    except Exception as e:
+        print(f"Email Error in verify_payment: {e}")
 
 
 @csrf_exempt
