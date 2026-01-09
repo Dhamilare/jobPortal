@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - Remote Ready With Tess{% endblock %}
+{% block title %}Dashboard - Remote Ready Jobs{% endblock %}
 
 {% block content %}
 <style>
@@ -18,23 +18,26 @@
     
     /* Style for the disabled delete button */
     .btn-delete-disabled {
-        /* Adjusted color to be purple-theme complimentary */
-        background-color: #A78BFA; /* violet-400 equivalent for base */
-        color: #F3F4F6; /* gray-100 */
+        background-color: #A78BFA; 
+        color: #F3F4F6; 
         cursor: not-allowed;
     }
-    /* Style override for the Delete Button itself, making it red on hover, but purple otherwise */
+    /* Style override for the Delete Button */
     #delete-confirm-btn.btn-delete-disabled {
-        background-image: linear-gradient(to right, #6D28D9, #8B5CF6); /* Default primary purple */
+        background-image: linear-gradient(to right, #6D28D9, #8B5CF6); 
         opacity: 0.6;
         cursor: not-allowed;
         color: white;
     }
     #delete-confirm-btn:not(.btn-delete-disabled) {
-        background: #DC2626; /* red-600 */
+        background: #DC2626; 
     }
     #delete-confirm-btn:not(.btn-delete-disabled):hover {
-        background: #B91C1C; /* red-700 */
+        background: #B91C1C; 
+    }
+
+    .card-shadow {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 </style>
 
@@ -44,7 +47,7 @@
             <i class="fas fa-tachometer-alt text-purple-600 mr-3"></i> Welcome, {{ user.username }}!
         </h1>
 
-        {# Django Messages Section (Updated 'info' message to purple) #}
+        {# Django Messages Section #}
         {% if messages %}
             <div class="mb-6 space-y-3">
                 {% for message in messages %}
@@ -54,17 +57,14 @@
                         {% if message.tags == 'info' %}bg-purple-100 text-purple-700 border border-purple-400{% endif %}
                         {% if message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400{% endif %}
                     " role="alert">
-                        {% if message.tags == 'success' %}<i class="fas fa-check-circle mr-3 text-lg"></i>{% endif %}
-                        {% if message.tags == 'error' %}<i class="fas fa-exclamation-circle mr-3 text-lg"></i>{% endif %}
-                        {% if message.tags == 'info' %}<i class="fas fa-info-circle mr-3 text-lg"></i>{% endif %}
-                        {% if message.tags == 'warning' %}<i class="fas fa-exclamation-triangle mr-3 text-lg"></i>{% endif %}
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'info' %}fa-info-circle{% else %}fa-exclamation-triangle{% endif %} mr-3 text-lg"></i>
                         <div>{{ message }}</div>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
 
-        {# Profile Update Warning (Kept yellow for high visibility warning) #}
+        {# Profile Update Warning #}
         {% if not user.first_name or not user.last_name %}
         <div class="mb-8 p-4 bg-yellow-100 text-yellow-800 rounded-lg shadow-md flex flex-col md:flex-row items-center justify-between" role="alert">
             <div class="flex items-center text-center md:text-left mb-2 md:mb-0">
@@ -77,161 +77,190 @@
         </div>
         {% endif %}
 
+        {# Stats & Subscription Grid #}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <a href="{% url 'applicant_applications_list' %}" class="block bg-white rounded-lg p-6 card-shadow border border-gray-200 text-center hover:bg-purple-50 transition-colors duration-200 cursor-pointer">
+            {# Total Jobs Applied Card #}
+            <a href="{% url 'applicant_applications_list' %}" class="block bg-white rounded-xl p-6 card-shadow border border-gray-200 text-center hover:bg-purple-50 transition-colors duration-200 cursor-pointer">
                 <i class="fas fa-file-alt text-5xl text-purple-500 mb-4"></i>
                 <h2 class="text-xl font-semibold text-gray-900 mb-2">Total Jobs Applied</h2>
                 <p class="text-4xl font-bold text-purple-600">{{ total_applied }}</p>
                 <p class="text-sm text-gray-500 mt-2">Click to view all your applications</p>
             </a>
 
-            <section class="bg-white rounded-lg p-8 card-shadow border border-gray-200">
+            {# Subscription Status Card #}
+            <div class="bg-white rounded-xl p-6 card-shadow border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-crown text-yellow-500 mr-3"></i> Subscription Status
+                    </h2>
+                    {% if days_left > 0 %}
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider">Active</span>
+                    {% else %}
+                        <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full uppercase tracking-wider">Expired</span>
+                    {% endif %}
+                </div>
+
+                {% if subscription and days_left > 0 %}
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-sm text-gray-500">Current Plan</p>
+                                <p class="text-lg font-bold text-purple-700">{{ subscription.get_plan_type_display|default:subscription.plan_type }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-black text-gray-900">{{ days_left }}</p>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider">Days Remaining</p>
+                            </div>
+                        </div>
+
+                        {# Simple Progress Bar #}
+                        <div class="w-full bg-gray-100 rounded-full h-3">
+                            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 h-3 rounded-full transition-all duration-500" 
+                                 style="width: {% if days_left > 30 %}100{% else %}{{ days_left|add:days_left }}{% endif %}%"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2">
+                            <span class="text-xs text-gray-500 font-medium"><i class="far fa-calendar-alt mr-1"></i> Expires: {{ subscription.expiry_date|date:"M d, Y" }}</span>
+                            <a href="{% url 'subscription_plans' %}" class="text-purple-600 font-bold hover:underline text-sm">Renew Plan</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-gray-600 mb-4 text-sm">Subscribe to receive personalized job alerts straight to your inbox.</p>
+                        <a href="{% url 'subscription_plans' %}" class="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
+                            Browse Plans
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Saved Jobs Section #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <section class="bg-white rounded-xl p-8 card-shadow border border-gray-200">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                     <i class="fas fa-bookmark text-indigo-600 mr-3"></i> Saved Jobs
                 </h2>
                 {% if saved_jobs %}
                     <ul class="space-y-4">
                         {% for saved_job in saved_jobs %}
-                            <li class="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-100">
-                                <div>
-                                    <p class="font-medium text-gray-800">{{ saved_job.job.title }} at {{ saved_job.job.company_name }}</p>
-                                    <p class="text-sm text-gray-600">Saved on: {{ saved_job.saved_at|date:"M d, Y" }}</p>
+                            <li class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-purple-200 transition-colors">
+                                <div class="truncate mr-4">
+                                    <p class="font-bold text-gray-800 truncate">{{ saved_job.job.title }}</p>
+                                    <p class="text-sm text-gray-500">{{ saved_job.job.company_name }} • {{ saved_job.saved_at|date:"M d" }}</p>
                                 </div>
-                                <div class="flex space-x-2">
-                                    <a href="{% url 'job_detail' saved_job.job.slug %}" class="text-purple-600 hover:text-purple-800 transition-colors duration-200" title="View Details">
-                                        <i class="fas fa-eye"></i>
+                                <div class="flex space-x-3 shrink-0">
+                                    <a href="{% url 'job_detail' saved_job.job.slug %}" class="w-9 h-9 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 hover:bg-purple-600 hover:text-white transition-all">
+                                        <i class="fas fa-eye text-sm"></i>
                                     </a>
-                                    <a href="{% url 'unsave_job' saved_job.job.slug %}" class="text-red-600 hover:text-red-800 transition-colors duration-200" title="Remove from Saved">
-                                        <i class="fas fa-trash-alt"></i>
+                                    <a href="{% url 'unsave_job' saved_job.job.slug %}" class="w-9 h-9 flex items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                                        <i class="fas fa-trash-alt text-sm"></i>
                                     </a>
                                 </div>
                             </li>
                         {% endfor %}
                     </ul>
-                    <div class="text-center mt-6">
-                        <a href="{% url 'job_list' %}" class="text-purple-600 hover:underline font-medium inline-flex items-center">
-                            Browse More Jobs <i class="fas fa-arrow-right ml-2"></i>
-                        </a>
-                    </div>
                 {% else %}
-                    <p class="text-center text-gray-600 py-4 flex items-center justify-center">
-                        <i class="fas fa-info-circle mr-2"></i> You haven't saved any jobs yet.
-                    </p>
+                    <div class="text-center py-8">
+                        <i class="fas fa-folder-open text-gray-300 text-4xl mb-3"></i>
+                        <p class="text-gray-500">No saved jobs yet.</p>
+                    </div>
+                {% endif %}
+            </section>
+
+            {# Recent Applications Section #}
+            <section class="bg-white rounded-xl p-8 card-shadow border border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-history text-purple-600 mr-3"></i> Recent Applications
+                </h2>
+                {% if recent_applications %}
+                    <ul class="space-y-4">
+                        {% for app in recent_applications %}
+                            <li class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                <div class="truncate mr-2">
+                                    <p class="font-bold text-gray-800 truncate">{{ app.job.title }}</p>
+                                    <p class="text-xs text-gray-500 uppercase">{{ app.application_date|date:"M d, Y" }}</p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold
+                                    {% if app.status == 'Applied' %}bg-purple-100 text-purple-800
+                                    {% elif app.status == 'Under Review' %}bg-yellow-100 text-yellow-800
+                                    {% elif app.status == 'Interview' %}bg-indigo-100 text-indigo-800
+                                    {% elif app.status == 'Offer' %}bg-green-100 text-green-800
+                                    {% elif app.status == 'Rejected' %}bg-red-100 text-red-800
+                                    {% else %}bg-gray-200 text-gray-800{% endif %}">
+                                    {{ app.status }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-paper-plane text-gray-300 text-4xl mb-3"></i>
+                        <p class="text-gray-500">No applications sent yet.</p>
+                    </div>
                 {% endif %}
             </section>
         </div>
 
-        <section class="bg-white rounded-lg p-8 card-shadow border border-gray-200 mb-12">
+        {# Account Settings Section #}
+        <section class="bg-white rounded-xl p-8 card-shadow border border-gray-200">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <i class="fas fa-history text-purple-600 mr-3"></i> Recent Applications
+                <i class="fas fa-user-cog text-gray-600 mr-3"></i> Account Management
             </h2>
-            {% if recent_applications %}
-                <ul class="space-y-4">
-                    {% for app in recent_applications %}
-                        <li class="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-100">
-                            <div>
-                                <p class="font-medium text-gray-800">{{ app.job.title }} at {{ app.job.company_name }}</p>
-                                <p class="text-sm text-gray-600">Applied on: {{ app.application_date|date:"M d, Y" }}</p>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold
-                                {% if app.status == 'Applied' %}bg-purple-100 text-purple-800
-                                {% elif app.status == 'Under Review' %}bg-yellow-100 text-yellow-800
-                                {% elif app.status == 'Interview' %}bg-indigo-100 text-indigo-800
-                                {% elif app.status == 'Offer' %}bg-green-100 text-green-800
-                                {% elif app.status == 'Rejected' %}bg-red-100 text-red-800
-                                {% elif app.status == 'Hired' %}bg-gray-200 text-gray-800
-                                {% endif %}">
-                                {{ app.status }}
-                            </span>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <div class="text-center mt-6">
-                    <a href="{% url 'applicant_applications_list' %}" class="text-purple-600 hover:underline font-medium inline-flex items-center">
-                        View All Applications <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            {% else %}
-                <p class="text-center text-gray-600 py-4 flex items-center justify-center">
-                    <i class="fas fa-info-circle mr-2"></i> You haven't applied for any jobs yet.
-                </p>
-            {% endif %}
-        </section>
-
-        <section class="mt-12 bg-white rounded-lg p-8 card-shadow border border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <i class="fas fa-cog text-gray-600 mr-3"></i> Account Settings
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <a href="{% url 'applicant_profile_update' %}" class="bg-purple-50 text-purple-700 p-4 rounded-lg hover:bg-purple-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
-                    <i class="fas fa-user-edit mr-2"></i> Update Profile
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="{% url 'applicant_profile_update' %}" class="bg-purple-50 text-purple-700 p-4 rounded-xl hover:bg-purple-600 hover:text-white transition-all flex flex-col items-center justify-center text-center font-bold border border-purple-100">
+                    <i class="fas fa-user-edit text-xl mb-2"></i> Edit Profile
                 </a>
-                <a href="{% url 'applicant_password_change' %}" class="bg-indigo-50 text-indigo-700 p-4 rounded-lg hover:bg-indigo-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
-                    <i class="fas fa-key mr-2"></i> Change Password
+                <a href="{% url 'applicant_password_change' %}" class="bg-indigo-50 text-indigo-700 p-4 rounded-xl hover:bg-indigo-600 hover:text-white transition-all flex flex-col items-center justify-center text-center font-bold border border-indigo-100">
+                    <i class="fas fa-key text-xl mb-2"></i> Password
                 </a>
-                <a href="{% url 'applicant_email_change' %}" class="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
-                    <i class="fas fa-envelope mr-2"></i> Change Email
+                <a href="{% url 'applicant_email_change' %}" class="bg-green-50 text-green-700 p-4 rounded-xl hover:bg-green-600 hover:text-white transition-all flex flex-col items-center justify-center text-center font-bold border border-green-100">
+                    <i class="fas fa-envelope text-xl mb-2"></i> Email
                 </a>
-                <!-- <a href="{% url 'manage_job_alerts' %}" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg hover:bg-yellow-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
-                    <i class="fas fa-bell mr-2"></i> Manage Job Alerts
-                </a> -->
-                
-                <button id="open-delete-modal-btn" type="button" class="bg-red-50 text-red-700 p-4 rounded-lg hover:bg-red-100 transition-colors duration-200 flex items-center justify-center text-center font-medium">
-                    <i class="fas fa-trash-alt mr-2"></i> Delete Account
+                <button id="open-delete-modal-btn" type="button" class="bg-red-50 text-red-700 p-4 rounded-xl hover:bg-red-600 hover:text-white transition-all flex flex-col items-center justify-center text-center font-bold border border-red-100">
+                    <i class="fas fa-user-slash text-xl mb-2"></i> Delete Account
                 </button>
             </div>
         </section>
     </div>
 </div>
 
-<div id="delete-account-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 opacity-0 hidden" style="transition: opacity 0.3s ease;">
-    <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-md p-6" style="transform: translateY(-20px); transition: transform 0.3s ease;">
-        <div class="flex items-center justify-between pb-4 border-b border-gray-200">
-            <h2 class="text-2xl font-bold text-red-700 flex items-center">
-                <i class="fas fa-exclamation-triangle mr-3"></i> Are you sure?
-            </h2>
-            <button id="close-delete-modal-btn" type="button" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
+{# Delete Account Modal #}
+<div id="delete-account-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-60 opacity-0 hidden">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Delete Account?</h2>
+            <p class="text-gray-500 mb-6 text-sm">This is permanent. All your data, applications, and saved jobs will be lost forever.</p>
         </div>
 
-        <div class="py-6">
-            <p class="text-gray-700 text-base mb-4">
-                <b>This action is permanent and cannot be undone</b>.
-            </p>
-            <p class="text-gray-700 text-base mb-6">
-                All your data, including your profile, applications, saved jobs, etc. will be permanently deleted.
-            </p>
+        <form id="delete-account-form" method="POST" action="{% url 'delete_account' %}">
+            {% csrf_token %}
+            <label for="delete-confirm-input" class="block text-xs font-bold text-gray-400 uppercase mb-2">
+                Type "<span class="text-red-600">delete</span>" to confirm
+            </label>
+            <input type="text" id="delete-confirm-input" name="delete_confirm" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all mb-6 text-center" autocomplete="off">
 
-            <form id="delete-account-form" method="POST" action="{% url 'delete_account' %}">
-                {% csrf_token %}
-                <label for="delete-confirm-input" class="block text-sm font-medium text-gray-700 mb-2">
-                    To confirm, please type "<strong class="text-red-700">delete</strong>" in the box below.
-                </label>
-                <input type="text" id="delete-confirm-input" name="delete_confirm" class="input-field w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500" autocomplete="off">
-
-                <div class="flex items-center justify-end space-x-4 mt-8">
-                    <button id="cancel-delete-btn" type="button" class="btn-secondary w-auto px-6 py-2">
-                        Cancel
-                    </button>
-                    <button id="delete-confirm-btn" type="submit" class="btn-primary w-auto px-6 py-2 bg-red-600 hover:bg-red-700 btn-delete-disabled" disabled>
-                        <i class="fas fa-trash-alt mr-2"></i> Delete My Account
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="flex flex-col space-y-3">
+                <button id="delete-confirm-btn" type="submit" class="w-full py-3 rounded-xl font-bold text-white transition-all btn-delete-disabled" disabled>
+                    Delete My Account
+                </button>
+                <button id="cancel-delete-btn" type="button" class="w-full py-3 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-all">
+                    Cancel
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
 
-
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Delete Account Modal Logic ---
     const modal = document.getElementById('delete-account-modal');
     const openBtn = document.getElementById('open-delete-modal-btn');
-    const closeBtn = document.getElementById('close-delete-modal-btn');
     const cancelBtn = document.getElementById('cancel-delete-btn');
     const confirmInput = document.getElementById('delete-confirm-input');
     const deleteBtn = document.getElementById('delete-confirm-btn');
@@ -242,61 +271,45 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!modal) return;
         modal.classList.remove('hidden');
         setTimeout(() => {
-            modal.classList.remove('opacity-0');
-            modal.querySelector('.modal-content').classList.remove('translate-y-[-20px]');
-        }, 10); // Start transition
+            modal.classList.add('opacity-100');
+            modal.querySelector('.modal-content').style.transform = 'translateY(0)';
+        }, 10);
     }
 
     function hideModal() {
         if (!modal) return;
-        modal.classList.add('opacity-0');
-        modal.querySelector('.modal-content').classList.add('translate-y-[-20px]');
+        modal.classList.remove('opacity-100');
+        modal.querySelector('.modal-content').style.transform = 'translateY(-20px)';
         setTimeout(() => {
             modal.classList.add('hidden');
-            // Reset form state when modal is hidden
             if (confirmInput) confirmInput.value = '';
             if (deleteBtn) {
                 deleteBtn.disabled = true;
                 deleteBtn.classList.add('btn-delete-disabled');
-                deleteBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
             }
-        }, 300); // Wait for transition to finish
+        }, 300);
     }
 
-    if (openBtn) {
-        openBtn.addEventListener('click', showModal);
-    }
-    if (closeBtn) {
-        closeBtn.addEventListener('click', hideModal);
-    }
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', hideModal);
-    }
+    if (openBtn) openBtn.addEventListener('click', showModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', hideModal);
     
-    // Close modal if clicking on the overlay
     if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                hideModal();
-            }
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideModal();
         });
     }
     
-    // Listen for input on the confirmation field
     if (confirmInput && deleteBtn) {
         confirmInput.addEventListener('input', function() {
             if (this.value === confirmationText) {
                 deleteBtn.disabled = false;
                 deleteBtn.classList.remove('btn-delete-disabled');
-                deleteBtn.classList.add('bg-red-600', 'hover:bg-red-700');
             } else {
                 deleteBtn.disabled = true;
                 deleteBtn.classList.add('btn-delete-disabled');
-                deleteBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
             }
         });
     }
-
 });
 </script>
 {% endblock %}

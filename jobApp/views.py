@@ -483,16 +483,32 @@ def job_apply_view(request, slug):
 # ----------------------------
 # Applicant Views
 # ----------------------------
+
 @applicant_required
 def applicant_dashboard(request):
     apps = Application.objects.filter(applicant=request.user)
-    # Fetch saved jobs for the current applicant
-    saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-saved_at') # Order by most recent saved job
+    saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-saved_at')
     
+    # Fetch the most recent successful subscription
+    subscription = JobSubscription.objects.filter(
+        user=request.user, 
+        status='success'
+    ).order_by('-expiry_date').first()
+
+    days_left = 0
+    if subscription and subscription.expiry_date:
+        if subscription.expiry_date > timezone.now():
+            diff = subscription.expiry_date - timezone.now()
+            days_left = diff.days + 1 
+        else:
+            days_left = 0
+
     context = {
         'total_applied': apps.count(),
         'recent_applications': apps.order_by('-application_date')[:5],
         'saved_jobs': saved_jobs,
+        'subscription': subscription,
+        'days_left': days_left,
     }
     return render(request, 'applicants/dashboard.html', context)
 
@@ -561,17 +577,34 @@ def applicant_email_change(request):
 # ----------------------------
 # Moderator Views
 # ----------------------------
+
 @moderator_required
 def moderator_dashboard(request):
+    if request.GET.get('export') == 'subscriptions':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="job_subscriptions.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Full Name', 'Email', 'Plan', 'Date Subscribed', 'Amount', 'WhatsApp', 'Category'])
+        
+        subs = JobSubscription.objects.filter(status='success').select_related('user')
+        for s in subs:
+            writer.writerow([
+                s.user.get_full_name() or s.user.username,
+                s.user.email,
+                s.plan_type,
+                s.created_at.strftime('%Y-%m-%d'),
+                s.amount,
+                s.whatsapp_number,
+                s.interest_category
+            ])
+        return response
+
     recent_jobs_with_apps = Job.objects.filter(is_active=True).annotate(
         app_count=models.Count('applications')
     ).order_by('-date_posted')
     
-    # --- Pagination Logic for Job Applications ---
     job_app_page_number = request.GET.get('job_app_page', 1)
-    
     paginator = Paginator(recent_jobs_with_apps, 10) 
-    
     try:
         job_app_page_obj = paginator.page(job_app_page_number)
     except Exception:
@@ -581,6 +614,25 @@ def moderator_dashboard(request):
         subscribers_context = get_subscribers_context(request)
         return render(request, 'staff/subscribers_table.html', subscribers_context)
      
+    job_subscriptions = JobSubscription.objects.filter(status='success').select_related('user').order_by('-created_at')
+    
+    sub_query = request.GET.get('sub_q')
+    if sub_query:
+        job_subscriptions = job_subscriptions.filter(
+            models.Q(user__email__icontains=sub_query) | 
+            models.Q(user__first_name__icontains=sub_query) |
+            models.Q(user__last_name__icontains=sub_query)
+        )
+
+    # Pagination: 10 subscriptions per page
+    sub_page_number = request.GET.get('sub_page', 1)
+    sub_paginator = Paginator(job_subscriptions, 10)
+    
+    try:
+        sub_page_obj = sub_paginator.page(sub_page_number)
+    except Exception:
+        sub_page_obj = sub_paginator.page(1)
+
     context = {
         'total_jobs': Job.objects.count(),
         'total_applicants': CustomUser.objects.filter(is_applicant=True).count(),
@@ -588,38 +640,24 @@ def moderator_dashboard(request):
         'verified_users': CustomUser.objects.filter(is_active=True, is_staff=False, is_moderator=False).count(),
         'recent_jobs_with_apps': job_app_page_obj.object_list,
         'job_app_page_obj': job_app_page_obj,
+        'job_subscriptions': sub_page_obj.object_list,
+        'sub_page_obj': sub_page_obj,
+        'sub_query': sub_query
     }
 
     recent_jobs = Job.objects.select_related('posted_by').order_by('-date_posted')[:5]
     recent_applicants = CustomUser.objects.order_by('-date_joined')[:5]
     recent_applications = Application.objects.select_related('applicant', 'job').order_by('-application_date')[:5]
     
-
     activity_list = []
-
     for job in recent_jobs:
-        activity_list.append({
-            'timestamp': job.date_posted,
-            'type': 'job_created',
-            'message': f'Job "{job.title}" created by {job.posted_by.username}.'
-        })
-
+        activity_list.append({'timestamp': job.date_posted, 'type': 'job_created', 'message': f'Job "{job.title}" created by {job.posted_by.username}.'})
     for applicant in recent_applicants:
-        activity_list.append({
-            'timestamp': applicant.date_joined,
-            'type': 'applicant_registered',
-            'message': f'Applicant "{applicant.get_full_name() or applicant.username}" registered.'
-        })
-
+        activity_list.append({'timestamp': applicant.date_joined, 'type': 'applicant_registered', 'message': f'Applicant "{applicant.get_full_name() or applicant.username}" registered.'})
     for app in recent_applications:
-        activity_list.append({
-            'timestamp': app.application_date,
-            'type': 'job_applied',
-            'message': f'Applicant "{app.applicant.get_full_name() or app.applicant.username}" clicked apply for "{app.job.title}".'
-        })
-
+        activity_list.append({'timestamp': app.application_date, 'type': 'job_applied', 'message': f'Applicant "{app.applicant.get_full_name() or app.applicant.username}" clicked apply for "{app.job.title}".'})
+    
     activity_list.sort(key=lambda x: x['timestamp'], reverse=True)
-
     context['recent_activity_log'] = activity_list[:15]
 
     if request.user.is_staff:
