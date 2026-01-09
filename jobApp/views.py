@@ -2161,10 +2161,11 @@ def send_subscription_email(sub):
         'current_year': timezone.now().year
     }
     try:
+        recipient_list = [str(sub.user.email)]
         send_templated_email(
-            'emails/subscription_confirmation.html',
+            'emails/subscription_confirmed.html',
             'Your Subscription is Active!',
-            [sub.user.email],
+            recipient_list,
             context
         )
         sub.is_notified = True
