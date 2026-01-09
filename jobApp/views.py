@@ -53,6 +53,48 @@ from django.views.decorators.http import require_POST
 import hmac
 import hashlib
 
+
+def robots_txt(request):
+    lines = [
+        "User-agent: Mediapartners-Google",
+        "Allow: /",
+        "",
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /admin/",
+        "Sitemap: https://readyremotejob.com/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def sitemap_xml(request):
+    """Generate a sitemap for all active job listings and homepage."""
+    now = timezone.now()
+    
+    # Only include active jobs that haven't expired
+    jobs = Job.objects.filter(is_active=True).filter(
+        job_expiry_date__gt=now
+    ) | Job.objects.filter(is_active=True, job_expiry_date__isnull=True)
+
+    # Start XML
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        # Homepage
+        f'  <url><loc>https://readyremotejob.com/</loc><lastmod>{now.date()}</lastmod></url>',
+    ]
+
+    # Add job URLs
+    for job in jobs:
+        url = f"https://readyremotejob.com/jobs/{job.slug}/"
+        lastmod = job.job_expiry_date.date() if job.job_expiry_date else job.date_posted.date()
+        lines.append(f'  <url><loc>{url}</loc><lastmod>{lastmod}</lastmod></url>')
+
+    # Close XML
+    lines.append('</urlset>')
+
+    return HttpResponse("\n".join(lines), content_type="application/xml")
+
 # ----------------------------
 # Role-based Access Decorators
 # ----------------------------

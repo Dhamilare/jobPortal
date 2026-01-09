@@ -7,6 +7,8 @@ from .forms import CustomSetPasswordForm
 
 urlpatterns = [
     # -------------------- Public Pages --------------------
+    path('robots.txt', views.robots_txt),
+    path('sitemap.xml', views.sitemap_xml),
     path('', views.home_view, name='home'),
     path('about/', views.about_view, name='about'),
     path('accounts/register/', views.applicant_register, name='register'),
