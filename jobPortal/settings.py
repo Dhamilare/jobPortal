@@ -77,33 +77,33 @@ WSGI_APPLICATION = 'jobPortal.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
   
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
-
 DATABASES = {
-
     'default': {
-
-        'ENGINE': 'django.db.backends.postgresql',
-
-        'NAME': 'postgres',
-
-        'USER': 'postgres',
-
-        'PASSWORD': 'Klassnics@1759',
-
-        'HOST': 'localhost',
-
-        'PORT': '5432',
-
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
-
 }
+
+
+# DATABASES = {
+
+#     'default': {
+
+#         'ENGINE': 'django.db.backends.postgresql',
+
+#         'NAME': 'postgres',
+
+#         'USER': 'postgres',
+
+#         'PASSWORD': 'Klassnics@1759',
+
+#         'HOST': 'localhost',
+
+#         'PORT': '5432',
+
+#     }
+
+# }
 
 
 # Password validation
@@ -219,6 +219,9 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 BASE_URL = 'https://readyremotejob.com'
 
 GEMINI_API_KEY = config("GEMINI_API_KEY")
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # USE_AZURE_STORAGE = config("USE_AZURE_STORAGE", default=not DEBUG, cast=bool)
 

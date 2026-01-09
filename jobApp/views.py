@@ -2065,7 +2065,7 @@ def initialize_payment(request, plan_key):
     )
 
     # 2. Prepare the callback URL
-    callback_url = request.build_absolute_uri(reverse('verify_payment'))
+    callback_url = f"https://{settings.SITE_DOMAIN}{reverse('verify_payment')}"
 
     # 3. Paystack Initialization
     url = "https://api.paystack.co/transaction/initialize"
@@ -2105,7 +2105,7 @@ def verify_payment(request):
             'user': sub.user,
             'plan_name': plan_info['name'],
             'amount': sub.amount,
-            'expiry_date': sub.expiry_date,
+            'expiry': sub.expiry_date,
             'reference': reference,
             'whatsapp_number': sub.whatsapp_number,
             'interest_category': sub.interest_category,
@@ -2153,7 +2153,7 @@ def paystack_webhook(request):
                 'reference': reference,
                 'whatsapp_number': sub.whatsapp_number,
                 'interest_category': sub.interest_category,
-                'domain': getattr(settings, 'SITE_DOMAIN', ''),
+                'domain': getattr(settings, 'SITE_DOMAIN'),
                 'protocol': 'https',
                 'current_year': timezone.now().year
             }
