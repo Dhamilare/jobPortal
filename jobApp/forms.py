@@ -146,6 +146,11 @@ class JobForm(forms.ModelForm):
         if method == 'Internal' and external_url:
              self.add_error('external_application_url', 
                             "The external URL should be left empty for Internal Form Applications.")
+             
+        if method == 'Email' and external_url:
+             self.add_error('external_application_url', 
+                            "The external URL should be left empty for 'Email/Description Only' jobs. "
+                            "Instructions should be written in the job description.")
 
         return cleaned_data
     

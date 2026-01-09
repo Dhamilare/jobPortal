@@ -167,25 +167,33 @@
                                 {% endif %}
 
                                 {# Apply Button Logic #}
-                                {% if has_applied %}
+                                {# START UPDATED LOGIC: Only lock button if method is Internal and has_applied is True #}
+                                {% if job.application_method == 'Internal' and has_applied %}
                                     <button class="btn-primary w-full opacity-70 cursor-not-allowed bg-green-600" disabled>
                                         <i class="fas fa-check-circle mr-2"></i> Application Sent!
                                     </button>
                                 {% else %}
+                                    {# This block handles all External jobs AND Internal jobs not yet applied to #}
                                     {% if job.application_method == 'External' and job.external_application_url %}
-                                        <a href="{% url 'job_apply_redirect' job.slug %}" class="btn-primary w-full inline-flex justify-center">
+                                        <a href="{% url 'job_apply_redirect' job.slug %}" class="btn-primary w-full inline-flex justify-center" target="_blank">
                                             <i class="fas fa-external-link-alt mr-2"></i> Apply on External Site
                                         </a>
                                     {% elif job.application_method == 'Internal' %}
                                         <button type="button" id="scroll-to-apply-form" class="btn-primary w-full inline-flex justify-center">
                                             <i class="fas fa-file-alt mr-2"></i> Apply Via Form
                                         </button>
+                                    {% elif job.application_method == 'Email' %}
+                                    <div class="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg text-sm">
+                                        <p class="font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> How to Apply:</p>
+                                        <p>Please follow the specific instructions provided in the <strong>Job Details</strong> section to submit your application via email.</p>
+                                    </div>
                                     {% else %}
                                         <div class="bg-yellow-50 text-yellow-700 p-3 rounded-lg text-sm font-medium text-center">
                                             Application link missing.
                                         </div>
                                     {% endif %}
                                 {% endif %}
+                                {# END UPDATED LOGIC #}
 
                             {% else %}
                                 {# Login to Interact logic #}
@@ -294,45 +302,45 @@
                     </button>
                 </form>
             </div>
-            {% endif %}
-            {# END: Internal Application Form Section #}
+        {% endif %}
+        {# END: Internal Application Form Section #}
 
 
-            {# --- 4. RELATED JOBS SECTION --- #}
-            {% if related_jobs %}
-                <section class="mt-16 lg:col-span-3">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-8 flex items-center">
-                        <i class="fas fa-hand-holding-heart text-purple-600 mr-3"></i> You Might Also Like
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {% for related_job in related_jobs %}
-                            <a href="{% url 'job_detail' related_job.slug %}" class="block group bg-white rounded-xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 ease-in-out border border-gray-200 hover:scale-105">
-                                <h3 class="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors duration-300 mb-2">{{ related_job.title }}</h3>
-                                <p class="text-lg text-gray-600 mb-3">{{ related_job.company_name }}</p>
-                                <div class="flex flex-col space-y-2 text-gray-500 text-sm">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-map-marker-alt text-purple-500 mr-2"></i> {{ related_job.location }}
-                                    </div>
-                                    <div class="flex items-center">
-                                        <i class="fas fa-clock text-green-500 mr-2"></i> {{ related_job.job_type }}
-                                    </div>
-                                    {% if related_job.category %}
-                                    <div class="flex items-center">
-                                        <i class="fas fa-tag text-indigo-500 mr-2"></i> {{ related_job.category.name }}
-                                    </div>
-                                    {% endif %}
+        {# --- 4. RELATED JOBS SECTION --- #}
+        {% if related_jobs %}
+            <section class="mt-16 lg:col-span-3">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 flex items-center">
+                    <i class="fas fa-hand-holding-heart text-purple-600 mr-3"></i> You Might Also Like
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {% for related_job in related_jobs %}
+                        <a href="{% url 'job_detail' related_job.slug %}" class="block group bg-white rounded-xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 ease-in-out border border-gray-200 hover:scale-105">
+                            <h3 class="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors duration-300 mb-2">{{ related_job.title }}</h3>
+                            <p class="text-lg text-gray-600 mb-3">{{ related_job.company_name }}</p>
+                            <div class="flex flex-col space-y-2 text-gray-500 text-sm">
+                                <div class="flex items-center">
+                                    <i class="fas fa-map-marker-alt text-purple-500 mr-2"></i> {{ related_job.location }}
                                 </div>
-                                <div class="mt-6 text-purple-600 font-bold group-hover:underline flex items-center">
-                                    View Details
-                                    <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock text-green-500 mr-2"></i> {{ related_job.job_type }}
                                 </div>
-                            </a>
-                        {% endfor %}
-                    </div>
-                </section>
-            {% endif %}
-        </div>
+                                {% if related_job.category %}
+                                <div class="flex items-center">
+                                    <i class="fas fa-tag text-indigo-500 mr-2"></i> {{ related_job.category.name }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="mt-6 text-purple-600 font-bold group-hover:underline flex items-center">
+                                View Details
+                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
     </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}

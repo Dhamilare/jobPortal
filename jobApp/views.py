@@ -385,10 +385,8 @@ def job_list_view(request):
     }
     return render(request, 'job_list.html', context)
 
+
 def job_detail_view(request, slug):
-    """
-    Displays a single job, including details, application status, and related jobs.
-    """
     job = get_object_or_404(Job, slug=slug)
     has_applied = False
     is_saved = False
@@ -397,25 +395,21 @@ def job_detail_view(request, slug):
     if job.application_method == 'Internal':
         application_form = InternalApplicationForm()
 
-    # Check if the job is "hot" (posted within the last 24 hours)
     now = timezone.now()
     time_since_posted = now - job.date_posted
     job.is_hot_job = time_since_posted < timedelta(hours=24)
 
     if request.user.is_authenticated and request.user.is_applicant:
-        has_applied = Application.objects.filter(applicant=request.user, job=job).exists()
+        if job.application_method == 'Internal':
+            has_applied = Application.objects.filter(applicant=request.user, job=job).exists()
+        
         is_saved = SavedJob.objects.filter(user=request.user, job=job).exists()
 
     related_jobs = []
-
     if job.category:
         related_jobs = Job.objects.filter(
             category=job.category
-        ).exclude(
-            slug=job.slug 
-        ).order_by(
-            '-date_posted' 
-        )[:3] 
+        ).exclude(slug=job.slug).order_by('-date_posted')[:3] 
 
     context = {
         'job': job,
@@ -427,32 +421,44 @@ def job_detail_view(request, slug):
 
     return render(request, 'job_detail.html', context)
 
+
 @login_required
 @applicant_required
 @require_http_methods(["GET", "POST"]) 
 def job_apply_view(request, slug): 
     job = get_object_or_404(Job, slug=slug)
 
-    if Application.objects.filter(applicant=request.user, job=job).exists():
-        messages.info(request, f'You have already applied for "{job.title}".')
+    if job.application_method == 'Email':
+        messages.info(request, "Please follow the email instructions in the job description.")
         return redirect('job_detail', slug=job.slug)
 
+    # --- EXTERNAL METHOD ---
     if job.application_method == 'External':
         if not job.external_application_url:
             messages.error(request, 'This job does not have an external application link configured.')
             return redirect('job_detail', slug=job.slug)
-        try:
-            Application.objects.create(applicant=request.user, job=job, status='Clicked Apply Link') # Use 'Clicked Apply Link' status
-            messages.success(request, f'You have successfully marked your interest in "{job.title}". Redirecting to external application site.')
-        except IntegrityError:
-            messages.info(request, f'Application log already exists for "{job.title}". Redirecting.')
-
+    
+        application_exists = Application.objects.filter(applicant=request.user, job=job).exists()
+        
+        if not application_exists:
+            try:
+                Application.objects.create(
+                    applicant=request.user, 
+                    job=job, 
+                    status='Clicked Apply Link'
+                )
+            except IntegrityError:
+                pass
         return redirect(job.external_application_url)
 
+    # --- INTERNAL METHOD ---
     elif job.application_method == 'Internal':
+        if Application.objects.filter(applicant=request.user, job=job).exists():
+            messages.info(request, f'You have already submitted an application for "{job.title}".')
+            return redirect('job_detail', slug=job.slug)
+
         if request.method == 'POST':
             form = InternalApplicationForm(request.POST, request.FILES)
-            
             if form.is_valid():
                 application = form.save(commit=False)
                 application.applicant = request.user
@@ -467,7 +473,6 @@ def job_apply_view(request, slug):
                     messages.error(request, 'You have already submitted an application for this job.')
                     return redirect('job_detail', slug=job.slug)
             else:
-                
                 messages.error(request, 'Please correct the errors in the application form.')
                 return redirect('job_detail', slug=job.slug) 
         

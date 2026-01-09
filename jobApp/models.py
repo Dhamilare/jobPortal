@@ -92,6 +92,7 @@ class Job(models.Model):
     APPLICATION_METHOD_CHOICES = [
         ('Internal', 'Internal Form Application'),
         ('External', 'External Link Application'),
+        ('Email', 'Email/Description Only'),
     ]
 
     title = models.CharField(max_length=200)
