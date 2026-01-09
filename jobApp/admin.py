@@ -385,6 +385,49 @@ class StaffProfileAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(JobSubscription)
+class JobSubscriptionAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 
+        'plan_type', 
+        'amount', 
+        'status', 
+        'interest_category', 
+        'whatsapp_number', 
+        'created_at', 
+        'expiry_date'
+    )
+    
+    list_filter = ('status', 'plan_type', 'created_at')
+    
+    search_fields = (
+        'user__email', 
+        'user__username', 
+        'reference', 
+        'whatsapp_number', 
+        'interest_category'
+    )
+    
+    readonly_fields = ('reference', 'created_at')
+    
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user', 'whatsapp_number', 'interest_category')
+        }),
+        ('Subscription Details', {
+            'fields': ('plan_type', 'amount', 'status', 'reference')
+        }),
+        ('Dates', {
+            'fields': ('created_at', 'expiry_date')
+        }),
+    )
+
+    ordering = ('-created_at',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
+
+
 
 
 
