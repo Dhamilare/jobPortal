@@ -199,7 +199,6 @@ def courses_coming_soon(request):
     return render(request, 'courses_coming_soon.html')
 
 
-
 def applicant_register(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -210,34 +209,34 @@ def applicant_register(request):
         user = form.save()
         token = EmailVerificationToken.objects.create(user=user)
 
-        site = Site.objects.get_current()
-        protocol = 'https' 
-
-        verification_link = f"{protocol}://{site.domain}{reverse('email_verification_confirm', args=[token.token])}"
+        # Build the absolute URL correctly
+        current_site = get_current_site(request)
+        domain = current_site.domain
+        protocol = 'https'
+        
+        verification_path = reverse('email_verification_confirm', args=[token.token])
+        verification_link = f"{protocol}://{domain}{verification_path}"
 
         subject = 'Verify Your Account'
-        from_email = settings.DEFAULT_FROM_EMAIL
-        to_email = user.email
-        current_year = datetime.now().year
-        
         context = {
             'user': user,
             'verification_link': verification_link,
-            'current_year': current_year
+            'current_year': timezone.now().year
         }
-        html_content = render_to_string('email_verification.html', context)
-        text_content = f'Hi {user.username},\n\nPlease verify your email using this link:\n{verification_link}'
 
-        email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
-        email.attach_alternative(html_content, "text/html")
-        email.send()
+        send_templated_email(
+            'email_verification.html',
+            subject,
+            [user.email],
+            context
+        )
 
         messages.success(
             request,
             f'Registration successful! A verification link has been sent to {user.email}. '
             'Please check your inbox (and spam folder) to activate your account.'
         )
-        form = ApplicantRegistrationForm()
+        return redirect('login') 
 
     return render(request, 'accounts/register.html', {'form': form})
 

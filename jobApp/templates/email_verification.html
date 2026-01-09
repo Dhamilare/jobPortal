@@ -3,130 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Verify Your Account</title>
     <style type="text/css">
-        /* Client-specific styles */
-        body, table, td, div, p {
-            -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
-        }
+        body, table, td, div, p { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
         table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-        img { -ms-interpolation-mode: bicubic; }
-        
-        /* General body styles */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: #f0f4f8; /* Softer, lighter background */
-            line-height: 1.6;
-        }
-
-        /* Container styles */
-        .email-container {
-            max-width: 600px;
-            margin: 40px auto;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-        }
-
-        /* Header section */
-        .header {
-            background-image: linear-gradient(to right, #4c66f5, #6366f1);
-            padding: 40px 30px;
-            text-align: center;
-            color: #ffffff;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 30px;
-            font-weight: 700;
-            line-height: 1.2;
-            letter-spacing: -0.5px;
-        }
-
-        /* Content section */
-        .content {
-            padding: 30px;
-            text-align: center;
-            color: #334155;
-            font-size: 16px;
-        }
-        .content p {
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-        .content strong {
-            color: #1a202c;
-            font-weight: 600;
-        }
-
-        /* Button styles using table for cross-client compatibility */
-        .button-table {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .button-td {
-            padding: 12px 24px;
-            border-radius: 8px;
-            background-color: #2563eb;
-            transition: background-color 0.2s ease-in-out;
-        }
-        .button-td a {
-            color: #ffffff !important;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 16px;
-            line-height: 1;
-        }
-        .button-td:hover {
-            background-color: #1e40af; /* Darker blue on hover */
-        }
-
-        /* Fallback link styles */
-        .link-text {
-            color: #64748b;
-            font-size: 14px;
-            margin-top: 25px;
-        }
-        .link-text a {
-            color: #2563eb;
-            text-decoration: underline;
-            word-break: break-all;
-        }
-        
-        /* Footer section */
-        .footer {
-            padding: 20px;
-            text-align: center;
-            font-size: 12px;
-            color: #64748b;
-            background-color: #f7faff;
-            border-top: 1px solid #e2e8f0;
-        }
-        .footer p {
-            margin: 0.5em 0;
-        }
-
+        body { margin: 0; padding: 0; font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #f0f4f8; }
+        .email-container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .header { background-color: #6D28D9; padding: 40px 30px; text-align: center; color: #ffffff; }
+        .content { padding: 30px; text-align: center; color: #334155; font-size: 16px; }
+        .button-td { border-radius: 8px; background-color: #6D28D9; text-align: center; }
+        .button-td a { color: #ffffff !important; text-decoration: none; font-weight: 600; font-size: 16px; padding: 12px 24px; display: inline-block; }
+        .link-text { color: #64748b; font-size: 14px; margin-top: 25px; word-break: break-all; }
+        .link-text a { color: #6D28D9; text-decoration: underline; }
+        .footer { padding: 20px; text-align: center; font-size: 12px; color: #64748b; background-color: #f7faff; border-top: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>Verify Your Account</h1>
+            <h1 style="margin:0; color: #ffffff;">Remote Ready Jobs</h1>
         </div>
         <div class="content">
             <p>Hi <strong>{{ user.username }}</strong>,</p>
-            <p>
-                Welcome to Remote Ready Jobs! To activate your account and start exploring amazing job opportunities, please verify your email address by clicking the button below.
-            </p>
+            <p>Welcome to Remote Ready Jobs! To activate your account, please verify your email address by clicking the button below.</p>
             
-            <table cellpadding="0" cellspacing="0" border="0" class="button-table">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                     <td align="center">
                         <table cellpadding="0" cellspacing="0" border="0">
@@ -141,15 +42,12 @@
             </table>
 
             <p class="link-text">
-                If the button above doesn't work, you can also copy and paste this link into your browser:<br>
+                If the button doesn't work, copy and paste this link:<br>
                 <a href="{{ verification_link }}">{{ verification_link }}</a>
-            </p>
-            <p style="margin-top: 30px; font-size: 14px; color: #64748b;">
-                This link will expire in 24 hours for security reasons.
             </p>
         </div>
         <div class="footer">
-            <p>If you did not create an account with Remote Ready Jobs, please ignore this email.</p>
+            <p>If you did not create an account, please ignore this email.</p>
             <p>&copy; {{ current_year }} Remote Ready Jobs. All rights reserved.</p>
         </div>
     </div>
