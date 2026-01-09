@@ -2093,11 +2093,14 @@ def initialize_payment(request, plan_key):
 
 def verify_payment(request):
 
-    reference = request.GET.get('reference')
+    reference = request.GET.get('reference') or request.GET.get('trxref')
     if not reference:
         return render(request, 'subscription/failed.html', {'error': 'No reference provided.'})
 
-    sub = get_object_or_404(JobSubscription, reference=reference)
+    sub = JobSubscription.objects.filter(reference=reference).first()
+
+    if not sub:
+        return render(request, 'subscription/failed.html', {'error': 'No subscription found for this reference.'})
 
     if sub.status == 'success':
         plan_info = PLANS.get(sub.plan_type)
