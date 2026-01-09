@@ -2041,20 +2041,22 @@ PLANS = {
 
 @login_required
 def subscription_plans(request):
-    return render(request, 'subscription/plans.html', {'plans': PLANS})
+    return render(request, 'subscription/plans.html', {'plans': PLANS, 'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY})
 
 @login_required
 def initialize_payment(request, plan_key):
     plan = PLANS.get(plan_key)
-    if not plan or request.method != "POST":
-        return redirect('subscription_plans')
     
+    if not plan:
+        return JsonResponse({'status': 'error', 'message': 'Invalid plan'}, status=400)
+
     reference = str(uuid.uuid4())
+    
     whatsapp = request.POST.get('whatsapp_number')
     interest = request.POST.get('interest_category')
-    
-    # 1. Create the local record first
-    JobSubscription.objects.create(
+
+    # 1. Create the local record (Keep status pending)
+    sub = JobSubscription.objects.create(
         user=request.user,
         plan_type=plan_key,
         amount=plan['price'],
@@ -2064,15 +2066,15 @@ def initialize_payment(request, plan_key):
         status='pending'
     )
 
-    # 2. Prepare the callback URL
-    callback_url = request.build_absolute_uri(reverse('verify_payment'))
-
-    # 3. Paystack Initialization
+    # 2. Paystack API Initialization
     url = "https://api.paystack.co/transaction/initialize"
     headers = {
         "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         "Content-Type": "application/json"
     }
+    
+    callback_url = f"https://readyremotejob.com{reverse('verify_payment')}"
+
     data = {
         "email": request.user.email,
         "amount": int(plan['price'] * 100),
@@ -2083,40 +2085,69 @@ def initialize_payment(request, plan_key):
     try:
         r = requests.post(url, headers=headers, json=data, timeout=10)
         response = r.json()
-        if response.get('status'):
-            auth_url = response['data']['authorization_url']
-            return HttpResponseRedirect(auth_url)
-    except Exception as e:
-        print(f"Payment Init Error: {e}")
         
-    return redirect('subscription_plans')
+        if response.get('status'):
+            return JsonResponse({
+                'status': 'success',
+                'access_code': response['data']['access_code'],
+                'reference': reference,
+                'amount_kobo': int(plan['price'] * 100)
+            })
+            
+    except Exception as e:
+        print(f"Paystack Init Error: {e}")
+        
+    return JsonResponse({'status': 'error', 'message': 'Could not initialize payment'}, status=500)
 
 
 def verify_payment(request):
-
     reference = request.GET.get('reference') or request.GET.get('trxref')
     if not reference:
         return render(request, 'subscription/failed.html', {'error': 'No reference provided.'})
 
-    sub = JobSubscription.objects.filter(reference=reference).first()
+    sub = get_object_or_404(JobSubscription, reference=reference)
 
-    if not sub:
-        return render(request, 'subscription/failed.html', {'error': 'No subscription found for this reference.'})
-
+    # 1. If Webhook already finished, just show success
     if sub.status == 'success':
-        plan_info = PLANS.get(sub.plan_type)
-        context = {
-            'user': sub.user,
-            'plan_name': plan_info['name'],
-            'amount': sub.amount,
-            'expiry': sub.expiry_date,
-            'reference': reference,
-            'whatsapp_number': sub.whatsapp_number,
-            'interest_category': sub.interest_category,
-        }
-        return render(request, 'subscription/success.html', context)
+        return render_success(request, sub)
+
+    # 2. FALLBACK: If Webhook is slow, verify manually once
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
+    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
     
-    return render(request, 'subscription/failed.html', {'error': 'Payment verification pending. Check your email shortly.'})
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        response = r.json()
+
+        if response.get('status') and response['data']['status'] == 'success':
+            # Update local record if not already done
+            plan_info = PLANS.get(sub.plan_type)
+            if sub.status != 'success':
+                sub.status = 'success'
+                sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
+                sub.save()
+                
+            return render_success(request, sub)
+            
+    except Exception as e:
+        print(f"Verification Error: {e}")
+
+    return render(request, 'subscription/failed.html', {
+        'error': 'Payment verification is taking longer than expected. Please check your email in a few minutes.'
+    })
+
+def render_success(request, sub):
+    plan_info = PLANS.get(sub.plan_type)
+    context = {
+        'user': sub.user,
+        'plan_name': plan_info['name'],
+        'amount': sub.amount,
+        'expiry': sub.expiry_date,
+        'reference': sub.reference,
+        'whatsapp_number': sub.whatsapp_number,
+        'interest_category': sub.interest_category,
+    }
+    return render(request, 'subscription/success.html', context)
 
 
 @csrf_exempt
@@ -2139,15 +2170,21 @@ def paystack_webhook(request):
     if event_data['event'] == 'charge.success':
         reference = event_data['data']['reference']
         
-        sub = JobSubscription.objects.filter(reference=reference).first()
+        # 1. Use select_for_update() to prevent race conditions 
+        # (Ensures two requests don't process the same reference at once)
+        sub = JobSubscription.objects.filter(reference=reference).select_for_update().first()
         
         if sub and sub.status == 'pending':
             plan_info = PLANS.get(sub.plan_type)
             
-            # Update Database
+            # 2. Update Database
             sub.status = 'success'
             sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
             sub.save()
+            
+            # 3. Safe Domain Retrieval
+            # If SITE_DOMAIN isn't in settings, it won't crash
+            domain = getattr(settings, 'SITE_DOMAIN')
             
             context = {
                 'user': sub.user,
@@ -2157,15 +2194,19 @@ def paystack_webhook(request):
                 'reference': reference,
                 'whatsapp_number': sub.whatsapp_number,
                 'interest_category': sub.interest_category,
-                'domain': getattr(settings, 'SITE_DOMAIN'),
+                'domain': domain,
                 'protocol': 'https',
                 'current_year': timezone.now().year
             }
-            send_templated_email(
-                'emails/subscription_confirmation.html',
-                'Your Subscription is Active!',
-                [sub.user.email],
-                context
-            )
+            
+            try:
+                send_templated_email(
+                    'emails/subscription_confirmation.html',
+                    'Your Subscription is Active!',
+                    [sub.user.email],
+                    context
+                )
+            except Exception as e:
+                print(f"Webhook Email Error: {e}")
 
     return HttpResponse(status=200)
