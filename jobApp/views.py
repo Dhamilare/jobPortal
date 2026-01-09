@@ -2064,10 +2064,8 @@ def initialize_payment(request, plan_key):
         status='pending'
     )
 
-    callback_path = reverse('verify_payment')
-
     # 2. Prepare the callback URL
-    callback_url = request.build_absolute_uri(callback_path)
+    callback_url = f"https://{settings.SITE_DOMAIN}{reverse('verify_payment')}"
 
     # 3. Paystack Initialization
     url = "https://api.paystack.co/transaction/initialize"
