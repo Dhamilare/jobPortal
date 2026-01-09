@@ -177,24 +177,6 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
-# ENVIRONMENT = config('ENVIRONMENT', default='local')
-
-# if ENVIRONMENT == 'production':
-#     # SENDGRID CONFIGURATION (for Render)
-#     EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
-#     SENDGRID_API_KEY = config('SENDGRID_API_KEY')
-#     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
-# else:
-#     # LOCAL SMTP CONFIGURATION (for your computer)
-#     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-#     EMAIL_HOST = config("EMAIL_HOST")
-#     EMAIL_PORT = config("EMAIL_PORT", cast=int)
-#     EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
-#     EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-#     EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-#     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
-
-
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['json']
@@ -222,42 +204,6 @@ GEMINI_API_KEY = config("GEMINI_API_KEY")
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
-
-# USE_AZURE_STORAGE = config("USE_AZURE_STORAGE", default=not DEBUG, cast=bool)
-
-# if USE_AZURE_STORAGE and not DEBUG:
-#     # Azure Blob credentials
-#     AZURE_ACCOUNT_NAME = config("AZURE_ACCOUNT_NAME")
-#     AZURE_ACCOUNT_KEY = config("AZURE_ACCOUNT_KEY")
-#     AZURE_CONNECTION_STRING = config("AZURE_CONNECTION_STRING")
-#     AZURE_STATIC_CONTAINER = config("AZURE_STATIC_CONTAINER", default="staticfiles") # To rename later
-#     AZURE_MEDIA_CONTAINER = config("AZURE_MEDIA_CONTAINER", default="mediafiles") # To rename later
-
-#     STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_STATIC_CONTAINER}/"
-#     MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}/"
-
-#     STORAGES = {
-#         "default": {
-#             "BACKEND": "storages.backends.azure_storage.AzureStorage",
-#             "OPTIONS": {
-#                 "account_name": AZURE_ACCOUNT_NAME,
-#                 "account_key": AZURE_ACCOUNT_KEY,
-#                 "connection_string": AZURE_CONNECTION_STRING,
-#                 "azure_container": AZURE_MEDIA_CONTAINER,
-#             },
-#         },
-#         "staticfiles": {
-#             "BACKEND": "storages.backends.azure_storage.AzureStorage",
-#             "OPTIONS": {
-#                 "account_name": AZURE_ACCOUNT_NAME,
-#                 "account_key": AZURE_ACCOUNT_KEY,
-#                 "connection_string": AZURE_CONNECTION_STRING,
-#                 "azure_container": AZURE_STATIC_CONTAINER,
-#             },
-#         },
-#     }
-
-# AZURE_OVERWRITE_FILES = False
 
 CSRF_TRUSTED_ORIGINS = [
      "https://readyremotejob.com"
