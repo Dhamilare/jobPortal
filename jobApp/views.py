@@ -2065,7 +2065,7 @@ def initialize_payment(request, plan_key):
     )
 
     # 2. Prepare the callback URL
-    callback_url = request.build_absolute_uri(reverse('verify_payment'))
+    callback_url = "https://readyremotejob.com/subscription/verify/"
 
     # 3. Paystack Initialization
     url = "https://api.paystack.co/transaction/initialize"
