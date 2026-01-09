@@ -17,7 +17,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from datetime import date, datetime
 import json
-from django.core.mail import EmailMultiAlternatives
+from django.http import HttpResponseRedirect
 from .forms import *
 from .models import *
 from django.db.models import Q
@@ -2085,7 +2085,7 @@ def initialize_payment(request, plan_key):
         response = r.json()
         if response.get('status'):
             auth_url = response['data']['authorization_url']
-            return redirect(auth_url)
+            return HttpResponseRedirect(auth_url)
     except Exception as e:
         print(f"Payment Init Error: {e}")
         
