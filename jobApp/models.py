@@ -126,6 +126,7 @@ class Job(models.Model):
     
     def __str__(self):
         return f"{self.title} at {self.company_name}"
+    
 
 # -------------------------------
 # Job Application

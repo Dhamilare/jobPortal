@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.db import IntegrityError, models
 from django.db.models.functions import TruncDay, Cast
 from datetime import timedelta
@@ -383,6 +383,14 @@ def job_apply_view(request, slug):
     
         application_exists = Application.objects.filter(applicant=request.user, job=job).exists()
         
+        url = job.external_application_url.strip()
+
+        if not url:
+            return HttpResponseBadRequest("Invalid external application URL")
+
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+
         if not application_exists:
             try:
                 Application.objects.create(
@@ -392,7 +400,7 @@ def job_apply_view(request, slug):
                 )
             except IntegrityError:
                 pass
-        return redirect(job.external_application_url)
+        return redirect(url)
 
     # --- INTERNAL METHOD ---
     elif job.application_method == 'Internal':
