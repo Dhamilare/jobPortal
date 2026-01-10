@@ -175,7 +175,7 @@
                                 {% else %}
                                     {# This block handles all External jobs AND Internal jobs not yet applied to #}
                                     {% if job.application_method == 'External' and job.external_application_url %}
-                                        <a href="{% url 'job_apply_redirect' job.slug %}" class="btn-primary w-full inline-flex justify-center" target="_blank">
+                                        <a href="{{ job.external_application_url }}" class="btn-primary w-full inline-flex justify-center" target="_blank">
                                             <i class="fas fa-external-link-alt mr-2"></i> Apply on External Site
                                         </a>
                                     {% elif job.application_method == 'Internal' %}
