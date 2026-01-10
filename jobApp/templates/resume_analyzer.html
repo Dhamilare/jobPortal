@@ -157,6 +157,7 @@
                     We accept PDF or DOCX files.
                 </p>
                 <form method="post" action="{% url 'handle_resume_upload' job.slug %}" enctype="multipart/form-data">
+                    {% csrf_token %}
                     <div id="upload-box-element" class="upload-box">
                         <label for="resume-upload" class="cursor-pointer">
                             <div class="upload-icon">
