@@ -2397,36 +2397,49 @@ def courses_list(request):
     return render(request, 'courses.html', context)
 
 
-@login_required
 def ambassador_signup(request):
-    # Check if the user is already an ambassador
-    ambassador = Ambassador.objects.filter(user=request.user).first()
+    # 1. Identify if the current user is an existing ambassador
+    ambassador = None
+    if request.user.is_authenticated:
+        ambassador = Ambassador.objects.filter(user=request.user).first()
 
-    if request.method == "POST" and not ambassador:
-        # User clicked the "Join Now" button
-        ambassador = Ambassador.objects.create(user=request.user)
+    # 2. Handle the "Join Now" POST request
+    if request.method == "POST":
+        # Force login if they try to join while anonymous
+        if not request.user.is_authenticated:
+            messages.info(request, "Please log in to join the Ambassador program.")
+            login_url = reverse('login')
+            return redirect(f"{login_url}?next={request.path}")
         
-        # Send the confirmation email
-        context = {
-            'user': request.user,
-            'referral_code': ambassador.referral_code,
-            'slack_link': "https://join.slack.com/t/your-invite-link",
-        }
-        send_templated_email(
-            template_name='emails/ambassador_confirmation.html',
-            subject="Welcome to the RRJ Ambassador Program! 🌟",
-            recipient_list=[request.user.email],
-            context=context
-        )
-        messages.success(request, "Congratulations! You are now an RRJ Ambassador.")
-        return redirect('ambassador_signup')
+        # Create the profile if it doesn't exist
+        if not ambassador:
+            ambassador = Ambassador.objects.create(user=request.user)
+            
+            # Send the confirmation email
+            email_context = {
+                'user': request.user,
+                'referral_code': ambassador.referral_code,
+                'slack_link': "https://join.slack.com/t/your-invite-link",
+            }
+            send_templated_email(
+                template_name='emails/ambassador_confirmation.html',
+                subject="Welcome to the RRJ Ambassador Program! 🌟",
+                recipient_list=[request.user.email],
+                context=email_context
+            )
+            messages.success(request, "Congratulations! You are now an official RRJ Ambassador.")
+            return redirect('ambassador_signup')
 
-    # Get leaderboard for everyone to see (marketing for non-ambassadors)
+    # 3. Leaderboard Logic (Visible to everyone, including guests)
     top_ambassadors = Ambassador.objects.annotate(
-        referral_count=Count('referral_subscriptions', filter=Q(referral_subscriptions__status='success'))
+        referral_count=Count(
+            'referral_subscriptions', 
+            filter=Q(referral_subscriptions__status='success')
+        )
     ).order_by('-referral_count')[:5]
 
-    return render(request, 'ambassador_program.html', {
+    context = {
         'ambassador': ambassador,
-        'top_ambassadors': top_ambassadors
-    })
+        'top_ambassadors': top_ambassadors,
+    }
+    return render(request, 'ambassador_program.html', context)
