@@ -2362,7 +2362,7 @@ def verify_course_payment(request):
         )
 
         messages.success(request, f"Payment successful! Welcome aboard. Check your email for the community link.")
-        return redirect(slack_link) 
+        return redirect('courses_list') 
     
     messages.error(request, "Payment verification failed.")
     return redirect('courses_list')
