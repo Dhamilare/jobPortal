@@ -400,7 +400,7 @@ def job_apply_view(request, slug):
                 )
             except IntegrityError:
                 pass
-        return redirect(url)
+        return HttpResponseRedirect(url)
 
     # --- INTERNAL METHOD ---
     elif job.application_method == 'Internal':
