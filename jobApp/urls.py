@@ -37,7 +37,7 @@ urlpatterns = [
 
 
     # -------------------- Job Listings --------------------
-    path('<slug:slug>/', views.job_apply_view, name='job_apply_redirect'),
+    
     path('jobs/', views.job_list_view, name='job_list'),
     path('jobs/<slug:slug>/', views.job_detail_view, name='job_detail'),
     path('jobs/<slug:slug>/save/', views.save_job, name='save_job'),
@@ -141,4 +141,6 @@ urlpatterns = [
     path('subscription/verify/', views.verify_payment, name='verify_payment'),
 
     path('paystack/webhook/', views.paystack_webhook, name='paystack_webhook'),
+
+    path('<slug:slug>/', views.job_apply_view, name='job_apply_redirect'),
 ]
