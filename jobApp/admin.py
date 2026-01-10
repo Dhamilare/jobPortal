@@ -234,17 +234,6 @@ class RecruiterAdmin(admin.ModelAdmin):
     user_email.admin_order_field = 'user__email'
 
 
-@admin.register(Subscriber)
-class SubscriberAdmin(admin.ModelAdmin):
-    """
-    Admin configuration for the Subscriber model.
-    """
-    list_display = ('email', 'created_at')
-    list_filter = ('created_at',)
-    search_fields = ('email',)
-    ordering = ('-created_at',)
-
-
 @admin.register(BlogCategory)
 class BlogCategoryAdmin(admin.ModelAdmin):
     """
@@ -426,6 +415,33 @@ class JobSubscriptionAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user')
+    
+
+@admin.register(CoursePurchase)
+class CoursePurchaseAdmin(admin.ModelAdmin):
+    list_display = ('user', 'course_name', 'amount', 'status', 'reference', 'created_at')
+    
+    list_filter = ('status', 'course_name', 'created_at')
+    
+    search_fields = ('user__email', 'user__username', 'reference', 'course_name')
+    
+    readonly_fields = ('reference', 'created_at')
+    
+    ordering = ('-created_at',)
+
+    def get_status_display(self, obj):
+        from django.utils.html import format_html
+        colors = {
+            'success': 'green',
+            'pending': 'orange',
+            'failed': 'red'
+        }
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            colors.get(obj.status, 'black'),
+            obj.status.upper()
+        )
+    get_status_display.short_description = 'Payment Status'
 
 
 

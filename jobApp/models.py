@@ -302,22 +302,6 @@ class Recruiter(models.Model):
         ]
 
 
-class Subscriber(models.Model):
-    """
-    Model to store email addresses for newsletter subscriptions.
-    """
-    email = models.EmailField(unique=True, help_text="The subscriber's email address.")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.email
-
-    class Meta:
-        verbose_name_plural = "Subscribers"
-        ordering = ['-created_at']
-
-
-
 # -------------------------------
 # Blog Models
 # -------------------------------
@@ -549,3 +533,15 @@ class JobSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.plan_type}"
+    
+
+class CoursePurchase(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    course_name = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reference = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=20, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.course_name}"

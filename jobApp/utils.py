@@ -38,26 +38,33 @@ def send_templated_email(template_name, subject, recipient_list, context, attach
 
 def get_subscribers_context(request):
     """
-    Helper function to get subscribers list and pagination context.
+    Helper function to get course enrollment list and pagination context.
+    Matches the 'students' variable used in the template.
     """
     query = request.GET.get('q', '')
     
-    subscribers_queryset = Subscriber.objects.all()
-    if query:
-        subscribers_queryset = subscribers_queryset.filter(Q(email__icontains=query))
+    enrollment_queryset = CoursePurchase.objects.filter(status='success').select_related('user').order_by('-created_at')
     
-    paginator = Paginator(subscribers_queryset, 10)
+    if query:
+        enrollment_queryset = enrollment_queryset.filter(
+            Q(user__email__icontains=query) | 
+            Q(user__first_name__icontains=query) | 
+            Q(user__last_name__icontains=query) |
+            Q(course_name__icontains=query)
+        )
+    
+    paginator = Paginator(enrollment_queryset, 10)
     page_number = request.GET.get('page')
 
     try:
-        subscribers_list = paginator.page(page_number)
+        students = paginator.page(page_number)
     except PageNotAnInteger:
-        subscribers_list = paginator.page(1)
+        students = paginator.page(1)
     except EmptyPage:
-        subscribers_list = paginator.page(paginator.num_pages)
+        students = paginator.page(paginator.num_pages)
 
     return {
-        'subscribers_list': subscribers_list,
+        'students': students,
         'query': query,
     }
 

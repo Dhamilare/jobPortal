@@ -183,63 +183,6 @@ def home_view(request):
 def about_view(request):
     return render(request, 'about.html')
 
-@require_http_methods(["GET", "POST"])
-def courses_coming_soon(request):
-    """
-    Renders the courses coming soon page and handles the newsletter signup form.
-    It returns a JSON response for AJAX POST requests to show the modal.
-    """
-    if request.method == 'POST':
-        email = request.POST.get('email')
-
-        # Validate email
-        if not email:
-            return JsonResponse({'success': False, 'message': 'Email address is required.'}, status=400)
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            return JsonResponse({'success': False, 'message': 'Invalid email address.'}, status=400)
-
-        # Check if the email already exists
-        if Subscriber.objects.filter(email=email).exists():
-            return JsonResponse({'success': False, 'message': 'This email address is already subscribed.'}, status=400)
-
-        try:
-            with transaction.atomic():
-                Subscriber.objects.create(email=email)
-
-            # 1. Send thank-you email to the subscriber
-            user_context = {'email': email}
-            email_sent_to_user = send_templated_email(
-                template_name='emails/subscriber_thank_you_email.html',
-                subject='Thanks for Your Interest!',
-                recipient_list=[email],
-                context=user_context
-            )
-
-            if not email_sent_to_user:
-                logger.warning(f"Thank-you email not sent to {email}")
-
-            # 2. Send notification email to staff
-            staff_emails = list(
-                User.objects.filter(is_staff=True, is_active=True).values_list('email', flat=True)
-            )
-            if staff_emails:
-                staff_context = {'subscriber_email': email}
-                send_templated_email(
-                    template_name='emails/new_subscriber_notification.html',
-                    subject='New Course Subscriber!',
-                    recipient_list=staff_emails,
-                    context=staff_context
-                )
-
-            return JsonResponse({'success': True, 'message': 'Thank you! Your email has been added.'})
-        except Exception as e:
-            logger.error(f"Error processing subscription: {e}")
-            return JsonResponse({'success': False, 'message': 'An error occurred. Please try again later.'}, status=500)
-    return render(request, 'courses_coming_soon.html')
-
 
 def applicant_register(request):
     if request.user.is_authenticated:
@@ -870,31 +813,6 @@ def is_staff_export_applicants_csv(request):
         ])
     messages.success(request, 'Applicant data exported successfully to CSV!')
     return response
-
-
-@staff_required
-def subscribers_list(request):
-    query = request.GET.get('q')
-    subscribers_list = Subscriber.objects.all()
-
-    if query:
-        subscribers_list = subscribers_list.filter(Q(email__icontains=query))
-
-    paginator = Paginator(subscribers_list, 20)
-    page_number = request.GET.get('page')
-
-    try:
-        subscribers = paginator.page(page_number)
-    except PageNotAnInteger:
-        subscribers = paginator.page(1)
-    except EmptyPage:
-        subscribers = paginator.page(paginator.num_pages)
-
-    context = {
-        'subscribers': subscribers,
-        'query': query,
-    }
-    return render(request, 'staff/subscribers.html', context)
 
 
 @moderator_required
@@ -2335,3 +2253,127 @@ def paystack_webhook(request):
                 print(f"Webhook Email Error: {e}")
 
     return HttpResponse(status=200)
+
+
+@login_required
+def initialize_course_payment(request, course_slug):
+    # Mapping slugs to display names
+    courses = {
+        'social-media': 'Social Media Management',
+        'graphic-design': 'Graphic Design',
+        'virtual-assistance': 'Virtual Assistance',
+        'content-writing': 'Content Writing',
+    }
+    
+    course_name = courses.get(course_slug)
+    if not course_name:
+        return JsonResponse({'status': 'error', 'message': 'Invalid course'}, status=400)
+
+    # Configuration
+    reference = str(uuid.uuid4())
+    amount_naira = 49999 
+    amount_kobo = amount_naira * 100 
+
+    # 1. Create the pending purchase record
+    CoursePurchase.objects.create(
+        user=request.user,
+        course_name=course_name,
+        amount=amount_naira,
+        reference=reference,
+        status='pending'
+    )
+
+    # 2. Prepare Paystack API call
+    url = "https://api.paystack.co/transaction/initialize"
+    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
+    payload = {
+        "email": request.user.email,
+        "amount": amount_kobo,
+        "reference": reference,
+        "callback_url": "https://readyremotejob.com/courses/verify/"
+    }
+    
+    try:
+        r = requests.post(url, headers=headers, json=payload)
+        paystack_response = r.json()
+
+        if paystack_response.get('status'):
+            # 3. Return 'success' AND the nested data object PaystackPop needs
+            return JsonResponse({
+                'status': 'success',
+                'data': {
+                    'access_code': paystack_response['data']['access_code'],
+                    'reference': reference,
+                    'amount': amount_kobo
+                }
+            })
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Paystack initialization failed'}, status=400)
+
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({'status': 'error', 'message': 'Connection error'}, status=500)
+
+
+def verify_course_payment(request):
+    reference = request.GET.get('reference')
+    purchase = get_object_or_404(CoursePurchase, reference=reference)
+    
+    # Avoid re-processing if already successful
+    if purchase.status == 'success':
+        return redirect("https://slack.com/your-invite-link")
+
+    # Verify with Paystack
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
+    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
+    
+    try:
+        r = requests.get(url, headers=headers)
+        response = r.json()
+    except Exception:
+        messages.error(request, "Could not connect to payment processor.")
+        return redirect('courses_list')
+
+    if response.get('status') and response['data']['status'] == 'success':
+        purchase.status = 'success'
+        purchase.save()
+
+        # --- Send Email using your existing helper function ---
+        slack_link = "https://slack.com/your-invite-link"
+        email_context = {
+            'user': purchase.user,
+            'course_name': purchase.course_name,
+            'amount': purchase.amount,
+            'slack_link': slack_link,
+        }
+        
+        send_templated_email(
+            template_name='emails/course_confirmation.html',
+            subject=f"Enrollment Confirmed: {purchase.course_name}",
+            recipient_list=[purchase.user.email],
+            context=email_context
+        )
+
+        messages.success(request, f"Payment successful! Welcome aboard. Check your email for the community link.")
+        return redirect(slack_link) 
+    
+    messages.error(request, "Payment verification failed.")
+    return redirect('courses_list')
+
+
+@login_required
+def courses_list(request):
+    """
+    Renders the course landing page.
+    Identifies courses already purchased by the user to change buttons to 'Go to Slack'.
+    """
+    user_purchases = CoursePurchase.objects.filter(
+        user=request.user, 
+        status='success'
+    ).values_list('course_name', flat=True)
+
+    context = {
+        'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY,
+        'user_purchases': list(user_purchases), 
+        'slack_invite_url': "https://join.slack.com/t/your-actual-link"
+    }
+    return render(request, 'courses.html', context)

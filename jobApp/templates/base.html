@@ -20,11 +20,11 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         /* Base styles: Apply Century Gothic font and a subtle white background with a purple-yellow gradient touch */
         body {
-            font-family: 'Century Gothic';
+            font-family: 'Poppins', sans-serif;
             /* Changed base background to white with a very subtle purple-yellow gradient */
             background: linear-gradient(to bottom right, #FFFFFF, #FEFCE8); /* White to very pale yellow */
             color: #1F2937; /* Dark text for contrast */
@@ -425,7 +425,7 @@
                     <div id="about-us-dropdown-menu" class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
                         <a href="{% url 'about' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">About Us</a>
                         <a href="{% url 'submit_resume' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Review your Resume</a>
-                        <a href="{% url 'courses_coming_soon' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
+                        <a href="{% url 'courses_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
                     </div>
                 </div>
                 <a href="{% url 'job_list' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-briefcase mr-2"></i> Jobs
@@ -468,7 +468,7 @@
                 <div id="mobile-about-us-menu" class="dropdown-menu-mobile hidden ml-8 space-y-2 py-1">
                     <a href="{% url 'about' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">About Us</a>
                     <a href="{% url 'submit_resume' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Review your Resume</a>
-                    <a href="{% url 'courses_coming_soon' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
+                    <a href="{% url 'courses_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
                 </div>
             </div>
             <a href="{% url 'job_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">

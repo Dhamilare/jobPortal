@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .button {
+            background-color: #6D28D9;
+            color: white !important;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 16px;">
+        <h2 style="color: #6D28D9;">Hi {{ user.get_full_name|default:user.username }}, you're enrolled! 🚀</h2>
+        
+        <p>Congratulations! Your payment of <strong>₦{{ amount }}</strong> for <strong>{{ course_name }}</strong> was successful.</p>
+        
+        <p>You now have full access to the course community where you can interact with instructors and start your learning journey.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ slack_link }}" class="button">Join the Student Slack Community</a>
+        </div>
+        
+        <p style="font-size: 0.9em; color: #6b7280;">
+            If the button above doesn't work, copy and paste this link into your browser:<br>
+            {{ slack_link }}
+        </p>
+        
+        <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        
+        <p>Best regards,<br><strong>The Ready Remote Jobs Team</strong></p>
+        <p style="font-size: 0.8em; color: #9ca3af;">&copy; {{ current_year }} Ready Remote Jobs. All rights reserved.</p>
+    </div>
+</body>
+</html>

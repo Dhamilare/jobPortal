@@ -399,36 +399,37 @@
                     </div>
                 </section>
                 
-                {# --- Subscribers List (Staff Only) --- #}
-                {% if user.is_staff %}
-                <section class="bg-white rounded-2xl p-8 shadow-2xl" id="subscribers-list">
-                    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8">
-                        <div class="flex items-center mb-4 lg:mb-0">
-                            <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mr-4 shadow-md">
-                                <i class="fas fa-envelope-open-text text-3xl"></i>
-                            </div>
-                            <h2 class="text-3xl font-bold text-gray-900">Courses Subscribers</h2>
+            {# --- Course Students List (Staff Only) --- #}
+            {% if user.is_staff %}
+            <section class="bg-white rounded-2xl p-8 shadow-2xl" id="subscribers-list">
+                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8">
+                    <div class="flex items-center mb-4 lg:mb-0">
+                        <div class="w-14 h-14 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mr-4 shadow-md">
+                            <i class="fas fa-graduation-cap text-3xl"></i>
                         </div>
-
-                        <div class="relative w-full lg:w-96">
-                            <input
-                                type="text"
-                                id="search-input"
-                                placeholder="Search by email..."
-                                value="{{ query }}"
-                                class="w-full p-3 pl-12 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all shadow-sm"
-                            >
-                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <i id="clear-search" class="fas fa-times-circle absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors {% if not query %}hidden{% endif %}"></i>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-900">Course Enrollments</h2>
+                            <p class="text-gray-500 text-sm">Managing all paid students</p>
                         </div>
                     </div>
 
-                    <div id="subscribers-table-container">
-                        {% comment %} Include the partial for dynamic loading (subscribers_table.html still required) {% endcomment %}
-                        {% include 'staff/subscribers_table.html' %}
+                    <div class="relative w-full lg:w-96">
+                        <input
+                            type="text"
+                            id="search-input"
+                            placeholder="Search by student or course..."
+                            value="{{ query }}"
+                            class="w-full p-3 pl-12 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all shadow-sm"
+                        >
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
-                </section>
-                {% endif %}
+                </div>
+
+                <div id="subscribers-table-container">
+                    {% include 'staff/subscribers_table.html' with students=students %}
+                </div>
+            </section>
+            {% endif %}
             </div>
         </div>
     </div>

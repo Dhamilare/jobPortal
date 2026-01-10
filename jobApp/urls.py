@@ -26,7 +26,13 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='accounts/password_reset_confirm.html', form_class=CustomSetPasswordForm), name='password_reset_confirm'),
     path('reset/complete/', auth_views.PasswordResetCompleteView.as_view(template_name='accounts/password_reset_complete.html'), name='password_reset_complete'),
     
-    path('courses/', views.courses_coming_soon, name='courses_coming_soon'),
+    # Course Landing Page
+    path('courses/', views.courses_list, name='courses_list'),
+    
+    # Course Payment Logic
+    path('courses/initialize/<slug:course_slug>/', views.initialize_course_payment, name='initialize_course_payment'),
+    path('courses/verify/', views.verify_course_payment, name='verify_course_payment'),
+
     path('resume/', views.submit_resume_view, name='submit_resume'),
 
 
@@ -83,7 +89,7 @@ urlpatterns = [
     path('staff/export-applicants/', views.is_staff_export_applicants_csv, name='is_staff_export_applicants_csv'),
     path('staff/moderators/manage/', views.manage_moderators, name='manage_moderators'),
     path('staff/moderators/manage/<int:user_id>/', views.manage_moderators, name='manage_moderators_edit_delete'),
-    path('staff/subscribers', views.subscribers_list, name='subscribers_list'),
+   
 
     
     # Blog Post Management
