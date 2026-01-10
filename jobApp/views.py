@@ -368,9 +368,8 @@ def job_detail_view(request, slug):
 @login_required
 @applicant_required
 @require_http_methods(["GET", "POST"]) 
-def job_apply_view(request, slug):
-    print(f"DEBUG: Searching for job with slug: '{slug}'") 
-    job = Job.objects.filter(slug__iexact=slug.strip()).first()
+def job_apply_view(request, slug): 
+    job = get_object_or_404(Job, slug=slug)
 
     if job.application_method == 'Email':
         messages.info(request, "Please follow the email instructions in the job description.")
