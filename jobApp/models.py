@@ -531,6 +531,14 @@ class JobSubscription(models.Model):
     expiry_date = models.DateTimeField(null=True, blank=True)
     whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
     interest_category = models.CharField(max_length=100, blank=True, null=True)
+    ambassador = models.ForeignKey(
+        'Ambassador', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='referral_subscriptions'
+    )
+    referral_code_used = models.CharField(max_length=6, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.email} - {self.plan_type}"
@@ -546,3 +554,17 @@ class CoursePurchase(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.course_name}"
+    
+
+class Ambassador(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ambassador_profile')
+    referral_code = models.CharField(max_length=6, unique=True, editable=False)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            self.referral_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.referral_code}"

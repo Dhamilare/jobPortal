@@ -141,4 +141,6 @@ urlpatterns = [
     path('subscription/verify/', views.verify_payment, name='verify_payment'),
 
     path('paystack/webhook/', views.paystack_webhook, name='paystack_webhook'),
+
+    path('ambassador-program/', views.ambassador_signup, name='ambassador_signup'),
 ]

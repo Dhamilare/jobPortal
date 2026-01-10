@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+        body { font-family: 'Poppins', Helvetica, Arial, sans-serif; line-height: 1.6; color: #1F2937; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; border: 1px solid #E5E7EB; border-radius: 24px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .code-box { 
+            background-color: #F5F3FF; 
+            border: 2px dashed #7C3AED; 
+            border-radius: 16px; 
+            padding: 30px; 
+            text-align: center; 
+            margin: 30px 0; 
+        }
+        .referral-code { 
+            font-size: 32px; 
+            font-weight: 800; 
+            letter-spacing: 4px; 
+            color: #7C3AED; 
+        }
+        .footer { font-size: 12px; color: #6B7280; text-align: center; margin-top: 40px; }
+        .btn { 
+            background-color: #7C3AED; 
+            color: #ffffff !important; 
+            padding: 14px 28px; 
+            text-decoration: none; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            display: inline-block; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="color: #111827; margin-bottom: 10px;">Welcome to the Inner Circle! 🌟</h1>
+            <p style="color: #4B5563;">You are now an official RRJ Ambassador.</p>
+        </div>
+
+        <p>Hi {{ user.get_full_name|default:user.username }},</p>
+        
+        <p>We're thrilled to have you on board. Our mission is to bridge the gap between talented individuals and remote opportunities, and your voice helps us get there faster.</p>
+
+        <div class="code-box">
+            <p style="margin-top: 0; font-weight: bold; color: #4C1D95;">YOUR UNIQUE REFERRAL CODE</p>
+            <div class="referral-code">{{ referral_code }}</div>
+            <p style="margin-bottom: 0; font-size: 14px; color: #6D28D9;">Share this with your network to start earning!</p>
+        </div>
+
+        <h3 style="color: #111827;">What's Next?</h3>
+        <ul style="padding-left: 20px;">
+            <li style="margin-bottom: 10px;"><strong>Share & Earn:</strong> When someone uses your code to enroll in a course, you earn a discount.</li>
+            <li style="margin-bottom: 10px;"><strong>Community Access:</strong> Join our private Slack channel to get exclusive tips and brand assets.</li>
+            <li style="margin-bottom: 10px;"><strong>Get Recognized:</strong> Top ambassadors get featured on our social media pages.</li>
+        </ul>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="{{ slack_link }}" class="btn">Join Ambassador Slack</a>
+        </div>
+
+        <div class="footer">
+            <p>&copy; {{ current_year }} Ready Remote Jobs. All rights reserved.</p>
+            <p>You received this email because you signed up for the RRJ Ambassador Program.</p>
+        </div>
+    </div>
+</body>
+</html>

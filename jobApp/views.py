@@ -20,7 +20,7 @@ import json
 from django.http import HttpResponseRedirect
 from .forms import *
 from .models import *
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.templatetags.static import static
 from django.http import Http404, HttpRequest
@@ -2107,9 +2107,9 @@ def initialize_payment(request, plan_key):
         return JsonResponse({'status': 'error', 'message': 'Invalid plan'}, status=400)
 
     reference = str(uuid.uuid4())
-    
     whatsapp = request.POST.get('whatsapp_number')
     interest = request.POST.get('interest_category')
+    referral_code = request.POST.get('referral_code', '').strip().upper()
 
     # 1. Create the local record (Keep status pending)
     sub = JobSubscription.objects.create(
@@ -2119,6 +2119,7 @@ def initialize_payment(request, plan_key):
         reference=reference,
         whatsapp_number=whatsapp, 
         interest_category=interest,
+        referral_code_used=referral_code,
         status='pending'
     )
 
@@ -2186,6 +2187,15 @@ def verify_payment(request):
             if sub.status != 'success':
                 sub.status = 'success'
                 sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
+                
+                if sub.referral_code_used:
+                    try:
+                        # Find the ambassador who owns the code
+                        ambassador = Ambassador.objects.get(referral_code=sub.referral_code_used)
+                        sub.ambassador = ambassador
+                    except Ambassador.DoesNotExist:
+                        # If code is invalid, we leave sub.ambassador as None
+                        pass
                 sub.save()
 
             if not sub.is_notified:
@@ -2385,3 +2395,38 @@ def courses_list(request):
         'slack_invite_url': "https://join.slack.com/t/your-actual-link"
     }
     return render(request, 'courses.html', context)
+
+
+@login_required
+def ambassador_signup(request):
+    # Check if the user is already an ambassador
+    ambassador = Ambassador.objects.filter(user=request.user).first()
+
+    if request.method == "POST" and not ambassador:
+        # User clicked the "Join Now" button
+        ambassador = Ambassador.objects.create(user=request.user)
+        
+        # Send the confirmation email
+        context = {
+            'user': request.user,
+            'referral_code': ambassador.referral_code,
+            'slack_link': "https://join.slack.com/t/your-invite-link",
+        }
+        send_templated_email(
+            template_name='emails/ambassador_confirmation.html',
+            subject="Welcome to the RRJ Ambassador Program! 🌟",
+            recipient_list=[request.user.email],
+            context=context
+        )
+        messages.success(request, "Congratulations! You are now an RRJ Ambassador.")
+        return redirect('ambassador_signup')
+
+    # Get leaderboard for everyone to see (marketing for non-ambassadors)
+    top_ambassadors = Ambassador.objects.annotate(
+        referral_count=Count('referral_subscriptions', filter=Q(referral_subscriptions__status='success'))
+    ).order_by('-referral_count')[:5]
+
+    return render(request, 'ambassador_program.html', {
+        'ambassador': ambassador,
+        'top_ambassadors': top_ambassadors
+    })

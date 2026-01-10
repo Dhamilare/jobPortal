@@ -288,6 +288,20 @@
                             <option value="Customer Support">Customer Support</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">
+                            Referral Code <span class="text-xs font-normal text-gray-400">(Optional)</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                                <i class="fas fa-ticket-alt"></i>
+                            </span>
+                            <input type="text" id="referral_input" maxlength="6" 
+                                placeholder="Enter 6-digit code"
+                                class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all uppercase placeholder:normal-case">
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1 ml-1">If you were referred by an ambassador, enter their code here.</p>
+                    </div>
                 </div>
             </div>
 
@@ -361,6 +375,7 @@
         const planKey = document.getElementById('current-plan-key').value;
         const whatsapp = document.getElementById('whatsapp_input').value;
         const category = document.getElementById('category_input').value;
+        const referral = document.getElementById('referral_input').value;
 
         if (!whatsapp || !category) {
             alert("Please fill in all fields.");
@@ -374,6 +389,7 @@
         const formData = new FormData();
         formData.append('whatsapp_number', whatsapp);
         formData.append('interest_category', category);
+        formData.append('referral_code', referral);
         formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
         fetch(`/subscription/pay/${planKey}/`, {

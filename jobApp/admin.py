@@ -444,6 +444,22 @@ class CoursePurchaseAdmin(admin.ModelAdmin):
     get_status_display.short_description = 'Payment Status'
 
 
+@admin.register(Ambassador)
+class AmbassadorAdmin(admin.ModelAdmin):
+    list_display = ('user_email', 'user_full_name', 'referral_code', 'joined_at')
+    search_fields = ('user__email', 'user__username', 'user__first_name', 'user__last_name', 'referral_code')
+    list_filter = ('joined_at',)
+    ordering = ('-joined_at',)
+
+    def user_email(self, obj):
+        return obj.user.email
+    user_email.short_description = 'Email'
+
+    def user_full_name(self, obj):
+        return obj.user.get_full_name() or obj.user.username
+    user_full_name.short_description = 'Name'
+
+
 
 
 
