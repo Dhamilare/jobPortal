@@ -1353,6 +1353,7 @@ def post_list_view(request):
     context = {
         'page_obj': page_obj,
         'query': query,
+        'paginator': paginator
     }
     return render(request, 'blog/post_list.html', context)
 

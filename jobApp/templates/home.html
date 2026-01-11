@@ -17,32 +17,63 @@
         .delay-400 { animation-delay: 0.4s; }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes pulse-soft {
             0%, 100% { box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.4); }
             50% { box-shadow: 0 0 0 15px rgba(109, 40, 217, 0); }
-            }
-            .btn-pulse {
-                animation: pulse-soft 2s infinite;
-            }
+        }
+        .btn-pulse { animation: pulse-soft 2s infinite; }
+
+        /* Distinctive Section Label */
+        .section-label {
+            display: inline-block;
+            padding: 4px 14px;
+            background: rgba(109, 40, 217, 0.1);
+            color: #6D28D9;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: 9999px;
+            margin-bottom: 1rem;
+        }
+
+        /* Hero Wave Divider */
+        .custom-shape-divider-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+        .custom-shape-divider-bottom svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 60px;
+        }
+        .custom-shape-divider-bottom .shape-fill { fill: #ffffff; }
+
+        /* General Scroll Animation from previous version */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 
-    <section class="hero-section bg-gradient-to-r from-purple-700 to-indigo-600 text-white py-20 px-6 sm:px-10 lg:px-20 text-center relative overflow-hidden rounded-lg shadow-lg">
-       <div
-            class="absolute inset-0 z-0 opacity-50"
-            style="background-image: url('{% static 'img/banner.jpg' %}'); background-size:cover;background-position:center;">
-        </div>
-
-        <div class="container mx-auto relative z-10">
+    {# --- Section 1: Hero --- #}
+    <section class="hero-section bg-gradient-to-r from-purple-700 to-indigo-600 text-white py-24 px-6 sm:px-10 lg:px-20 text-center relative overflow-hidden shadow-lg">
+       <div class="absolute inset-0 z-0 opacity-50" style="background-image: url('{% static 'img/banner.jpg' %}'); background-size:cover;background-position:center;"></div>
+        <div class="container mx-auto relative z-10 pb-10">
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 animate-fade-in-up">
                 Find Verified Remote Jobs<br>Build Your Career
             </h1>
@@ -60,20 +91,20 @@
                 {% endif %}
             </div>
         </div>
+        <div class="custom-shape-divider-bottom">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C58.47,110.49,114.99,115.68,171.84,110.12,238.39,103.66,295,83,321.39,56.44Z" class="shape-fill"></path>
+            </svg>
+        </div>
     </section>
 
-    <section class="py-12 px-6">
+    {# --- Section 2: Personalization Subscription --- #}
+    <section class="py-20 px-6 bg-white border-b border-gray-100">
         <div class="container mx-auto max-w-6xl">
             <div class="bg-gradient-to-br from-purple-700 to-indigo-800 rounded-[2rem] p-1 shadow-xl overflow-hidden">
                 <div class="bg-white rounded-[1.8rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div class="flex-1 text-center md:text-left">
-                        <div class="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold uppercase mb-4">
-                            <span class="relative flex h-2 w-2 mr-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
-                            </span>
-                            New Service Available
-                        </div>
+                        <div class="section-label">Smart Alerts</div>
                         <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4 leading-tight">
                             Tired of searching?<br><span class="text-purple-600">Let the jobs find you.</span>
                         </h2>
@@ -91,22 +122,24 @@
         </div>
     </section>
 
-    <section class="py-16 px-6 md:px-8 lg:px-12 bg-gray-50">
+    {# --- Section 3: Job Listings --- #}
+    <section class="py-24 px-6 md:px-8 lg:px-12 bg-gray-50 border-b border-gray-200">
         <div class="container mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center text-purple-700">
-                <i class="fas fa-search text-purple-700 mr-3"></i> Explore Remote Opportunities
-            </h2>
+            <div class="text-center mb-16">
+                <div class="section-label">Verified Listings</div>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 flex items-center justify-center">
+                    <i class="fas fa-search text-purple-700 mr-3"></i> Explore Remote Opportunities
+                </h2>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% if verified_jobs %}
                     {% for job in verified_jobs %}
-                        <div class="bg-white rounded-lg p-6 card-shadow h-full flex flex-col justify-between transform transition-transform duration-300 hover:scale-105 relative overflow-hidden">
-                            {# Hot Job Banner #}
+                        <div class="bg-white rounded-lg p-6 card-shadow h-full flex flex-col justify-between transform transition-transform duration-300 hover:scale-105 relative overflow-hidden border border-gray-100">
                             {% if job.is_hot_job %}
                                 <span class="absolute top-0 right-0 mt-3 mr-3 bg-yellow-500 text-purple-900 text-xs font-bold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center transform rotate-3 origin-top-right">
                                     <i class="fas fa-fire mr-1 text-sm"></i> Hot!
                                 </span>
                             {% endif %}
-                            {# Expired Job Banner #}
                             {% if job.is_expired %}
                                 <span class="absolute top-0 left-0 mt-3 ml-3 bg-gray-700 text-white text-xs font-bold uppercase px-2 py-0.5 rounded-full shadow-md flex items-center transform -rotate-3 origin-top-left">
                                     <i class="fas fa-times-circle mr-1 text-sm"></i> Expired
@@ -131,32 +164,18 @@
                                         <i class="fas fa-folder-open mr-1"></i> {{ job.category.name }}
                                     </span>{% endif %}
                                     <span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
-                                        <i class="fas fa-calendar-alt mr-1"></i> Posted: {{ job.date_posted|date:"M d, Y" }}
+                                        <i class="fas fa-calendar-alt mr-1"></i> {{ job.date_posted|date:"M d" }}
                                     </span>
-                                    {# Job Expiry Date on list #}
-                                    {% if job.job_expiry_date %}
-                                        <span class="inline-flex items-center px-2.5 py-0.5 bg-red-100 text-red-800 rounded-full font-medium">
-                                            <i class="fas fa-hourglass-end mr-1"></i> Expires: {{ job.job_expiry_date|date:"M d, Y" }}
-                                        </span>
-                                    {% else %}
-                                        <span class="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-700 rounded-full font-medium">
-                                            <i class="fas fa-calendar-times mr-1"></i> No Expiry
-                                        </span>
-                                    {% endif %}
                                 </div>
                             </div>
                             <hr class="my-4 border-gray-200">
                             <div class="text-center">
-                                <a href="{% url 'job_detail' job.slug %}" class="bg-purple-700 text-white px-6 py-2 w-full font-semibold shadow-lg hover:bg-purple-800 transition-all duration-300 inline-flex items-center justify-center">
+                                <a href="{% url 'job_detail' job.slug %}" class="bg-purple-700 text-white px-6 py-2 w-full font-semibold shadow-lg hover:bg-purple-800 transition-all duration-300 inline-flex items-center justify-center rounded-lg">
                                     <i class="fas fa-eye mr-2"></i> View Job
                                 </a>
                             </div>
                         </div>
                     {% endfor %}
-                {% else %}
-                    <p class="text-center text-gray-600 col-span-full w-full py-10">
-                        <i class="fas fa-info-circle mr-2"></i> No active jobs found at the moment. Please check back later!
-                    </p>
                 {% endif %}
             </div>
             <div class="text-center mt-12">
@@ -167,30 +186,79 @@
         </div>
     </section>
 
-    <section class="py-16 px-6 md:px-8 lg:px-12 bg-white">
+    {# --- Section 4: What We Offer --- #}
+    <section class="w-full bg-white py-24">
+        <div class="container mx-auto max-w-7xl px-6 text-center">
+            <div class="section-label">Career Services</div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-purple-700 animate-on-scroll">What We Offer</h2>
+            <p class="text-lg md:text-xl text-gray-600 leading-relaxed mb-16 max-w-3xl mx-auto animate-on-scroll delay-100">
+                We go beyond just listing jobs. At RRJ, we prepare you to stand out and succeed in the remote economy.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <a href="{% url 'submit_resume' %}" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
+                    <i class="fas fa-file-alt text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Resume Reviews</h3>
+                    <p class="text-gray-600 text-sm text-left">Get tailored feedback to make your resume shine for remote-first employers.</p>
+                    <div class="mt-4 text-purple-600 font-semibold text-xs uppercase tracking-wider flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </a>
+                <a href="#" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-200 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
+                    <i class="fas fa-microphone-alt text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Interview Prep</h3>
+                    <p class="text-gray-600 text-sm text-left">Practice with experts so you enter virtual interviews with confidence.</p>
+                    <div class="mt-4 text-purple-600 font-semibold text-xs uppercase tracking-wider flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </a>
+                <a href="#" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-300 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
+                    <i class="fas fa-chalkboard-teacher text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Career Counselling</h3>
+                    <p class="text-gray-600 text-sm text-left">Personalized guidance for your unique remote career journey.</p>
+                    <div class="mt-4 text-purple-600 font-semibold text-xs uppercase tracking-wider flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </a>
+                <a href="{% url 'courses_list' %}" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-400 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
+                    <i class="fas fa-graduation-cap text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Practical Courses</h3>
+                    <p class="text-gray-600 text-sm text-left">Learn the exact skills employers are looking for in today's remote hires.</p>
+                    <div class="mt-4 text-purple-600 font-semibold text-xs uppercase tracking-wider flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {# --- Section 5: Testimonials --- #}
+    <section class="py-24 px-6 md:px-8 lg:px-12 bg-purple-50 border-y border-purple-100">
         <div class="container mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center text-purple-700">
-                <i class="fas fa-quote-left text-purple-700 mr-3"></i> What Our Users Say
-            </h2>
+            <div class="text-center mb-16">
+                <div class="section-label">User Praise</div>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">
+                    <i class="fas fa-quote-left text-purple-700 mr-3"></i> What Our Users Say
+                </h2>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-gray-50 rounded-lg p-6 card-shadow border border-gray-200">
-                    <p class="text-gray-700 italic mb-4 text-center">"Finally, a job portal I can trust. No fake offers, just real jobs and real results."</p>
+                <div class="bg-white rounded-2xl p-8 card-shadow border border-gray-100">
+                    <p class="text-gray-700 italic mb-6 text-center">"Finally, a job portal I can trust. No fake offers, just real jobs and real results."</p>
                     <div class="flex flex-col items-center">
                         <img src="https://placehold.co/64x64/F0F0F0/888888?text=TO" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-purple-300">
                         <p class="font-semibold text-gray-900">Tunde O.</p>
                         <p class="text-sm text-gray-600">Software Developer</p>
                     </div>
                 </div>
-                <div class="bg-gray-50 rounded-lg p-6 card-shadow border border-gray-200">
-                    <p class="text-gray-700 italic mb-4 text-center">"This platform helped me land my first job after graduation. The process was smooth, and I felt confident every step of the way"</p>
+                <div class="bg-white rounded-2xl p-8 card-shadow border border-gray-100">
+                    <p class="text-gray-700 italic mb-6 text-center">"This platform helped me land my first job after graduation. The process was smooth and confident."</p>
                     <div class="flex flex-col items-center">
                         <img src="https://placehold.co/64x64/F0F0F0/888888?text=GA" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-yellow-300">
                         <p class="font-semibold text-gray-900">Grace A.</p>
-                        <p class="text-sm text-gray-600">Customer Service Executive</p>
+                        <p class="text-sm text-gray-600">Support Specialist</p>
                     </div>
                 </div>
-                <div class="bg-gray-50 rounded-lg p-6 card-shadow border border-gray-200">
-                    <p class="text-gray-700 italic mb-4 text-center">"Finding relevant jobs was never easier. The powerful search functionality saved me so much time. Thank you, JobPortal!"</p>
+                <div class="bg-white rounded-2xl p-8 card-shadow border border-gray-100">
+                    <p class="text-gray-700 italic mb-6 text-center">"Finding relevant jobs was never easier. The powerful search functionality saved me time."</p>
                     <div class="flex flex-col items-center">
                         <img src="https://placehold.co/64x64/F0F0F0/888888?text=EM" alt="User Avatar" class="w-16 h-16 rounded-full mb-3 border-2 border-purple-300">
                         <p class="font-semibold text-gray-900">Emily White</p>
@@ -201,138 +269,95 @@
         </div>
     </section>
 
-        {# --- What We Offer Section --- #}
-    <section class="w-full bg-purple-50 py-20">
-        <div class="container mx-auto max-w-7xl px-6">
-            <div class="text-center max-w-3xl mx-auto">
-                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-purple-700 animate-on-scroll">
-                    What We Offer
-                </h2>
-                <p class="text-lg md:text-xl text-gray-600 leading-relaxed mb-16 animate-on-scroll delay-100">
-                    We go beyond just listing jobs. At RRJ, we prepare you to stand out and succeed in the remote economy.
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                
-                <a href="{% url 'submit_resume' %}" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
-                    <i class="fas fa-file-alt text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
-                    <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Resume Reviews</h3>
-                    <p class="text-gray-600 text-sm">Get tailored feedback to make your resume shine for remote-first employers.</p>
-                    <div class="mt-4 text-purple-600 font-semibold text-xs uppercase tracking-wider flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        Learn More <i class="fas fa-arrow-right ml-2"></i>
-                    </div>
-                </a>
-
-                <a href="#" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-200 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
-                    <i class="fas fa-microphone-alt text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
-                    <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Interview Prep</h3>
-                    <p class="text-gray-600 text-sm">Practice with experts so you enter virtual interviews with confidence.</p>
-                    <div class="mt-4 text-purple-600 font-semibold text-xs uppercase tracking-wider flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        Learn More <i class="fas fa-arrow-right ml-2"></i>
-                    </div>
-                </a>
-
-                <a href="#" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-300 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
-                    <i class="fas fa-chalkboard-teacher text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
-                    <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Career Counselling</h3>
-                    <p class="text-gray-600 text-sm">Personalized one-on-one guidance for your unique remote career journey.</p>
-                    <div class="mt-4 text-purple-600 font-semibold text-xs uppercase tracking-wider flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        Learn More <i class="fas fa-arrow-right ml-2"></i>
-                    </div>
-                </a>
-
-                <a href="{% url 'courses_list' %}" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-400 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
-                    <i class="fas fa-graduation-cap text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
-                    <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Practical Courses</h3>
-                    <p class="text-gray-600 text-sm">Learn the exact skills employers are looking for in today's remote hires.</p>
-                    <div class="mt-4 text-purple-600 font-semibold text-xs uppercase tracking-wider flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        Learn More <i class="fas fa-arrow-right ml-2"></i>
-                    </div>
-                </a>
-
-            </div>
-        </div>
-    </section>
-
-    <section class="py-16 px-6 md:px-8 lg:px-12 bg-gray-100">
+    {# --- Section 6: FAQ --- #}
+    <section class="py-24 px-6 md:px-8 lg:px-12 bg-white">
         <div class="container mx-auto max-w-3xl">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center text-purple-700">
-                <i class="fas fa-question-circle text-purple-700 mr-3"></i> Frequently Asked Questions
-            </h2>
+            <div class="text-center mb-16">
+                <div class="section-label">Help & Support</div>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">
+                    <i class="fas fa-question-circle text-purple-700 mr-3"></i> Frequently Asked Questions
+                </h2>
+            </div>
             <div class="space-y-4">
-                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                {# FAQ 1 #}
+                <div class="accordion-item bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> How do I apply for a job?
+                            <i class="fas fa-question-circle text-purple-500 mr-3 text-sm"></i> How do I apply for a job?
                         </h3>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300"></i>
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
                         <p>To apply for a job, you must first register and log in. Once logged in, navigate to the job listing you are interested in and click the "**Apply Now**" button which will redirect you to the company's external application page.</p>
                     </div>
                 </div>
-                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                {# FAQ 2 #}
+                <div class="accordion-item bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Is email verification required?
+                            <i class="fas fa-question-circle text-purple-500 mr-3 text-sm"></i> Is email verification required?
                         </h3>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300"></i>
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
                         <p>Yes, email verification is required for all new registrations. After signing up, a verification link will be sent to your registered email address. Please click the link to activate your account before attempting to log in.</p>
                     </div>
                 </div>
-                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                {# FAQ 3 #}
+                <div class="accordion-item bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> How can I track my applications?
+                            <i class="fas fa-question-circle text-purple-500 mr-3 text-sm"></i> How can I track my applications?
                         </h3>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300"></i>
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
                         <p>Once logged in, you can visit your personal dashboard where you will find a summary of all the jobs for which you've clicked the 'Apply' link and options to manage your profile.</p>
                     </div>
                 </div>
-                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                {# FAQ 4 #}
+                <div class="accordion-item bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Can I update my profile information?
+                            <i class="fas fa-question-circle text-purple-500 mr-3 text-sm"></i> Can I update my profile information?
                         </h3>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300"></i>
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
                         <p>Absolutely! From your applicant dashboard, you can access your profile settings to update your personal details, change your password, and modify your email address.</p>
                     </div>
                 </div>
-                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                {# FAQ 5 #}
+                <div class="accordion-item bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Is it free to use?
+                            <i class="fas fa-question-circle text-purple-500 mr-3 text-sm"></i> Is it free to use?
                         </h3>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300"></i>
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
                         <p>Yes, our platform is completely free to use. You can create an account and apply for jobs without any cost.</p>
                     </div>
                 </div>
-                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                {# FAQ 6 #}
+                <div class="accordion-item bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Are the jobs verified?
+                            <i class="fas fa-question-circle text-purple-500 mr-3 text-sm"></i> Are the jobs verified?
                         </h3>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300"></i>
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
                         <p>Yes, every single job listing is carefully screened and approved by our team before it goes live on the site. We are committed to providing only legitimate and verified opportunities.</p>
                     </div>
                 </div>
-                <div class="accordion-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                {# FAQ 7 #}
+                <div class="accordion-item bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="accordion-header flex justify-between items-center p-5 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
                         <h3 class="text-lg font-medium text-gray-800 flex items-center">
-                            <i class="fas fa-question-circle text-purple-500 mr-3"></i> Do you offer career support?
+                            <i class="fas fa-question-circle text-purple-500 mr-3 text-sm"></i> Do you offer career support?
                         </h3>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 transform"></i>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300"></i>
                     </div>
                     <div class="accordion-content p-5 text-gray-700 border-t border-gray-200 hidden">
                         <p>Yes, we do! We offer a range of career support services, including resume reviews, interview preparation, and one-on-one career counseling to help you succeed.</p>
@@ -342,21 +367,23 @@
         </div>
     </section>
 
-    <section class="py-16 px-6 md:px-8 lg:px-12 bg-white">
+    {# --- Section 7: Blog --- #}
+    <section class="py-24 px-6 md:px-8 lg:px-12 bg-gray-100 border-t border-gray-200">
         <div class="container mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 flex items-center justify-center text-purple-700">
-                <i class="fas fa-rss-square text-purple-700 mr-3"></i> Latest Blog Posts
-            </h2>
+            <div class="text-center mb-16">
+                <div class="section-label">Journal</div>
+                <h2 class="text-3xl md:text-4xl font-bold text-purple-700 flex items-center justify-center">
+                    <i class="fas fa-rss-square mr-3 text-purple-700"></i> Latest Blog Posts
+                </h2>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% if blog_posts %}
                     {% for post in blog_posts %}
-                        <div class="bg-gray-50 rounded-lg p-6 card-shadow h-full flex flex-col justify-between transform transition-transform duration-300 hover:scale-105 border border-gray-200">
+                        <div class="bg-white rounded-2xl p-6 card-shadow h-full flex flex-col justify-between transform transition-transform duration-300 hover:scale-105 border border-gray-200">
                             {% if post.image %}
-                                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="rounded-lg w-full h-48 object-cover mb-4">
+                                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="rounded-xl w-full h-48 object-cover mb-4">
                             {% else %}
-                                <div class="w-full h-48 bg-purple-100 flex items-center justify-center rounded-lg mb-4">
-                                    <i class="fas fa-blog text-purple-500 text-6xl"></i>
-                                </div>
+                                <div class="w-full h-48 bg-purple-100 flex items-center justify-center rounded-xl mb-4 text-purple-500 text-6xl"><i class="fas fa-blog"></i></div>
                             {% endif %}
                             <div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2 mt-2 flex items-center">
@@ -364,28 +391,13 @@
                                 </h3>
                                 <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ post.description }}</p>
                             </div>
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-gray-500 mt-auto">
-                                <div class="flex flex-wrap gap-2 mb-2 sm:mb-0">
-                                    <span class="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
-                                        <i class="fas fa-calendar-alt mr-1"></i> Posted: {{ post.created_at|date:"M d, Y" }}
-                                    </span>
-                                    <span class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                                        <i class="fas fa-user-circle mr-1"></i> By: {{ post.author.get_full_name|default:post.author.username }}
-                                    </span>
-                                </div>
+                            <div class="flex items-center text-xs text-gray-500 space-x-4 mb-4">
+                                <span><i class="fas fa-calendar-alt mr-1"></i> {{ post.created_at|date:"M d, Y" }}</span>
+                                <span><i class="fas fa-user mr-1"></i> {{ post.author.username }}</span>
                             </div>
-                            <hr class="my-4 border-gray-200">
-                            <div class="text-center">
-                                <a href="{% url 'blog_detail' post.slug %}" class="bg-purple-700 text-white px-6 py-2 w-full font-semibold shadow-lg hover:bg-purple-800 transition-all duration-300 inline-flex items-center justify-center">
-                                    <i class="fas fa-book-reader mr-2"></i> Read
-                                </a>
-                            </div>
+                            <a href="{% url 'blog_detail' post.slug %}" class="bg-purple-700 text-white px-6 py-2 w-full text-center font-semibold rounded-lg hover:bg-purple-800 transition-all">Read Post</a>
                         </div>
                     {% endfor %}
-                {% else %}
-                    <p class="text-center text-gray-600 col-span-full w-full py-10">
-                        <i class="fas fa-info-circle mr-2"></i> No blog posts found at the moment. Please check back later!
-                    </p>
                 {% endif %}
             </div>
             <div class="text-center mt-12">
@@ -401,36 +413,44 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // FAQ Accordion Functionality
+        // --- FAQ Accordion Logic ---
         const accordionHeaders = document.querySelectorAll('.accordion-header');
-
         accordionHeaders.forEach(header => {
             header.addEventListener('click', () => {
                 const accordionItem = header.closest('.accordion-item');
                 const accordionContent = accordionItem.querySelector('.accordion-content');
                 const icon = header.querySelector('.fa-chevron-down');
 
-                // Toggle visibility of the content
+                // Toggle current
                 accordionContent.classList.toggle('hidden');
-
-                // Toggle icon rotation
                 icon.classList.toggle('rotate-180');
 
-                // Close other open accordions
+                // Close others
                 accordionHeaders.forEach(otherHeader => {
                     if (otherHeader !== header) {
-                        const otherAccordionItem = otherHeader.closest('.accordion-item');
-                        const otherAccordionContent = otherAccordionItem.querySelector('.accordion-content');
+                        const otherContent = otherHeader.closest('.accordion-item').querySelector('.accordion-content');
                         const otherIcon = otherHeader.querySelector('.fa-chevron-down');
-
-                        if (!otherAccordionContent.classList.contains('hidden')) {
-                            otherAccordionContent.classList.add('hidden');
+                        if (!otherContent.classList.contains('hidden')) {
+                            otherContent.classList.add('hidden');
                             otherIcon.classList.remove('rotate-180');
                         }
                     }
                 });
             });
         });
+
+        // --- Scroll Animation Logic ---
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
     });
 </script>
 {% endblock %}
