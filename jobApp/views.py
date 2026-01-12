@@ -52,6 +52,7 @@ from requests.exceptions import HTTPError, RequestException
 from django.views.decorators.http import require_POST
 import hmac
 import hashlib
+from decimal import Decimal, ROUND_HALF_UP
 
 
 def robots_txt(request):
@@ -2046,9 +2047,9 @@ def privacy_policy(request):
 
 
 PLANS = {
-    '2_weeks': {'name': 'Intensive Search', 'price': 5000, 'days': 14, 'desc': 'Perfect for immediate needs.'},
-    '1_month': {'name': 'Professional', 'price': 9000, 'days': 30, 'desc': 'Our most popular career booster.'},
-    '3_months': {'name': 'Ultimate Career', 'price': 22000, 'days': 90, 'desc': 'Full long-term job support.'},
+    '2_weeks': {'name': 'Intensive Search', 'price': 3000, 'days': 14, 'desc': 'Perfect for immediate needs.'},
+    '1_month': {'name': 'Professional', 'price': 5000, 'days': 30, 'desc': 'Our most popular career booster.'},
+    '3_months': {'name': 'Ultimate Career', 'price': 10000, 'days': 90, 'desc': 'Full long-term job support.'},
 }
 
 @login_required
@@ -2100,116 +2101,224 @@ def send_subscription_email(sub):
     except Exception as e:
         print(f"Email Error in verify_payment: {e}")
 
+
 @login_required
 def initialize_payment(request, plan_key):
     plan = PLANS.get(plan_key)
-    
+
     if not plan:
-        return JsonResponse({'status': 'error', 'message': 'Invalid plan'}, status=400)
+        return JsonResponse(
+            {'status': 'error', 'message': 'Invalid plan'},
+            status=400
+        )
 
     reference = str(uuid.uuid4())
     whatsapp = request.POST.get('whatsapp_number')
     interest = request.POST.get('interest_category')
     referral_code = request.POST.get('referral_code', '').strip().upper()
 
-    # 1. Create the local record (Keep status pending)
+    # ------------------------------------------------------------------
+    # PRICING
+    # ------------------------------------------------------------------
+    base_price = float(plan['price'])          # Original price
+    final_price = base_price                   # Default: no discount
+    applied_ambassador = None
+
+    if referral_code:
+        try:
+            # 1. Validate ambassador
+            applied_ambassador = Ambassador.objects.get(
+                referral_code=referral_code
+            )
+
+            # 2. Prevent reuse of referral code by same user
+            already_used = JobSubscription.objects.filter(
+                user=request.user,
+                referral_code_used=referral_code,
+                status='success'
+            ).exists()
+
+            if already_used:
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': 'You have already used this referral code once.'
+                    },
+                    status=400
+                )
+
+            # 3. Apply 10% DISCOUNT (SUBTRACTED)
+            discount = (
+                Decimal(str(base_price)) * Decimal('0.10')
+            ).quantize(
+                Decimal('0.01'),
+                rounding=ROUND_HALF_UP
+            )
+
+            final_price = float(
+                (Decimal(str(base_price)) - discount).quantize(
+                    Decimal('0.01'),
+                    rounding=ROUND_HALF_UP
+                )
+            )
+
+        except Ambassador.DoesNotExist:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'The referral code "{referral_code}" is invalid.'
+                },
+                status=400
+            )
+
+    # ------------------------------------------------------------------
+    # PAYSTACK AMOUNT (KOBO)
+    # ------------------------------------------------------------------
+    # Round to avoid float precision issues before casting to int
+    amount_in_kobo = int(round(final_price * 100))
+
+    # ------------------------------------------------------------------
+    # CREATE LOCAL SUBSCRIPTION (PENDING)
+    # ------------------------------------------------------------------
     sub = JobSubscription.objects.create(
         user=request.user,
         plan_type=plan_key,
-        amount=plan['price'],
+        amount=final_price,                 # Actual amount to be paid
         reference=reference,
-        whatsapp_number=whatsapp, 
+        whatsapp_number=whatsapp,
         interest_category=interest,
-        referral_code_used=referral_code,
+        referral_code_used=referral_code or None,
+        ambassador=applied_ambassador,
         status='pending'
     )
 
-    # 2. Paystack API Initialization
+    # ------------------------------------------------------------------
+    # PAYSTACK INITIALIZATION
+    # ------------------------------------------------------------------
     url = "https://api.paystack.co/transaction/initialize"
     headers = {
         "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         "Content-Type": "application/json"
     }
-    
+
     callback_url = f"https://readyremotejob.com{reverse('verify_payment')}"
 
-    data = {
+    payload = {
         "email": request.user.email,
-        "amount": int(plan['price'] * 100),
+        "amount": amount_in_kobo,
         "reference": reference,
         "callback_url": callback_url
     }
-    
+
     try:
-        r = requests.post(url, headers=headers, json=data, timeout=10)
-        response = r.json()
-        
-        if response.get('status'):
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=10
+        ).json()
+
+        if response.get('status') is True:
             return JsonResponse({
                 'status': 'success',
                 'access_code': response['data']['access_code'],
                 'reference': reference,
-                'amount_kobo': int(plan['price'] * 100),
+                'amount_kobo': amount_in_kobo,
                 'email': request.user.email
             })
-            
+
     except Exception as e:
         print(f"Paystack Init Error: {e}")
-        
-    return JsonResponse({'status': 'error', 'message': 'Could not initialize payment'}, status=500)
+
+    return JsonResponse(
+        {'status': 'error', 'message': 'Could not initialize payment'},
+        status=500
+    )
 
 
 def verify_payment(request):
     reference = request.GET.get('reference') or request.GET.get('trxref')
+
     if not reference:
-        return render(request, 'subscription/failed.html', {'error': 'No reference provided.'})
+        return render(
+            request,
+            'subscription/failed.html',
+            {'error': 'No reference provided.'}
+        )
 
-    sub = get_object_or_404(JobSubscription, reference=reference)
+    with transaction.atomic():
+        sub = get_object_or_404(
+            JobSubscription.objects.select_for_update(),
+            reference=reference
+        )
 
-    # 1. If Webhook already finished, just show success
-    if sub.status == 'success':
-        # Safety check: if webhook succeeded but email failed, try sending here
-        if not sub.is_notified:
-            send_subscription_email(sub)
-        return render_success(request, sub)
-    
-    # 2. FALLBACK: If Webhook is slow, verify manually once
-    url = f"https://api.paystack.co/transaction/verify/{reference}"
-    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
-    
-    try:
-        r = requests.get(url, headers=headers, timeout=10)
-        response = r.json()
+        # If already processed (e.g. webhook already ran)
+        if sub.status == 'success':
+            if not sub.is_notified:
+                send_subscription_email(sub)   # Immediate fallback
+            return render_success(request, sub)
 
-        if response.get('status') and response['data']['status'] == 'success':
+        # ------------------------------------------------------------------
+        # Paystack verification
+        # ------------------------------------------------------------------
+        url = f"https://api.paystack.co/transaction/verify/{reference}"
+        headers = {
+            "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"
+        }
+
+        try:
+            r = requests.get(url, headers=headers, timeout=10)
+            response = r.json()
+
+            if not response.get('status'):
+                raise ValueError("Verification failed")
+
+            data = response['data']
+
+            if data['status'] != 'success':
+                raise ValueError("Transaction not successful")
+
+            # Amount validation
+            paid_amount = data['amount'] / 100
+            expected_amount = float(sub.amount)
+
+            if paid_amount != expected_amount:
+                raise ValueError(
+                    f"Amount mismatch: expected {expected_amount}, got {paid_amount}"
+                )
+
+            # ------------------------------------------------------------------
+            # Mark subscription successful
+            # ------------------------------------------------------------------
             plan_info = PLANS.get(sub.plan_type)
-            
-            # Update local record if status is not success
-            if sub.status != 'success':
-                sub.status = 'success'
-                sub.expiry_date = timezone.now() + timedelta(days=plan_info['days'])
-                
-                if sub.referral_code_used:
-                    try:
-                        # Find the ambassador who owns the code
-                        ambassador = Ambassador.objects.get(referral_code=sub.referral_code_used)
-                        sub.ambassador = ambassador
-                    except Ambassador.DoesNotExist:
-                        # If code is invalid, we leave sub.ambassador as None
-                        pass
-                sub.save()
 
+            sub.status = 'success'
+            sub.expiry_date = timezone.now() + timedelta(
+                days=plan_info['days']
+            )
+            sub.save()
+
+            # ------------------------------------------------------------------
+            # SEND EMAIL IMMEDIATELY
+            # ------------------------------------------------------------------
             if not sub.is_notified:
                 send_subscription_email(sub)
-                
-            return render_success(request, sub)
-            
-    except Exception as e:
-        print(f"Verification Error: {e}")
 
-    return render(request, 'subscription/failed.html', {
-        'error': 'Payment verification is taking longer than expected. Please check your email in a few minutes.'
-    })
+            return render_success(request, sub)
+
+        except Exception as e:
+            print(f"Verification Error: {e}")
+
+    return render(
+        request,
+        'subscription/failed.html',
+        {
+            'error': (
+                'Payment verification is taking longer than expected. '
+                'Please check your email shortly.'
+            )
+        }
+    )
 
 
 @csrf_exempt

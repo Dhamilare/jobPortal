@@ -4,7 +4,6 @@
 {% block title %}Job Subscription Plans - Remote Ready Jobs{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
     @keyframes fadeInUp {
@@ -39,6 +38,10 @@
     
     #info-modal.hidden { display: none; }
     #modal-panel { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    /* Additional helper classes for validation colors */
+    .status-error { color: #DC2626 !important; }
+    .status-success { color: #16A34A !important; }
 </style>
 
 <script src="https://js.paystack.co/v1/inline.js"></script>
@@ -54,7 +57,7 @@
             
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-purple-50 text-left md:text-center leading-relaxed text-gray-600 space-y-4">
                 <p>
-                    Finding remote jobs can be <span class="font-bold text-gray-800">time-consuming, overwhelming, and frustrating</span> especially if you’re juggling work, school, or personal responsibilities. 
+                    Finding remote jobs can be <span class="font-bold text-gray-800">time consuming, overwhelming, and frustrating</span> especially if you’re juggling work, school, or personal responsibilities. 
                 </p>
                 <p>
                     <strong>Ready Remote Jobs</strong> solves this by bringing verified, relevant remote job opportunities directly to you. You receive carefully selected job openings that match your skills, experience level, and career interests, sent straight to your <strong>WhatsApp and email every day.</strong>
@@ -277,7 +280,7 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Preferred Job Category</label>
                         <select id="category_input" required 
-                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all bg-white">
+                                 class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all bg-white">
                             <option value="" disabled selected>Select your interest...</option>
                             <option value="Social Media Management">Social Media Management</option>
                             <option value="Graphic Design">Graphic Design</option>
@@ -300,6 +303,9 @@
                                 placeholder="Enter 6-digit code"
                                 class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all uppercase placeholder:normal-case">
                         </div>
+                        <p id="discount-status" class="text-[10px] mt-1 ml-1 hidden font-bold">
+                            <i class="fas fa-check-circle"></i> 10% Referral discount will be applied at checkout!
+                        </p>
                         <p class="text-[10px] text-gray-400 mt-1 ml-1">If you were referred by an ambassador, enter their code here.</p>
                     </div>
                 </div>
@@ -343,6 +349,34 @@
     const cancelBtn = document.getElementById('cancel-btn');
     const btnText = document.getElementById('btn-text');
     const btnSpinner = document.getElementById('btn-spinner');
+    const referralInput = document.getElementById('referral_input');
+    const discountStatus = document.getElementById('discount-status');
+
+    // Referral input visual feedback with AJAX live check
+    referralInput.addEventListener('input', function() {
+        const code = this.value.trim().toUpperCase();
+        if (code.length === 6) {
+            // Live validation check against database
+            fetch(`/subscription/validate-referral/?code=${code}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.valid) {
+                    discountStatus.innerHTML = `<i class="fas fa-check-circle"></i> 10% Discount applied! (Ambassador: ${data.ambassador})`;
+                    discountStatus.className = "text-[10px] mt-1 ml-1 font-bold status-success";
+                } else {
+                    discountStatus.innerHTML = `<i class="fas fa-times-circle"></i> ${data.message}`;
+                    discountStatus.className = "text-[10px] mt-1 ml-1 font-bold status-error";
+                }
+                discountStatus.classList.remove('hidden');
+            });
+        } else if (code.length > 0) {
+            discountStatus.innerHTML = "Verifying code...";
+            discountStatus.className = "text-[10px] mt-1 ml-1 font-bold text-gray-400";
+            discountStatus.classList.remove('hidden');
+        } else {
+            discountStatus.classList.add('hidden');
+        }
+    });
 
     function openModal(planKey, planName) {
         submitBtn.disabled = false;
@@ -399,15 +433,18 @@
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
+        .then(response => {
+            // Get the body and status code for strict error handling
+            return response.json().then(data => ({ status: response.status, body: data }));
+        })
+        .then(res => {
+            if (res.status === 200 && res.body.status === 'success') {
                 let handler = PaystackPop.setup({
                     key: '{{ paystack_public_key }}', 
                     email: '{{ request.user.email }}',
-                    amount: data.amount_kobo,
-                    ref: data.reference,
-                    access_code: data.access_code, 
+                    amount: res.body.amount_kobo,
+                    ref: res.body.reference,
+                    access_code: res.body.access_code, 
                     onClose: function() {
                         submitBtn.disabled = false;
                         btnText.classList.remove('hidden');
@@ -419,14 +456,19 @@
                 });
                 handler.openIframe();
             } else {
-                alert("Error initializing payment. Please try again.");
-                location.reload();
+                // Strict validation error message from backend
+                alert(res.body.message || "Initialization error.");
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert("Connection error.");
-            location.reload();
+            submitBtn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnSpinner.classList.add('hidden');
         });
     }
 </script>
