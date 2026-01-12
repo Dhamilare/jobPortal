@@ -48,11 +48,13 @@ from django.http import FileResponse
 import mimetypes
 from django.contrib.sites.models import Site
 import time
+import os
 from requests.exceptions import HTTPError, RequestException
 from django.views.decorators.http import require_POST
 import hmac
 import hashlib
 from decimal import Decimal, ROUND_HALF_UP
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 def robots_txt(request):
@@ -1502,116 +1504,66 @@ def create_category(request):
 # --- RENDER THE ANALYZER PAGE ---
 # -------------------------------------------------
 
+@ensure_csrf_cookie
 @login_required
 def resume_analyzer_view(request: HttpRequest, job_slug: str) -> HttpResponse:
-    """
-    Checks for user profile and resume status. Passes flags to the template
-    to conditionally show upload form, processing message, or analysis results.
-    """
-    if not request.user.is_applicant:
-        messages.error(request, "This feature is for applicants only.")
-        return redirect('job_list')
-
     job = get_object_or_404(Job, slug=job_slug, is_active=True)
+    profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
 
-    needs_upload = False
-    is_processing = False
-    profile = None
+    session_text = request.session.get('temp_resume_text')
+    session_job = request.session.get('temp_resume_job')
 
-    try:
-        profile = request.user.applicant_profile
-
-        if not profile.resume:
-            needs_upload = True
-            messages.info(request, "Please upload your resume to start the analysis.")
-
-        elif profile.resume and not profile.resume_text:
-            is_processing = True
-            extracted = extract_resume_text(profile.resume.path)
-            if extracted:
-                profile.resume_text = extracted
-                profile.save()
-                is_processing = False
-                messages.success(request, "Your resume has been processed successfully.")
-            else:
-                messages.warning(request, "We couldn't extract text from your resume. Try re-uploading a clearer file.")
-
-    except ApplicantProfile.DoesNotExist:
-        messages.warning(request, "Applicant profile not found. Please upload your resume to create one.")
-        needs_upload = True
-        return redirect('job_list')
-    except Exception as e:
-        messages.error(request, f"Unexpected error while accessing your profile: {e}")
-        print(f"ERROR accessing profile for user {request.user.id}: {e}")
-        return redirect('job_list')
+    # Logic: Only allow analysis if there is text in session matching THIS job
+    needs_upload = not (session_text and session_job == job.slug)
 
     context = {
         'job': job,
         'needs_upload': needs_upload,
-        'is_processing': is_processing,
         'profile': profile
     }
     return render(request, 'resume_analyzer.html', context)
 
 
 # -------------------------------------------------
-# --- HANDLE RESUME UPLOAD ---
+# --- HANDLE RESUME UPLOAD (SESSION-ONLY) ---
 # -------------------------------------------------
 
 @login_required
 def handle_resume_upload_view(request: HttpRequest, job_slug: str) -> HttpResponse:
     """
-    Handles resume file upload and automatically extracts text upon upload.
+    Handles applicant resume uploads.
+    - Extracts text from PDF/DOCX entirely in-memory.
+    - Stores raw text temporarily in session for AI analysis.
+    - No files are saved to disk or ApplicantProfile.
     """
     if not request.user.is_applicant:
-        messages.error(request, "Only applicants can upload resumes.")
         return redirect('job_list')
 
     job = get_object_or_404(Job, slug=job_slug)
 
-    if request.method == 'POST':
-        resume_file = request.FILES.get('resume_file')
+    if request.method == "POST":
+        resume_file = request.FILES.get("resume_file")
+
         if not resume_file:
-            messages.error(request, "No resume file was selected.")
-            return redirect('resume_analyzer', job_slug=job.slug)
-
-        allowed_types = [
-            'application/pdf',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/msword'
-        ]
-        if resume_file.content_type not in allowed_types:
-            messages.error(request, "Invalid file type. Please upload PDF or DOCX.")
-            return redirect('resume_analyzer', job_slug=job.slug)
-
-        if resume_file.size > 5 * 1024 * 1024:
-            messages.error(request, "File size exceeds 5MB limit.")
+            messages.error(request, "Please select a file to upload.")
             return redirect('resume_analyzer', job_slug=job.slug)
 
         try:
-            profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
+            # --- Extract text in-memory ---
+            extracted_text = extract_resume_text(resume_file)
 
-            # Delete old resume if exists
-            if profile.resume and default_storage.exists(profile.resume.name):
-                default_storage.delete(profile.resume.name)
+            if extracted_text:
+                # --- Store only in session ---
+                request.session['temp_resume_text'] = extracted_text
+                request.session['temp_resume_job'] = job.slug
+                request.session.modified = True
 
-            profile.resume = resume_file
-            profile.resume_text = ""
-            profile.save()
-
-            extracted = extract_resume_text(profile.resume.path)
-            if extracted:
-                profile.resume_text = extracted
-                profile.save()
-                messages.success(request, f"Resume '{resume_file.name}' uploaded and processed successfully.")
+                return redirect('resume_analyzer', job_slug=job.slug)
             else:
-                messages.warning(request, f"Resume '{resume_file.name}' uploaded, but text extraction failed. Try re-uploading.")
-
-            return redirect('resume_analyzer', job_slug=job.slug)
-
+                messages.error(request, "Could not read the resume. Ensure it is PDF or DOCX.")
         except Exception as e:
-            messages.error(request, f"Error during upload: {e}")
-            return redirect('resume_analyzer', job_slug=job.slug)
+            print(f"CRITICAL ERROR during text extraction: {str(e)}")
+            messages.error(request, "An error occurred while processing your resume.")
 
     return redirect('resume_analyzer', job_slug=job.slug)
 
@@ -1625,50 +1577,43 @@ INITIAL_BACKOFF_DELAY = 4
 
 @login_required
 def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
-    """
-    Calls Gemini API to analyze the applicant’s resume vs job description with 
-    retry logic for rate limiting (HTTP 429).
-    """
     if not request.user.is_applicant:
-        return JsonResponse({"error": "This feature is for applicants only."}, status=403)
+        return JsonResponse({"error": "Unauthorized."}, status=403)
 
     if request.method != "POST":
-        return JsonResponse({"error": "Invalid request method. Please use POST."}, status=405)
+        return JsonResponse({"error": "Invalid method."}, status=405)
 
     try:
         job = get_object_or_404(Job, slug=job_slug)
-        profile = request.user.applicant_profile 
+        profile = request.user.applicant_profile
 
-        if not profile.resume_text:
-            return JsonResponse({"error": "Resume text not found. Please upload or re-process your resume."}, status=404)
+        # SESSION-BASED SOURCE OF TRUTH
+        resume_text = request.session.get('temp_resume_text')
+        resume_job = request.session.get('temp_resume_job')
 
-        resume_text = profile.resume_text
+        if not resume_text or resume_job != job.slug:
+            return JsonResponse(
+                {"error": "No resume found for this job. Please upload again."},
+                status=404
+            )
+
         job_description = strip_tags(job.description)
 
-        # AI system + user prompts (Defined once)
         system_prompt = (
             "You are an expert AI recruitment assistant specialized in the Nigerian job market. "
             "Analyze the candidate's resume against the job description and respond in JSON with keys: "
             "'score' (0-100), 'summary', 'pros', and 'cons'."
         )
 
-        user_query = f"""
-        Candidate Resume:
-        --- START ---
-        {resume_text}
-        --- END ---
-
-        Job Description:
-        --- START ---
-        {job_description}
-        --- END ---
-
-        Provide the JSON analysis based on resume-job alignment.
-        """
-
         payload = {
-            "contents": [{"parts": [{"text": user_query}]}],
-            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{
+                "parts": [{
+                    "text": f"Resume: {resume_text}\n\nJob Description: {job_description}"
+                }]
+            }],
+            "systemInstruction": {
+                "parts": [{"text": system_prompt}]
+            },
             "generationConfig": {
                 "responseMimeType": "application/json",
                 "temperature": 0.5,
@@ -1689,99 +1634,47 @@ def run_analysis_api_view(request: HttpRequest, job_slug: str) -> JsonResponse:
         model_name = "gemini-2.5-flash-preview-09-2025"
         apiUrl = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={apiKey}"
         
-        # Initialize response before the loop
-        response = None 
 
-        # --- Implementation of Retry Loop with Exponential Backoff ---
+        # --- Retry with backoff ---
         for attempt in range(MAX_RETRIES):
             try:
-                # 1. Attempt the API call
-                response = requests.post(
-                    apiUrl, 
-                    headers={'Content-Type': 'application/json'}, 
-                    data=json.dumps(payload), 
-                    timeout=60
-                )
-                
-                # 2. Check for 429 specifically before raising other errors
+                response = requests.post(apiUrl, json=payload, timeout=60)
                 if response.status_code == 429:
-                    raise HTTPError("Rate Limit Exceeded (429)")
-
-                # 3. Raise an exception for other bad status codes (4xx, 5xx)
+                    raise HTTPError("Rate limited")
                 response.raise_for_status()
-                
-                # 4. If successful, break the loop and proceed to processing logic
-                break 
-
-            except HTTPError as e:
-                if response is not None and response.status_code == 429 and attempt < MAX_RETRIES - 1:
-                    wait_time = INITIAL_BACKOFF_DELAY * (2 ** attempt) + (time.time() * 0.1) % 1
-                    print(f"Rate limit hit. Retrying in {wait_time:.2f} seconds (Attempt {attempt + 1}/{MAX_RETRIES})")
-                    time.sleep(wait_time)
-                    continue 
-                else:
-                    print(f"Final API call failed after {attempt + 1} attempts: {e}")
-                    status_code = response.status_code if response is not None else 500
-                    return JsonResponse({
-                        "error": f"AI service failed to respond: {status_code} {getattr(response, 'reason', 'Unknown Reason')}"
-                    }, status=status_code)
-            
-            except RequestException as e:
+                break
+            except (HTTPError, RequestException):
                 if attempt < MAX_RETRIES - 1:
-                    wait_time = INITIAL_BACKOFF_DELAY * (2 ** attempt)
-                    print(f"Network error: {e}. Retrying in {wait_time:.2f} seconds (Attempt {attempt + 1}/{MAX_RETRIES})")
-                    time.sleep(wait_time)
-                    continue
+                    time.sleep(INITIAL_BACKOFF_DELAY * (2 ** attempt))
                 else:
-                    print(f"Final network failure after {attempt + 1} attempts: {e}")
-                    return JsonResponse({"error": "Failed to connect to the AI service after multiple retries. Try refreshing the page."}, status=503)
-        
-        else:
-             return JsonResponse({"error": "AI service rate limit exceeded after all retries. Please try again later."}, status=429)
-        # --- End of Retry Loop ---
-        
-        try:
-            result = response.json()
-        except json.JSONDecodeError:
-            print(f"AI response was not valid JSON: {response.text}")
-            return JsonResponse({"error": "AI service returned invalid data."}, status=500)
+                    return JsonResponse(
+                        {"error": "AI service unavailable. Try again later."},
+                        status=503
+                    )
 
+        ai_data = json.loads(
+            response.json()['candidates'][0]['content']['parts'][0]['text']
+        )
 
-        if (
-            result.get('candidates')
-            and result['candidates'][0].get('content')
-            and result['candidates'][0]['content'].get('parts')
-        ):
-            ai_part = result['candidates'][0]['content']['parts'][0]
-            if 'text' not in ai_part:
-                return JsonResponse({"error": "Unexpected AI response format (missing text part)."}, status=500)
+        # --- SAVE RESULTS ONLY ---
+        profile.parsed_summary = ai_data.get("summary", "")
+        profile.parsed_skills = ai_data.get("pros", [])
+        profile.parsed_experience = ai_data.get("cons", [])
+        profile.save(update_fields=[
+            "parsed_summary",
+            "parsed_skills",
+            "parsed_experience",
+        ])
 
-            try:
-                ai_data = json.loads(ai_part['text'])
-            except json.JSONDecodeError:
-                print(f"AI attempted to return data but it was corrupted: {ai_part.get('text', 'No text found')}")
-                return JsonResponse({"error": "AI analysis data was corrupted (Invalid JSON structure)."}, status=500)
+        # PURGE SESSION DATA IMMEDIATELY
+        request.session.pop('temp_resume_text', None)
+        request.session.pop('temp_resume_job', None)
 
-            if not all(k in ai_data for k in ["score", "summary", "pros", "cons"]):
-                return JsonResponse({"error": "AI response missing required analysis keys."}, status=500)
-
-            # --- Save the results to the profile (using appropriate update_fields) ---
-            profile.parsed_summary = ai_data.get("summary", "")
-            profile.parsed_skills = ai_data.get("pros", [])
-            profile.parsed_experience = ai_data.get("cons", [])
-            profile.save(update_fields=["parsed_summary", "parsed_skills", "parsed_experience"])
-
-            return JsonResponse(ai_data, status=200)
-
-        # If the outer structure of the AI response is bad
-        return JsonResponse({"error": "Unexpected AI response structure (missing candidates)."}, status=500)
-        
-        # --- END: SUCCESSFUL RESPONSE PROCESSING ---
+        return JsonResponse(ai_data, status=200)
 
     except Exception as e:
-        # Catch any remaining critical errors
-        print(f"CRITICAL ERROR in run_analysis_api_view: {str(e)}")
-        return JsonResponse({"error": f"An unexpected critical error occurred: {e}"}, status=500)
+        return JsonResponse({"error": str(e)}, status=500)
+
 
 @login_required
 def delete_account_view(request: HttpRequest) -> HttpResponse:

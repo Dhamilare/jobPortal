@@ -9,9 +9,7 @@ import string, random
 from django_ckeditor_5.fields import CKEditor5Field
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from PyPDF2 import PdfReader
-import docx2txt
-import os
+from django.core.files.storage import default_storage
 
 # -------------------------------
 # User Manager
@@ -406,68 +404,32 @@ class Comment(models.Model):
 
 class ApplicantProfile(models.Model):
     """
-    Stores applicant-specific data, including their primary resume
-    and the AI-parsed analysis.
+    Stores persistent AI analysis results for each applicant.
+    Stateless resume uploads are handled via session; no files are stored.
     """
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='applicant_profile' # This related_name is very important
+        related_name='applicant_profile'
     )
     
-    # --- Resume Fields ---
-    resume = models.FileField(
-        upload_to='resumes/%Y/%m/',
-        blank=True,
-        null=True,
-        help_text="The user's primary resume file (PDF, DOCX)."
-    )
-    resume_text = models.TextField(
-        blank=True,
-        help_text="Raw text extracted from the resume file (populated by a background task)."
-    )
-    
+    # --- PERSISTENT ANALYSIS RESULTS ---
     parsed_experience = models.JSONField(
-        blank=True,
+        blank=True, 
         null=True,
-        help_text="Structured experience extracted by the AI."
+        help_text="Gaps or areas to highlight identified by AI."
     )
     parsed_skills = models.JSONField(
-        blank=True,
+        blank=True, 
         null=True,
-        help_text="Skills extracted by the AI (e.g., ['Python', 'Django', 'React'])."
+        help_text="Key strengths/matches identified by AI."
     )
     parsed_summary = models.TextField(
-        blank=True,
-        help_text="AI-generated summary of the applicant's profile."
+        blank=True, 
+        help_text="AI-generated summary of the fit."
     )
 
     last_updated = models.DateTimeField(auto_now=True)
-
-    def extract_resume_text(self):
-        """Extract text content from the uploaded resume (PDF or DOCX)."""
-        if not self.resume:
-            return ""
-
-        try:
-            ext = os.path.splitext(self.resume.name)[1].lower()
-
-            if ext == ".pdf":
-                with open(self.resume.path, "rb") as f:
-                    reader = PdfReader(f)
-                    text = "".join(page.extract_text() or "" for page in reader.pages)
-                    return text.strip()
-
-            elif ext == ".docx":
-                text = docx2txt.process(self.resume.path)
-                return text.strip()
-
-            else:
-                return "Unsupported file format. Please upload a PDF or DOCX."
-
-        except Exception as e:
-            print(f"Error extracting text from resume: {e}")
-            return ""
 
     def __str__(self):
         return f"Profile for {self.user.email}"
@@ -475,18 +437,12 @@ class ApplicantProfile(models.Model):
 
 # --- Signal to auto-create profile ---
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_or_update_applicant_profile(sender, instance, created, **kwargs):
+def create_applicant_profile(sender, instance, created, **kwargs):
     """
-    Automatically create an ApplicantProfile when a new user is created
-    and is_applicant is True.
+    Automatically create an ApplicantProfile when a new applicant user is created.
     """
-    if instance.is_applicant and created:
-        ApplicantProfile.objects.create(user=instance)
-    elif instance.is_applicant:
-        if hasattr(instance, 'applicant_profile'):
-            instance.applicant_profile.save()
-        else:
-            ApplicantProfile.objects.create(user=instance)
+    if instance.is_applicant:
+        ApplicantProfile.objects.get_or_create(user=instance)
 
 
 

@@ -5,9 +5,11 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from datetime import datetime
-import os
+from django.core.files.uploadedfile import UploadedFile
 import fitz 
-import docx2txt
+import docx 
+from typing import Optional
+import io
 
 
 def send_templated_email(template_name, subject, recipient_list, context, attachments=None):
@@ -69,27 +71,50 @@ def get_subscribers_context(request):
     }
 
 
-def extract_resume_text(file_path: str) -> str:
+def extract_resume_text(file: UploadedFile) -> Optional[str]:
     """
-    Extracts readable text from a resume file (PDF or DOCX).
-    Returns the plain text or None if extraction fails.
+    Extracts readable text from an uploaded resume file (PDF or DOCX) in-memory.
+    - Accepts a Django UploadedFile (InMemoryUploadedFile or TemporaryUploadedFile).
+    - Returns the plain text or None if extraction fails.
     """
     try:
-        ext = os.path.splitext(file_path)[1].lower()
+        # Determine file extension
+        ext = file.name.lower().split('.')[-1]
 
-        if ext == ".pdf":
-            text = ""
-            with fitz.open(file_path) as doc:
-                for page in doc:
-                    text += page.get_text()
-            return text.strip()
+        # --- PDF Extraction ---
+        if ext == "pdf":
+            # Read bytes into PyMuPDF
+            file_bytes = file.read()
+            pdf_doc = fitz.open(stream=file_bytes, filetype="pdf")
+            text_parts = [page.get_text("text") for page in pdf_doc if page.get_text("text").strip()]
+            pdf_doc.close()
+            final_text = "\n".join(text_parts).strip()
+            return final_text if final_text else None
 
-        elif ext == ".docx":
-            text = docx2txt.process(file_path)
-            return text.strip()
+        # --- DOCX Extraction ---
+        elif ext == "docx":
+            file_bytes = io.BytesIO(file.read())
+            doc = docx.Document(file_bytes)
+            full_text = [para.text for para in doc.paragraphs if para.text.strip()]
 
+            # Also extract text from tables
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        if cell.text.strip():
+                            full_text.append(cell.text)
+
+            final_text = "\n".join(full_text).strip()
+            return final_text if final_text else None
+
+        # --- Unsupported formats ---
+        elif ext == "doc":
+            print("Extraction Warning: Legacy .doc format detected. Conversion required.")
+            return None
         else:
+            print(f"Extraction Error: Unsupported file extension .{ext}")
             return None
 
     except Exception as e:
+        print(f"CRITICAL ERROR during text extraction: {str(e)}")
         return None

@@ -319,20 +319,13 @@ class ApplicantProfileInline(admin.StackedInline):
 @admin.register(ApplicantProfile)
 class ApplicantProfileAdmin(admin.ModelAdmin):
     """
-    A separate admin view to see all ApplicantProfiles at once.
+    Admin view to see all ApplicantProfiles at once.
     """
-    list_display = ('user', 'get_resume_filename', 'last_updated')
+    list_display = ('user', 'last_updated')
     search_fields = ('user__email', 'user__username', 'user__first_name')
     
-    readonly_fields = ('resume_text', 'parsed_skills', 'parsed_experience', 'parsed_summary', 'last_updated')
+    readonly_fields = ('parsed_skills', 'parsed_experience', 'parsed_summary', 'last_updated')
     raw_id_fields = ('user',)
-
-    def get_resume_filename(self, obj):
-        if obj.resume:
-            return obj.resume.name.split('/')[-1]
-        return "No resume"
-    get_resume_filename.short_description = "Resume File"
-
 
 
 # ---------------------------------
