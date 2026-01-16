@@ -55,6 +55,7 @@ import hmac
 import hashlib
 from decimal import Decimal, ROUND_HALF_UP
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core.cache import cache
 
 
 def robots_txt(request):
@@ -2515,3 +2516,224 @@ def ambassador_signup(request):
         'banks': sorted(NIGERIAN_BANKS),
     }
     return render(request, 'ambassador_program.html', context)
+
+
+def interview_prep_home(request):
+    """Displays the animated grid of job skills/categories."""
+    categories = InterviewCategory.objects.all()
+    return render(request, 'interview/home.html', {
+        'categories': categories
+    })
+
+def interview_prep_detail(request, slug):
+    """Displays the study guide for a specific skill and the Knowledge Check entry point."""
+    category = get_object_or_404(InterviewCategory, slug=slug)
+    # Fetch all static Q&As defined in the Admin for this category
+    study_qa = category.static_qa.all()
+    
+    return render(request, 'interview/detail.html', {
+        'category': category,
+        'study_qa': study_qa
+    })
+
+
+AI_TIMEOUT_SECONDS = 12
+CACHE_TTL_SECONDS = 3600
+EXPECTED_QUESTION_COUNT = 3
+
+def generate_knowledge_check(request, slug):
+    request_id = str(uuid.uuid4())  # Correlation ID for tracing
+    category = get_object_or_404(InterviewCategory, slug=slug)
+
+    cache_key = f"ai_quiz_v2_{slug}"
+    cached_data = cache.get(cache_key)
+
+    if cached_data:
+        logger.info(
+            "AI quiz cache hit",
+            extra={"request_id": request_id, "category": slug}
+        )
+        return JsonResponse(cached_data)
+
+    logger.info(
+        "AI quiz cache miss",
+        extra={"request_id": request_id, "category": slug}
+    )
+
+    # Prompt hardening: sanitize interpolated values
+    safe_category_name = sanitize_prompt_input(category.name)
+
+    system_instruction = (
+        "You are an expert technical recruiter and senior industry specialist. "
+        f"Generate {EXPECTED_QUESTION_COUNT} highly specific, modern, and challenging interview questions "
+        f"for a candidate applying for a professional role in {safe_category_name}. "
+        "Each question must test deep knowledge or practical scenarios. "
+        "Each 'a' (answer) must be a detailed model response using industry best practices."
+    )
+
+    json_format_instruction = (
+        "Return ONLY a valid JSON object. Do not include markdown, comments, or extra text. "
+        "Schema: {'questions': [{'q': 'string', 'a': 'string'}]}"
+    )
+
+    api_key = config("GEMINI_API_KEY")
+    model_name = "gemini-1.5-flash"
+    api_url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{model_name}:generateContent?key={api_key}"
+    )
+
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": f"{system_instruction} {json_format_instruction}"
+                    }
+                ]
+            }
+        ],
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "temperature": 0.7,
+            "maxOutputTokens": 1000
+        }
+    }
+
+    try:
+        response = requests.post(
+            api_url,
+            json=payload,
+            timeout=AI_TIMEOUT_SECONDS
+        )
+        response.raise_for_status()
+
+        res_data = response.json()
+
+        raw_text = (
+            res_data.get("candidates", [{}])[0]
+            .get("content", {})
+            .get("parts", [{}])[0]
+            .get("text", "")
+        )
+
+        if not raw_text:
+            raise ValueError("Empty AI response")
+
+        quiz_data = json.loads(raw_text)
+
+        # Schema validation BEFORE caching
+        validate_quiz_payload(quiz_data)
+
+        # Attach metadata (non-breaking)
+        quiz_data["is_fallback"] = False
+
+        cache.set(cache_key, quiz_data, CACHE_TTL_SECONDS)
+
+        logger.info(
+            "AI quiz generated successfully",
+            extra={
+                "request_id": request_id,
+                "category": slug,
+                "cached": True
+            }
+        )
+
+        return JsonResponse(quiz_data)
+
+    except requests.exceptions.RequestException as e:
+        logger.error(
+            "AI API connection failure",
+            extra={"request_id": request_id, "error": str(e)}
+        )
+        return JsonResponse(get_fallback_questions(category), status=200)
+
+    except (json.JSONDecodeError, ValueError, KeyError) as e:
+        logger.error(
+            "AI response validation failure",
+            extra={"request_id": request_id, "error": str(e)}
+        )
+        return JsonResponse(get_fallback_questions(category), status=200)
+
+    except Exception as e:
+        logger.critical(
+            "Unexpected AI quiz generation error",
+            extra={"request_id": request_id, "error": str(e)}
+        )
+        return JsonResponse(
+            {"error": "Service temporarily unavailable"},
+            status=503
+        )
+
+
+# -----------------------------
+# Validation & Safety Utilities
+# -----------------------------
+
+def validate_quiz_payload(data):
+    if not isinstance(data, dict):
+        raise ValueError("Payload is not a JSON object")
+
+    questions = data.get("questions")
+    if not isinstance(questions, list):
+        raise ValueError("Missing or invalid 'questions' list")
+
+    if len(questions) != EXPECTED_QUESTION_COUNT:
+        raise ValueError("Unexpected number of questions")
+
+    for idx, item in enumerate(questions):
+        if not isinstance(item, dict):
+            raise ValueError(f"Question {idx} is not an object")
+        if not isinstance(item.get("q"), str) or not item["q"].strip():
+            raise ValueError(f"Invalid question text at index {idx}")
+        if not isinstance(item.get("a"), str) or not item["a"].strip():
+            raise ValueError(f"Invalid answer text at index {idx}")
+
+
+def sanitize_prompt_input(value: str) -> str:
+    """
+    Prevent prompt injection via admin-editable fields.
+    """
+    return (
+        value.replace('"', "")
+        .replace("'", "")
+        .replace("{", "")
+        .replace("}", "")
+        .strip()
+    )
+
+
+def get_fallback_questions(category):
+    return {
+        "questions": [
+            {
+                "q": f"How do you stay current with evolving trends and tools in {category.name}?",
+                "a": (
+                    "Discuss specific blogs, certifications, hands-on labs, "
+                    "and professional communities you actively engage with."
+                ),
+            },
+            {
+                "q": (
+                    f"Describe a real-world project where you applied your "
+                    f"{category.name} expertise to achieve measurable business impact."
+                ),
+                "a": (
+                    "Explain the context, your technical decisions, challenges encountered, "
+                    "and the measurable outcome using the STAR framework."
+                ),
+            },
+            {
+                "q": (
+                    f"What is the most complex technical problem you have solved in "
+                    f"{category.name}, and how did you approach it?"
+                ),
+                "a": (
+                    "Focus on your diagnostic methodology, trade-offs considered, "
+                    "and how you validated the final solution."
+                ),
+            },
+        ],
+        "is_fallback": True,
+        "source": "static"
+    }

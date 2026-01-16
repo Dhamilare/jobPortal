@@ -143,4 +143,13 @@ urlpatterns = [
     path('paystack/webhook/', views.paystack_webhook, name='paystack_webhook'),
 
     path('ambassador-program/', views.ambassador_signup, name='ambassador_signup'),
+
+    # The main listing page for all job skills
+    path('interview-prep/', views.interview_prep_home, name='interview_prep_home'),
+    
+    # The study guide and knowledge check page for a specific skill
+    path('interview-prep/<slug:slug>/', views.interview_prep_detail, name='interview_prep_detail'),
+    
+    # The AJAX endpoint used to fetch AI questions
+    path('interview-prep/api/generate-check/<slug:slug>/', views.generate_knowledge_check, name='generate_knowledge_check'),
 ]

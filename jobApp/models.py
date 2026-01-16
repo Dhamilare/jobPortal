@@ -528,3 +528,21 @@ class Ambassador(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.referral_code}"
+
+
+class InterviewCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(unique=True)
+    icon_class = models.CharField(max_length=50, default="fas fa-briefcase", help_text="FontAwesome class")
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+class InterviewStaticQA(models.Model):
+    category = models.ForeignKey(InterviewCategory, on_delete=models.CASCADE, related_name='static_qa')
+    question = models.TextField()
+    answer = models.TextField()
+
+    def __str__(self):
+        return f"QA for {self.category.name}"

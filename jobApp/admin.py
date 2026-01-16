@@ -454,6 +454,29 @@ class AmbassadorAdmin(admin.ModelAdmin):
 
 
 
+class InterviewStaticQAInline(admin.TabularInline):
+    model = InterviewStaticQA
+    extra = 3  # Provides 3 empty rows by default
+    classes = ('collapse',) # Optional: Keeps the UI clean if you have many QAs
+
+@admin.register(InterviewCategory)
+class InterviewCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'icon_class')
+    prepopulated_fields = {'slug': ('name',)} # Automatically generates slug from name
+    search_fields = ('name', 'description')
+    inlines = [InterviewStaticQAInline]
+    
+    fieldsets = (
+        ('General Information', {
+            'fields': ('name', 'slug', 'icon_class', 'description')
+        }),
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('static_qa')
+
+
+
 
 
     

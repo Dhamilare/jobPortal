@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* Custom Animations */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slideUp 0.6s ease-out forwards; }
+    
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .reveal-box {
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        max-height: 0;
+        overflow: hidden;
+    }
+    .reveal-box.open { max-height: 500px; }
+</style>
+
+<div class="container mx-auto px-6 py-12 max-w-5xl">
+    <nav class="mb-10 animate-slide-up">
+        <a href="{% url 'interview_prep_home' %}" class="inline-flex items-center text-purple-700 font-bold hover:translate-x-[-5px] transition-transform">
+            <i class="fas fa-chevron-left mr-2"></i> Master Skills
+        </a>
+    </nav>
+
+    <div class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-3xl p-10 text-white shadow-2xl mb-12 animate-slide-up">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+                <h2 class="text-4xl font-black mb-2">{{ category.name }} Prep</h2>
+                <p class="text-purple-200">Review the guide, then challenge the AI Knowledge Check.</p>
+            </div>
+            <div class="flex -space-x-3">
+                <div class="w-12 h-12 rounded-full bg-yellow-400 border-4 border-purple-900 flex items-center justify-center text-purple-900 font-bold">AI</div>
+                <div class="w-12 h-12 rounded-full bg-purple-500 border-4 border-purple-900 flex items-center justify-center text-white"><i class="fas fa-check"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 mb-12 animate-slide-up" style="animation-delay: 0.2s;">
+        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-book-open text-yellow-500 mr-3"></i> Study Guide
+        </h3>
+        <div class="space-y-4">
+            {% for qa in study_qa %}
+            <div class="accordion-item glass-effect rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <button class="accordion-header w-full px-6 py-5 text-left font-bold text-gray-800 flex justify-between items-center">
+                    <span>{{ qa.question }}</span>
+                    <i class="fas fa-plus accordion-icon text-purple-600 transition-transform"></i>
+                </button>
+                <div class="accordion-content px-6 bg-white/50">
+                    <div class="py-5 text-gray-600 leading-relaxed border-t border-purple-100">
+                        <span class="text-purple-700 font-bold uppercase text-xs block mb-2">Ideal Response:</span>
+                        {{ qa.answer }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="text-center animate-slide-up" style="animation-delay: 0.4s;">
+        <div class="inline-block p-1 rounded-2xl bg-gradient-to-r from-purple-600 via-yellow-400 to-purple-600 bg-[length:200%_auto] animate-[gradient_3s_linear_infinite] hover:scale-105 transition-transform">
+            <button id="start-check" class="bg-white px-10 py-5 rounded-xl font-black text-purple-900 flex items-center gap-3">
+                <i class="fas fa-brain text-purple-600"></i> START AI KNOWLEDGE CHECK
+            </button>
+        </div>
+    </div>
+
+    <div id="quiz-area" class="hidden mt-16 animate-slide-up">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 border-b-8 border-yellow-400">
+            <div class="flex items-center justify-between mb-10">
+                <h3 class="text-3xl font-black text-gray-900">AI Assessment</h3>
+                <span class="bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-bold">3 Questions Generated</span>
+            </div>
+            
+            <div id="questions-container" class="space-y-12">
+                </div>
+
+            <div class="mt-12 flex flex-col items-center">
+                <button id="submit-quiz" class="btn-primary py-4 px-12 text-xl shadow-xl hover:shadow-yellow-200/50">
+                    Submit Assessment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let quizData = [];
+
+document.getElementById('start-check').addEventListener('click', async () => {
+    const btn = document.getElementById('start-check');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> GENERATING WITH AI...';
+    
+    try {
+        const response = await fetch("{% url 'generate_knowledge_check' category.slug %}");
+        const data = await response.json();
+        quizData = data.questions;
+
+        const container = document.getElementById('questions-container');
+        container.innerHTML = quizData.map((item, index) => `
+            <div class="question-block opacity-0 translate-y-4 transition-all duration-700" style="transition-delay: ${index * 0.2}s">
+                <label class="block text-lg font-bold text-gray-800 mb-4 flex items-start">
+                    <span class="bg-purple-700 text-white w-8 h-8 rounded-lg flex items-center justify-center mr-4 flex-shrink-0 text-sm italic">${index + 1}</span>
+                    ${item.q}
+                </label>
+                <textarea class="input-field min-h-[120px] focus:ring-4 focus:ring-purple-200" placeholder="Type your professional response..."></textarea>
+                <div id="result-${index}" class="reveal-box rounded-2xl mt-4">
+                    <div class="p-6 bg-purple-50 border-l-4 border-purple-700">
+                        <h4 class="text-purple-900 font-black mb-2 flex items-center">
+                            <i class="fas fa-lightbulb mr-2 text-yellow-500"></i> AI ANALYSIS
+                        </h4>
+                        <p class="text-purple-800 leading-relaxed">${item.a}</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('quiz-area').classList.remove('hidden');
+        document.getElementById('quiz-area').scrollIntoView({ behavior: 'smooth' });
+        
+        // Trigger question animations
+        setTimeout(() => {
+            document.querySelectorAll('.question-block').forEach(el => {
+                el.classList.remove('opacity-0', 'translate-y-4');
+            });
+        }, 100);
+
+        btn.parentElement.classList.add('hidden');
+    } catch (err) {
+        alert("AI is currently busy. Please try again in a moment.");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('submit-quiz').addEventListener('click', function() {
+    this.innerHTML = '<i class="fas fa-check-double mr-2"></i> ASSESSMENT REVIEWED';
+    this.disabled = true;
+    this.classList.replace('hover:shadow-yellow-200/50', 'opacity-50');
+
+    quizData.forEach((_, index) => {
+        const revealBox = document.getElementById(`result-${index}`);
+        revealBox.classList.add('open');
+    });
+});
+</script>
+{% endblock %}
