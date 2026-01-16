@@ -516,6 +516,10 @@ class Ambassador(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ambassador_profile')
     referral_code = models.CharField(max_length=6, unique=True, editable=False)
     joined_at = models.DateTimeField(auto_now_add=True)
+    phone_number = models.CharField(max_length=20)
+    social_media_links = models.TextField(help_text="Links to your profiles (Instagram, Twitter, etc.)")
+    bank_name = models.CharField(max_length=100)
+    account_number = models.CharField(max_length=10)
 
     def save(self, *args, **kwargs):
         if not self.referral_code:

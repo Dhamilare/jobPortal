@@ -28,10 +28,19 @@
         background: linear-gradient(135deg, #6D28D9 0%, #4F46E5 100%);
     }
 
-    /* Custom Checkbox Styling */
-    .custom-checkbox:checked {
-        background-color: #6D28D9;
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #E5E7EB;
+        background-color: #F9FAFB;
+        outline: none;
+        transition: all 0.3s;
+    }
+
+    .form-input:focus {
         border-color: #6D28D9;
+        box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.1);
     }
 </style>
 
@@ -68,7 +77,18 @@
             
             {# Left Column: Your Code OR Signup Form #}
             <div class="space-y-8 lg:col-span-1">
-                
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                        <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center gap-3 animate-pulse">
+                            <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-xs"></i>
+                            </div>
+                            <p class="text-green-800 text-sm font-bold">{{ message }}</p>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
                 {% if ambassador %}
                     <div class="glass-box p-8 rounded-3xl shadow-2xl border-t-4 border-purple-600 animate-rise">
                         <h3 class="text-gray-800 font-bold text-xl mb-6">Your Referral Code</h3>
@@ -84,21 +104,49 @@
                     </div>
                 {% else %}
                     <div class="glass-box p-8 rounded-3xl shadow-2xl border-t-4 border-indigo-600 animate-rise">
-                        <h3 class="text-gray-900 font-bold text-2xl mb-4">Join the Program</h3>
-                        <p class="text-sm text-gray-500 mb-6">Ready to start earning? Generate your unique referral code by clicking below.</p>
+                        <h3 class="text-gray-900 font-bold text-2xl mb-4">Register Now</h3>
+                        <p class="text-sm text-gray-500 mb-6">Complete your details to generate your unique referral code.</p>
                         
-                        <form method="POST" class="space-y-6">
+                        <form method="POST" class="space-y-4">
                             {% csrf_token %}
+                            
+                            <div>
+                                <label class="text-xs font-bold text-gray-600 uppercase ml-1">Phone Number</label>
+                                <input type="text" name="phone_number" placeholder="e.g. 08012345678" required class="form-input">
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-bold text-gray-600 uppercase ml-1">Social Media Links</label>
+                                <textarea name="social_media_links" rows="2" placeholder="Instagram, Twitter, or LinkedIn links..." required class="form-input"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 p-4 bg-purple-50 rounded-2xl">
+                                <p class="text-xs font-bold text-purple-700 uppercase">Payout Account Information</p>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-500 uppercase">Bank Name</label>
+                                    <select name="bank_name" required class="form-input text-sm">
+                                        <option value="" disabled selected>Select your bank</option>
+                                        {% for bank in banks %}
+                                        <option value="{{ bank }}">{{ bank }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-500 uppercase">Account Number</label>
+                                    <input type="text" name="account_number" maxlength="10" placeholder="10-digit number" required class="form-input">
+                                </div>
+                            </div>
+
                             <div class="flex items-start">
                                 <div class="flex items-center h-5">
                                     <input type="checkbox" id="terms" required class="custom-checkbox h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer">
                                 </div>
-                                <label for="terms" class="ml-3 text-xs text-gray-600 cursor-pointer">
-                                    I agree to help others add value and follow the Ambassador Program guidelines.
+                                <label for="terms" class="ml-3 text-xs text-gray-600 cursor-pointer leading-tight">
+                                    I agree to the program guidelines and understand that commissions are paid to the account provided above.
                                 </label>
                             </div>
                             <button type="submit" class="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-2xl font-bold hover:shadow-xl transition-all active:scale-95 flex items-center justify-center group">
-                                <i class="fas fa-rocket mr-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i> Join Now
+                                <i class="fas fa-rocket mr-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i> Become an Ambassador
                             </button>
                         </form>
                     </div>
@@ -123,10 +171,10 @@
                 <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 animate-rise">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">About the Program</h2>
                     <p class="text-gray-600 leading-relaxed mb-4">
-                        The Ready Remote Jobs (RRJ) Ambassador Program is designed for individuals who want to earn commissions by referring others to a platform that genuinely helps people become job-ready and find remote work.
+                        The Remote Ready Jobs (RRJ) Ambassador Program is designed for individuals who want to earn commissions by referring others to a platform that genuinely helps people become job-ready and find remote work.
                     </p>
                     <p class="text-gray-600 leading-relaxed">
-                        As an ambassador, you don’t need to sell aggressively or manage products. You simply share RRJ with content creators, students, and professionals who need it—and get rewarded.
+                        As an ambassador, you don’t need to sell aggressively. You simply share RRJ with professionals who need it and get rewarded when they subscribe.
                     </p>
                 </div>
 
@@ -150,7 +198,7 @@
                             <div class="w-12 h-12 step-number text-white rounded-xl flex items-center justify-center font-bold text-xl mr-6 flex-shrink-0 shadow-lg">2</div>
                             <div>
                                 <h4 class="font-bold text-lg text-gray-900">Get Your Code</h4>
-                                <p class="text-gray-500 text-sm mt-1">Receive a unique 6-digit referral code (e.g., AB1234) used to track your successful referrals.</p>
+                                <p class="text-gray-500 text-sm mt-1">Receive a unique 6-digit referral code used to track your successful referrals.</p>
                             </div>
                         </div>
 
@@ -158,14 +206,14 @@
                             <div class="w-12 h-12 step-number text-white rounded-xl flex items-center justify-center font-bold text-xl mr-6 flex-shrink-0 shadow-lg">3</div>
                             <div>
                                 <h4 class="font-bold text-lg text-gray-900">Share & Promote</h4>
-                                <p class="text-gray-500 text-sm mt-1">Share your code with your network, social media audiences, or career communities.</p>
+                                <p class="text-gray-500 text-sm mt-1">Share your code with your network or career communities.</p>
                             </div>
                         </div>
 
                         <div class="flex items-start relative z-10">
                             <div class="w-12 h-12 step-number text-white rounded-xl flex items-center justify-center font-bold text-xl mr-6 flex-shrink-0 shadow-lg">4</div>
                             <div>
-                                <h4 class="font-bold text-lg text-gray-900">Earn 10% Commission</h4>
+                                <h4 class="font-bold text-lg text-gray-900">Earn Commission</h4>
                                 <p class="text-gray-500 text-sm mt-1">Earn a 10% commission on every successful subscription made using your code.</p>
                             </div>
                         </div>
@@ -177,7 +225,6 @@
                         <h2 class="text-2xl font-bold text-white flex items-center">
                             <i class="fas fa-trophy text-yellow-400 mr-3"></i> Top Ambassadors
                         </h2>
-                        <span class="bg-white/10 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Monthly Standings</span>
                     </div>
 
                     <div class="p-8">

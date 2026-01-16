@@ -439,9 +439,9 @@ class CoursePurchaseAdmin(admin.ModelAdmin):
 
 @admin.register(Ambassador)
 class AmbassadorAdmin(admin.ModelAdmin):
-    list_display = ('user_email', 'user_full_name', 'referral_code', 'joined_at')
-    search_fields = ('user__email', 'user__username', 'user__first_name', 'user__last_name', 'referral_code')
-    list_filter = ('joined_at',)
+    list_display = ('user_email', 'user_full_name', 'phone_number', 'bank_name', 'referral_code', 'joined_at')
+    search_fields = ('user__email', 'user__username', 'user__first_name', 'user__last_name', 'referral_code', 'phone_number')
+    list_filter = ('joined_at', 'bank_name')
     ordering = ('-joined_at',)
 
     def user_email(self, obj):

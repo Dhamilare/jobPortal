@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Privacy Policy | Ready Remote Jobs{% endblock %}
+{% block title %}Privacy Policy | Remote Ready Jobs{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -55,6 +55,11 @@
     ::-webkit-scrollbar-thumb:hover { background: #6D28D9; }
 
     html { scroll-behavior: smooth; }
+    
+    .hero-section {
+        background: linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%);
+        color: white;
+    }
 </style>
 {% endblock %}
 
@@ -64,10 +69,11 @@
 </div>
 
 <div class="bg-gray-50 min-h-screen">
-    <div class="hero-section py-16">
+    <div class="hero-section py-20">
         <div class="container mx-auto px-6 animate-fade-in-up">
             <h1 class="text-4xl md:text-6xl font-bold mb-4">Privacy Policy</h1>
-            <p class="text-purple-100 text-lg opacity-90">Last updated: {% now "F j, Y" %}</p>
+            <p class="text-purple-100 text-lg opacity-90">Remote Ready Jobs (“RRJ”) — committed to protecting your privacy.</p>
+            <p class="text-purple-200 text-sm mt-2">Last updated: {% now "F j, Y" %}</p>
         </div>
     </div>
 
@@ -78,12 +84,16 @@
                 <div class="sticky top-24 space-y-2 glass-sidebar p-6 rounded-2xl shadow-xl animate-slide-left">
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Table of Contents</h3>
                     <nav class="flex flex-col space-y-1">
-                        <a href="#intro" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Introduction</a>
-                        <a href="#collection" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Data Collection</a>
-                        <a href="#adsense" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Google AdSense</a>
-                        <a href="#logfiles" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Log Files</a>
-                        <a href="#rights" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">User Rights</a>
-                        <a href="#contact" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium">Contact Us</a>
+                        <a href="#intro" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Introduction</a>
+                        <a href="#collection" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Information We Collect</a>
+                        <a href="#usage" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">How We Use Information</a>
+                        <a href="#cookies" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Cookies & Web Beacons</a>
+                        <a href="#adsense" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Google AdSense</a>
+                        <a href="#logfiles" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Log Files</a>
+                        <a href="#rights" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Data Protection Rights</a>
+                        <a href="#thirdparty" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Third-Party Policies</a>
+                        <a href="#children" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Children's Information</a>
+                        <a href="#contact" class="toc-link p-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-all font-medium text-sm">Contact Us</a>
                     </nav>
                 </div>
             </aside>
@@ -95,8 +105,11 @@
                         <div class="p-2 bg-purple-100 rounded-lg"><i class="fas fa-shield-alt text-purple-700"></i></div>
                         <h2 class="text-2xl font-bold text-gray-800">Introduction</h2>
                     </div>
-                    <p class="text-gray-600 leading-relaxed">
-                        Welcome to <strong>Remote Ready Jobs</strong>. Your privacy is paramount to us. This policy outlines how we handle your personal data when you use our platform.
+                    <p class="text-gray-600 leading-relaxed mb-4">
+                        Welcome to <strong>Ready Remote Jobs</strong>. Your privacy is paramount to us. This Privacy Policy document explains what information we collect, how we use it, how it is protected, and your rights as a user when you visit or use our website and services.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed italic border-l-4 border-purple-200 pl-4 bg-purple-50 py-2">
+                        By using our website, you consent to this Privacy Policy and agree to its terms.
                     </p>
                 </section>
 
@@ -105,51 +118,142 @@
                         <div class="p-2 bg-yellow-100 rounded-lg"><i class="fas fa-database text-yellow-700"></i></div>
                         <h2 class="text-2xl font-bold text-gray-800">Information We Collect</h2>
                     </div>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div class="p-4 border border-gray-100 rounded-xl bg-gray-50">
-                            <h4 class="font-bold text-purple-800 mb-2">Registration Data</h4>
-                            <p class="text-sm text-gray-600">Email, name, and professional details when you create an account.</p>
+                    <p class="text-gray-600 mb-6 font-medium">We collect information in the following ways:</p>
+                    
+                    <div class="space-y-4">
+                        <div class="p-5 border border-gray-100 rounded-xl bg-gray-50">
+                            <h4 class="font-bold text-purple-800 mb-2">a. Personal Information</h4>
+                            <p class="text-sm text-gray-600 mb-2">When you register or subscribe, we may collect:</p>
+                            <ul class="grid md:grid-cols-2 gap-2 text-xs text-gray-500 font-medium">
+                                <li>• Full Name</li>
+                                <li>• Email Address</li>
+                                <li>• Phone Number (WhatsApp)</li>
+                                <li>• Career details (Skills/Experience)</li>
+                            </ul>
                         </div>
-                        <div class="p-4 border border-gray-100 rounded-xl bg-gray-50">
-                            <h4 class="font-bold text-purple-800 mb-2">Communication</h4>
-                            <p class="text-sm text-gray-600">Details provided during support inquiries or resume reviews.</p>
+                        <div class="p-5 border border-gray-100 rounded-xl bg-gray-50">
+                            <h4 class="font-bold text-purple-800 mb-2">b. Communication Data</h4>
+                            <p class="text-sm text-gray-600">Details provided during support inquiries, messages sent via forms, or resume/portfolio details shared for review.</p>
+                        </div>
+                        <div class="p-5 border border-gray-100 rounded-xl bg-gray-50">
+                            <h4 class="font-bold text-purple-800 mb-2">c. Automatically Collected Information</h4>
+                            <p class="text-sm text-gray-600 mb-2">Used solely for analytics and site optimization:</p>
+                            <ul class="grid md:grid-cols-2 gap-2 text-xs text-gray-500 font-medium">
+                                <li>• IP Address & Browser Type</li>
+                                <li>• ISP & Time Stamps</li>
+                                <li>• Referring/Exit Pages</li>
+                                <li>• Number of Clicks</li>
+                            </ul>
                         </div>
                     </div>
+                </section>
+
+                <section id="usage" class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-blue-100 rounded-lg"><i class="fas fa-tasks text-blue-700"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">How We Use Your Information</h2>
+                    </div>
+                    <ul class="space-y-3">
+                        {% for use in uses %}
+                        <li class="flex items-start gap-3 text-gray-600">
+                            <i class="fas fa-check text-purple-500 mt-1"></i>
+                            <span>{{ use }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <p class="mt-6 text-sm font-bold text-red-600">We do not sell, rent, or trade your personal information to third parties.</p>
+                </section>
+
+                <section id="cookies" class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-orange-100 rounded-lg"><i class="fas fa-cookie-bite text-orange-700"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">Cookies and Web Beacons</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed mb-4">
+                        Ready Remote Jobs uses cookies to store user preferences, optimize user experience, and track website usage. Cookies are small text files stored on your device.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed">
+                        You can choose to disable cookies through your browser settings; however, disabling cookies may affect certain website features.
+                    </p>
                 </section>
 
                 <section id="adsense" class="mb-12 p-6 bg-purple-50 rounded-2xl border-l-8 border-purple-700">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="p-2 bg-white rounded-lg shadow-sm"><i class="fab fa-google text-blue-500"></i></div>
-                        <h2 class="text-2xl font-bold text-gray-800">Google AdSense & Cookies</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">Google AdSense & Partners</h2>
                     </div>
                     <p class="text-gray-600 mb-4">
-                        We use Google AdSense to serve advertisements. Google uses the <strong>DART cookie</strong> to serve ads based on your visit history across the internet.
+                        Google uses the <strong>DART cookie</strong> to serve ads to users based on visits to RRJ and other sites on the internet.
                     </p>
-                    <a href="https://policies.google.com/technologies/ads" target="_blank" class="inline-flex items-center text-purple-700 font-bold hover:gap-2 transition-all">
-                        Opt-out of DART cookies <i class="fas fa-arrow-right ml-2"></i>
+                    <div class="bg-white p-4 rounded-lg mb-4 text-sm text-gray-500">
+                        Our advertising partners may use cookies, JavaScript, or Web Beacons to measure campaign effectiveness. <strong>RRJ has no control over these third-party cookies.</strong>
+                    </div>
+                    <a href="https://policies.google.com/technologies/ads" target="_blank" class="inline-flex items-center text-purple-700 font-bold hover:underline transition-all">
+                        Opt-out of DART cookies <i class="fas fa-external-link-alt ml-2 text-xs"></i>
                     </a>
+                </section>
+
+                <section id="logfiles" class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-gray-100 rounded-lg"><i class="fas fa-file-code text-gray-700"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">Log Files</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        RRJ follows standard procedures for using log files. These files log visitors for trend analysis, site administration, tracking movement, and improving services. This information is <strong>not</strong> linked to personally identifiable information.
+                    </p>
                 </section>
 
                 <section id="rights" class="mb-12">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="p-2 bg-green-100 rounded-lg"><i class="fas fa-user-check text-green-700"></i></div>
-                        <h2 class="text-2xl font-bold text-gray-800">Your Data Rights</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">Your Data Protection Rights</h2>
                     </div>
-                    <p class="text-gray-600 mb-4">Under GDPR and other privacy laws, you have the following rights:</p>
-                    <ul class="grid md:grid-cols-2 gap-3">
-                        <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check-circle text-purple-500"></i> Right to be forgotten</li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check-circle text-purple-500"></i> Right to data portability</li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check-circle text-purple-500"></i> Right of access</li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check-circle text-purple-500"></i> Right to rectification</li>
-                    </ul>
+                    <p class="text-gray-600 mb-6">Under GDPR, CCPA, and other applicable laws, you have the following rights:</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        {% for title, desc in rights %}
+                        <div class="flex gap-3 items-start p-3 bg-green-50/50 rounded-lg border border-green-100">
+                            <i class="fas fa-check-circle text-green-600 mt-1"></i>
+                            <div>
+                                <span class="block font-bold text-gray-800 text-sm">{{ title }}</span>
+                                <span class="text-xs text-gray-500">{{ desc }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section id="thirdparty" class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-indigo-100 rounded-lg"><i class="fas fa-external-link-square-alt text-indigo-700"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">Third-Party Privacy Policies</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Ready Remote Jobs’ Privacy Policy does not apply to other advertisers or websites. We encourage you to review the Privacy Policies of third-party ad servers or websites for more detailed information.
+                    </p>
+                </section>
+
+                <section id="children" class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-pink-100 rounded-lg"><i class="fas fa-child text-pink-700"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800">Children's Information</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        We do not knowingly collect personal information from children under 13. If you believe your child has provided personal data on our website, please contact us immediately for prompt removal.
+                    </p>
                 </section>
 
                 <section id="contact" class="text-center py-10 border-t border-gray-100">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Have Questions?</h2>
-                    <p class="text-gray-600 mb-6">Our privacy team is here to help.</p>
-                    <a href="mailto:remotereadywithtess@gmail.com" class="btn-primary w-auto px-10">
-                        <i class="fas fa-envelope mr-2"></i> Contact Support
-                    </a>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Questions or Concerns?</h2>
+                    <p class="text-gray-600 mb-6">Our privacy team is available to assist you with any inquiries.</p>
+                    <div class="flex flex-col md:flex-row justify-center gap-4">
+                        <a href="mailto:support@readyremotejobs.com" class="bg-purple-700 text-white px-8 py-3 rounded-full font-bold hover:bg-purple-800 transition-all shadow-lg flex items-center justify-center">
+                            <i class="fas fa-envelope mr-2"></i> support@readyremotejobs.com
+                        </a>
+                        <a href="https://readyremotejob.com" class="bg-gray-100 text-gray-700 px-8 py-3 rounded-full font-bold hover:bg-gray-200 transition-all flex items-center justify-center">
+                            <i class="fas fa-globe mr-2"></i> Visit Homepage
+                        </a>
+                    </div>
                 </section>
 
             </main>
@@ -178,7 +282,7 @@
                 link?.classList.add('bg-purple-100', 'text-purple-700', 'pl-4');
             }
         });
-    }, { threshold: 0.5 });
+    }, { threshold: 0.2 });
 
     document.querySelectorAll('section[id]').forEach((section) => {
         observer.observe(section);

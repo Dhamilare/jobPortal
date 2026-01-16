@@ -592,6 +592,33 @@ def moderator_dashboard(request):
     except Exception:
         sub_page_obj = sub_paginator.page(1)
 
+    # 1. Fetch Ambassadors
+    ambassadors_list = Ambassador.objects.select_related('user').annotate(
+        # Counting successful referrals for the dashboard
+        referral_count=models.Count(
+            'referral_subscriptions',
+            filter=models.Q(referral_subscriptions__status='success')
+        )
+    ).order_by('-joined_at')
+
+    # 2. Search for Ambassadors
+    amb_query = request.GET.get('amb_q')
+    if amb_query:
+        ambassadors_list = ambassadors_list.filter(
+            models.Q(user__email__icontains=amb_query) | 
+            models.Q(user__first_name__icontains=amb_query) |
+            models.Q(user__last_name__icontains=amb_query) |
+            models.Q(referral_code__icontains=amb_query)
+        )
+
+    # 3. Pagination for Ambassadors
+    amb_page_number = request.GET.get('amb_page', 1)
+    amb_paginator = Paginator(ambassadors_list, 10)
+    try:
+        amb_page_obj = amb_paginator.page(amb_page_number)
+    except Exception:
+        amb_page_obj = amb_paginator.page(1)
+
     context = {
         'total_jobs': Job.objects.count(),
         'total_applicants': CustomUser.objects.filter(is_applicant=True).count(),
@@ -601,7 +628,10 @@ def moderator_dashboard(request):
         'job_app_page_obj': job_app_page_obj,
         'job_subscriptions': sub_page_obj.object_list,
         'sub_page_obj': sub_page_obj,
-        'sub_query': sub_query
+        'sub_query': sub_query,
+        'ambassadors': amb_page_obj.object_list,
+        'amb_page_obj': amb_page_obj,
+        'amb_query': amb_query,
     }
 
     recent_jobs = Job.objects.select_related('posted_by').order_by('-date_posted')[:5]
@@ -1936,7 +1966,24 @@ def update_staff_bio(request):
 
 
 def privacy_policy(request):
-    return render(request, 'privacy_policy.html')
+    rights = [
+        ('Right of Access', 'Request copies of your personal data.'),
+        ('Right to Rectification', 'Request correction of inaccurate information.'),
+        ('Right to Erasure', 'The "Right to be Forgotten" — request deletion.'),
+        ('Right to Restrict', 'Limit how your data is used.'),
+        ('Data Portability', 'Request transfer of your data to another org.'),
+        ('Right to Object', 'Object to processing under certain conditions.'),
+    ]
+
+    uses = [
+        'Provide and manage our services',
+        'Personalize job alerts and recommendations',
+        'Improve website functionality and user experience',
+        'Communicate updates, offers, and service-related messages',
+        'Prevent fraud and ensure platform security',
+        'Comply with legal obligations'
+    ]
+    return render(request, 'privacy_policy.html', {'rights': rights, 'uses': uses})
 
 
 PLANS = {
@@ -2400,6 +2447,16 @@ def courses_list(request):
     return render(request, 'courses.html', context)
 
 
+NIGERIAN_BANKS = [
+    "Access Bank", "Citibank Nigeria", "Ecobank Nigeria", "Fidelity Bank", 
+    "First Bank of Nigeria", "First City Monument Bank (FCMB)", "Globus Bank", 
+    "Guaranty Trust Bank (GTB)", "Heritage Bank", "Keystone Bank", "Kuda Bank", 
+    "Moniepoint MFB", "OPay", "PalmPay", "Parallex Bank", "Polaris Bank", 
+    "Providus Bank", "Stanbic IBTC Bank", "Standard Chartered Bank", "Sterling Bank", 
+    "SunTrust Bank", "Titan Trust Bank", "Union Bank of Nigeria", "United Bank for Africa (UBA)", 
+    "Unity Bank", "Wema Bank", "Zenith Bank"
+]
+
 def ambassador_signup(request):
     # 1. Identify if the current user is an existing ambassador
     ambassador = None
@@ -2416,7 +2473,18 @@ def ambassador_signup(request):
         
         # Create the profile if it doesn't exist
         if not ambassador:
-            ambassador = Ambassador.objects.create(user=request.user)
+            phone = request.POST.get('phone_number')
+            socials = request.POST.get('social_media_links')
+            bank = request.POST.get('bank_name')
+            account = request.POST.get('account_number')
+
+            ambassador = Ambassador.objects.create(
+                user=request.user,
+                phone_number=phone,
+                social_media_links=socials,
+                bank_name=bank,
+                account_number=account
+            )
             
             # Send the confirmation email
             email_context = {
@@ -2444,5 +2512,6 @@ def ambassador_signup(request):
     context = {
         'ambassador': ambassador,
         'top_ambassadors': top_ambassadors,
+        'banks': sorted(NIGERIAN_BANKS),
     }
     return render(request, 'ambassador_program.html', context)

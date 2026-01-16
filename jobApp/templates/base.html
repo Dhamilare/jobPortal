@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Ready Remote Jobs{% endblock %}</title>
+    <title>{% block title %}Remote Ready Jobs{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}We connect you with trusted job opportunities while giving you the tools to prepare, apply, and land your next role.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
     <meta name="google-adsense-account" content="ca-pub-9467498426364206">
@@ -348,16 +348,6 @@
             transition: all 0.15s ease-in-out;
         }
 
-        /* General form input styling for Django forms */
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="url"],
-        textarea,
-        select {
-            /* These will inherit .input-field styles from above */
-        }
-
         /* Styling for the rendered blog content */
         .ck-content {
             line-height: 1.75;
@@ -431,124 +421,141 @@
     {% endblock %}
 </head>
 <body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
-    <header class="fixed top-0 left-0 w-full bg-white shadow-sm py-4 px-6 md:px-8 lg:px-12 z-50">
-        <nav class="container mx-auto flex justify-between items-center">
-            <a href="{% url 'home' %}" class="text-2xl font-bold text-purple-700">Remote Ready Jobs</a> <div class="hidden md:flex space-x-6 items-center">
-                <a href="{% url 'home' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-home mr-2"></i> Home
-                </a>
-                <a href="{% url 'blog_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                    <i class="fas fa-blog mr-2"></i> Blog
-                </a>
-                <div class="relative">
-                    <a href="#" id="about-us-dropdown-toggle" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-2 text-xs transition-transform duration-300 transform" id="dropdown-icon"></i>
-                    </a>
-                    <div id="about-us-dropdown-menu" class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
-                        <a href="{% url 'about' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">About Us</a>
-                        <a href="{% url 'ambassador_signup' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Ambassador Program</a>
-                        <a href="{% url 'courses_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
-                    </div>
-                </div>
-                <a href="{% url 'job_list' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-briefcase mr-2"></i> Jobs
-                </a>
-                {% if user.is_authenticated %}
-                {% if user.is_applicant %}
-                <a href="{% url 'applicant_dashboard' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-                </a>
-                {% elif user.is_moderator or user.is_staff %}
-                <a href="{% url 'moderator_dashboard' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-chart-line mr-2"></i> Dashboard
-                </a>
-                {% endif %}
-                <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                </a>
-                {% else %}
-                <a href="{% url 'login' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center"> <i class="fas fa-sign-in-alt mr-2"></i> Login
-                </a>
-                <a href="{% url 'post_job' %}" class="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors duration-200 flex items-center"> <i class="fas fa-cloud-upload-alt mr-2"></i> Post a Job
-                </a>
-                {% endif %}
-            </div>
-            <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
-        </nav>
-        <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
-            <a href="{% url 'home' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                <i class="fas fa-home mr-2"></i> Home
-            </a>
-            <a href="{% url 'blog_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                <i class="fas fa-blog mr-2"></i> Blog
-            </a>
-            <div class="nav-dropdown-mobile">
-                <a href="javascript:void(0)" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center" id="mobile-about-us-toggle">
-                    <i class="fas fa-info-circle mr-2"></i> About Us <i class="fas fa-chevron-down ml-auto text-xs transition-transform duration-300 transform" id="mobile-dropdown-icon"></i>
-                </a>
-                <div id="mobile-about-us-menu" class="dropdown-menu-mobile hidden ml-8 space-y-2 py-1">
-                    <a href="{% url 'about' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">About Us</a>
-                    <a href="{% url 'ambassador_signup' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Ambassador Program</a>
-                    <a href="{% url 'courses_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
-                </div>
-            </div>
-            <a href="{% url 'job_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                <i class="fas fa-briefcase mr-2"></i> Jobs
-            </a>
-            {% if user.is_authenticated %}
-            {% if user.is_applicant %}
-            <a href="{% url 'applicant_dashboard' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-            </a>
-            {% elif user.is_moderator or user.is_staff %}
-            <a href="{% url 'moderator_dashboard' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                <i class="fas fa-chart-line mr-2"></i> Dashboard
-            </a>
-            {% endif %}
-            <a href="{% url 'logout' %}" class="block px-4 py-2 bg-red-500 text-white rounded-lg text-center flex items-center justify-center">
-                <i class="fas fa-sign-out-alt mr-2"></i> Logout
-            </a>
-            {% else %}
-            <a href="{% url 'login' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
-                <i class="fas fa-sign-in-alt mr-2"></i> Login
-            </a>
-            <a href="{% url 'post_job' %}" class="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors duration-200 flex items-center">
-                <i class="fas fa-cloud-upload-alt mr-2"></i> Post a Job
-            </a>
-            {% endif %}
-        </div>
-    </header>
+  
+<header class="fixed top-0 left-0 w-full bg-white shadow-sm z-50">
+  <nav class="h-20 px-6 md:px-8 lg:px-12 max-w-7xl mx-auto flex justify-between items-center">
+    <a href="{% url 'home' %}" class="flex items-center group">
+      <img src="{% static 'img/RRJ1.png' %}" 
+           alt="Remote Ready Jobs Logo" 
+           class="w-auto max-h-16 md:max-h-20 object-contain"
+           style="mix-blend-mode: multiply;"
+           loading="eager">
+    </a>
+    <div class="hidden md:flex space-x-6 items-center">
+      <a href="{% url 'blog_list' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center text-lg">
+        <i class="fas fa-blog mr-2 text-sm"></i> Blog
+      </a>
 
-    <main class="flex-grow pt-20">
+      <div class="relative">
+        <a href="#" id="about-us-dropdown-toggle" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center text-lg">
+          <i class="fas fa-info-circle mr-2 text-sm"></i> About Us
+          <i class="fas fa-chevron-down ml-2 text-xs transition-transform duration-300 transform" id="dropdown-icon"></i>
+        </a>
+        <div id="about-us-dropdown-menu" class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
+          <a href="{% url 'about' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">About Us</a>
+          <a href="{% url 'ambassador_signup' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Ambassador Program</a>
+          <a href="{% url 'courses_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Courses</a>
+        </div>
+      </div>
+
+      <a href="{% url 'job_list' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center text-lg">
+        <i class="fas fa-briefcase mr-2 text-sm"></i> Jobs
+      </a>
+
+      {% if user.is_authenticated %}
+        {% if user.is_applicant %}
+          <a href="{% url 'applicant_dashboard' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center text-lg">
+            <i class="fas fa-tachometer-alt mr-2 text-sm"></i> Dashboard
+          </a>
+        {% elif user.is_moderator or user.is_staff %}
+          <a href="{% url 'moderator_dashboard' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center text-lg">
+            <i class="fas fa-chart-line mr-2 text-sm"></i> Dashboard
+          </a>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center font-bold">
+          <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="text-gray-700 hover:text-purple-700 font-medium transition-colors duration-200 flex items-center text-lg">
+          <i class="fas fa-sign-in-alt mr-2 text-sm"></i> Login
+        </a>
+        <a href="{% url 'post_job' %}" class="bg-purple-700 text-white px-5 py-2 rounded-lg hover:bg-purple-800 transition-colors duration-200 flex items-center font-bold">
+          <i class="fas fa-cloud-upload-alt mr-2"></i> Post a Job
+        </a>
+      {% endif %}
+    </div>
+
+    <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+  </nav>
+
+  <div id="mobile-menu" class="hidden md:hidden mt-2 pb-6 space-y-2 px-6 md:px-8 lg:px-12 bg-white">
+    <a href="{% url 'blog_list' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center text-lg">
+      <i class="fas fa-blog mr-2 text-sm"></i> Blog
+    </a>
+
+    <div class="nav-dropdown-mobile">
+      <a href="javascript:void(0)" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center text-lg" id="mobile-about-us-toggle">
+        <i class="fas fa-info-circle mr-2 text-sm"></i> About Us
+        <i class="fas fa-chevron-down ml-auto text-xs transition-transform duration-300 transform" id="mobile-dropdown-icon"></i>
+      </a>
+      <div id="mobile-about-us-menu" class="dropdown-menu-mobile hidden ml-8 space-y-2 py-1">
+        <a href="{% url 'about' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">About Us</a>
+        <a href="{% url 'ambassador_signup' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Ambassador Program</a>
+        <a href="{% url 'courses_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Courses</a>
+      </div>
+    </div>
+
+    <a href="{% url 'job_list' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center text-lg">
+      <i class="fas fa-briefcase mr-2 text-sm"></i> Jobs
+    </a>
+
+    {% if user.is_authenticated %}
+      {% if user.is_applicant %}
+        <a href="{% url 'applicant_dashboard' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center text-lg">
+          <i class="fas fa-tachometer-alt mr-2 text-sm"></i> Dashboard
+        </a>
+      {% elif user.is_moderator or user.is_staff %}
+        <a href="{% url 'moderator_dashboard' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center text-lg">
+          <i class="fas fa-chart-line mr-2 text-sm"></i> Dashboard
+        </a>
+      {% endif %}
+      <a href="{% url 'logout' %}" class="block px-4 py-3 bg-red-500 text-white rounded-lg text-center flex items-center justify-center font-bold">
+        <i class="fas fa-sign-out-alt mr-2 text-sm"></i> Logout
+      </a>
+    {% else %}
+      <a href="{% url 'login' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center text-lg">
+        <i class="fas fa-sign-in-alt mr-2 text-sm"></i> Login
+      </a>
+      <a href="{% url 'post_job' %}" class="bg-purple-700 text-white block px-4 py-3 rounded-lg hover:bg-purple-800 transition-colors duration-200 text-center font-bold">
+        <i class="fas fa-cloud-upload-alt mr-2 text-sm"></i> Post a Job
+      </a>
+    {% endif %}
+  </div>
+</header>
+
+
+    <main class="flex-grow mt-20">
         {% block content %}
         {% endblock %}
     </main>
-
     <footer class="bg-purple-900 text-white py-8 px-6 md:px-8 lg:px-12 mt-auto">
-        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
-            
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left">
             <div class="mb-4 md:mb-0">
                 Copyright &copy; {% now "Y" %} Remote Ready Jobs.
             </div>
-
            <div class="flex space-x-6 mb-4 md:mb-0 text-sm">
                 <a href="{% url 'about' %}" class="text-gray-300 hover:text-purple-400 transition-colors">About Us</a>
                 <a href="{% url 'ambassador_signup' %}" class="text-gray-300 hover:text-purple-400 transition-colors">Ambassador Program</a>
                 <a href="{% url 'privacy_policy' %}" class="text-gray-300 hover:text-purple-400 transition-colors">Privacy Policy</a>
             </div>
-            
             <div class="flex space-x-6">
                 <a href="https://www.instagram.com/remotereadyjobs_?igsh=azZ5Nm5rM3J4cDJw" class="text-gray-400 hover:text-purple-400 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram text-xl"></i></a>
                 <a href="https://www.linkedin.com/company/remote-ready-with-tess-rrwt/" class="text-gray-400 hover:text-purple-400 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in text-xl"></i></a>
                 <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors duration-200"><i class="fab fa-tiktok text-xl"></i></a>
                 <a href="https://chat.whatsapp.com/Hc3Zti3TROhAifML88ANao?mode=ems_copy_t" class="text-gray-400 hover:text-green-500 transition-colors duration-200" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp text-xl"></i></a>
             </div>
-            
         </div>
     </footer>
 
-    <div id="cookie-consent-modal" class="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 transition-transform duration-500 ease-out transform translate-y-full opacity-0">
-        <div class="container mx-auto bg-white rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-8 border-t-4 border-purple-700"> <div class="flex-grow text-sm md:text-base text-gray-700 text-center md:text-left">
-                <p>This website uses cookies to ensure you get the best experience on our site. By continuing to use this site, you agree to our <a href="{% url 'privacy_policy' %}" class="text-purple-700 hover:underline font-semibold">Privacy Policy</a>.</p> </div>
+    <div id="cookie-consent-modal" class="fixed bottom-0 left-0 right-0 z-[60] p-4 md:p-6 transition-transform duration-500 ease-out transform translate-y-full opacity-0">
+        <div class="container mx-auto bg-white rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-8 border-t-4 border-purple-700">
+            <div class="flex-grow text-sm md:text-base text-gray-700 text-center md:text-left">
+                <p>This website uses cookies to ensure you get the best experience on our site. By continuing to use this site, you agree to our <a href="{% url 'privacy_policy' %}" class="text-purple-700 hover:underline font-semibold">Privacy Policy</a>.</p>
+            </div>
             <div class="flex-shrink-0 w-full md:w-auto">
                 <button id="accept-cookies-btn" class="w-full btn-primary px-6 py-2.5 text-base md:text-sm">
                     Accept Cookies
@@ -568,7 +575,7 @@
                 });
             }
 
-            // FAQ Accordion
+            // FAQ Accordion logic
             const accordionHeaders = document.querySelectorAll('.accordion-header');
             accordionHeaders.forEach(header => {
                 header.addEventListener('click', () => {
@@ -576,139 +583,69 @@
                     const accordionContent = accordionItem.querySelector('.accordion-content');
                     const accordionIcon = header.querySelector('.accordion-icon');
                     accordionItem.classList.toggle('active');
-                    if (accordionContent.style.maxHeight !== '0px' && accordionContent.style.maxHeight !== '') {
-                        accordionContent.style.maxHeight = '0';
-                        accordionContent.style.opacity = '0';
-                        setTimeout(() => { accordionContent.style.display = 'none'; }, 300);
-                    } else {
+                    if (accordionItem.classList.contains('active')) {
                         accordionContent.style.display = 'block';
                         accordionContent.style.maxHeight = accordionContent.scrollHeight + 'px';
                         accordionContent.style.opacity = '1';
+                    } else {
+                        accordionContent.style.maxHeight = '0';
+                        accordionContent.style.opacity = '0';
+                        setTimeout(() => { accordionContent.style.display = 'none'; }, 300);
                     }
-                    accordionIcon.classList.toggle('rotate-180');
+                    if (accordionIcon) accordionIcon.classList.toggle('rotate-180');
                 });
             });
 
-            // --- Cookie Consent Logic ---
+            // Cookie Consent logic
             const cookieModal = document.getElementById('cookie-consent-modal');
             const acceptButton = document.getElementById('accept-cookies-btn');
-
-            // Function to show the modal with an animation
-            const showCookieModal = () => {
+            if (!localStorage.getItem('cookie_consent')) {
                 setTimeout(() => {
                     cookieModal.classList.remove('translate-y-full', 'opacity-0');
                     cookieModal.classList.add('translate-y-0', 'opacity-100');
-                }, 1000); // Wait 1 second before sliding in
-            };
-
-            // Function to hide the modal with an animation
-            const hideCookieModal = () => {
-                cookieModal.classList.remove('translate-y-0', 'opacity-100');
-                cookieModal.classList.add('translate-y-full', 'opacity-0');
-            };
-
-            // Check if the user has already accepted cookies
-            const hasAcceptedCookies = localStorage.getItem('cookie_consent');
-
-            if (!hasAcceptedCookies) {
-                // If not, show the modal
-                showCookieModal();
+                }, 1000);
             }
-
-            // Handle the "Accept" button click
             if (acceptButton) {
                 acceptButton.addEventListener('click', () => {
-                    // Set a key in local storage to remember the user's choice
                     localStorage.setItem('cookie_consent', 'accepted');
-                    // Hide the modal
-                    hideCookieModal();
+                    cookieModal.classList.remove('translate-y-0', 'opacity-100');
+                    cookieModal.classList.add('translate-y-full', 'opacity-0');
                 });
             }
 
-            // For desktop dropdown
+            // Desktop Dropdown logic
             const aboutUsToggle = document.getElementById('about-us-dropdown-toggle');
             const aboutUsMenu = document.getElementById('about-us-dropdown-menu');
             const dropdownIcon = document.getElementById('dropdown-icon');
-
-            if (aboutUsToggle && aboutUsMenu) {
-                aboutUsToggle.addEventListener('click', (event) => {
-                    event.preventDefault(); // Prevents the default link behavior
-                    const isMenuHidden = aboutUsMenu.classList.contains('hidden');
-                    if (isMenuHidden) {
-                        // Hide any other open menus
-                        closeAllDropdowns();
-                        // Show the current menu
-                        aboutUsMenu.classList.remove('hidden');
-                        dropdownIcon.classList.add('rotate-180');
-                    } else {
-                        // Hide the menu
-                        aboutUsMenu.classList.add('hidden');
-                        dropdownIcon.classList.remove('rotate-180');
-                    }
+            if (aboutUsToggle) {
+                aboutUsToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    aboutUsMenu.classList.toggle('hidden');
+                    dropdownIcon.classList.toggle('rotate-180');
                 });
             }
 
-            // For mobile dropdown
+            // Mobile Dropdown logic
             const mobileAboutUsToggle = document.getElementById('mobile-about-us-toggle');
             const mobileAboutUsMenu = document.getElementById('mobile-about-us-menu');
             const mobileDropdownIcon = document.getElementById('mobile-dropdown-icon');
-
-            if (mobileAboutUsToggle && mobileAboutUsMenu) {
-                mobileAboutUsToggle.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const isMenuHidden = mobileAboutUsMenu.classList.contains('hidden');
-                    if (isMenuHidden) {
-                        // Hide any other open mobile menus
-                        closeAllMobileDropdowns();
-                        // Show the current mobile menu
-                        mobileAboutUsMenu.classList.remove('hidden');
-                        mobileDropdownIcon.classList.add('rotate-180');
-                    } else {
-                        // Hide the menu
-                        mobileAboutUsMenu.classList.add('hidden');
-                        mobileDropdownIcon.classList.remove('rotate-180');
-                    }
+            if (mobileAboutUsToggle) {
+                mobileAboutUsToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    mobileAboutUsMenu.classList.toggle('hidden');
+                    mobileDropdownIcon.classList.toggle('rotate-180');
                 });
             }
 
-            // Function to close all desktop dropdowns
-            function closeAllDropdowns() {
-                const menus = document.querySelectorAll('.hidden.absolute');
-                menus.forEach(menu => {
-                    menu.classList.add('hidden');
-                    const icon = menu.previousElementSibling.querySelector('#dropdown-icon');
-                    if (icon) {
-                        icon.classList.remove('rotate-180');
-                    }
-                });
-            }
-
-            // Function to close all mobile dropdowns
-            function closeAllMobileDropdowns() {
-                const menus = document.querySelectorAll('.dropdown-menu-mobile');
-                menus.forEach(menu => {
-                    menu.classList.add('hidden');
-                    const icon = menu.previousElementSibling.querySelector('#mobile-dropdown-icon');
-                    if (icon) {
-                        icon.classList.remove('rotate-180');
-                    }
-                });
-            }
-
-            // Close dropdowns if the user clicks outside of them
-            window.addEventListener('click', (event) => {
-                // Desktop dropdown
-                if (!event.target.closest('#about-us-dropdown-toggle') && !event.target.closest('#about-us-dropdown-menu')) {
-                    closeAllDropdowns();
-                }
-                // Mobile dropdown
-                if (!event.target.closest('#mobile-about-us-toggle') && !event.target.closest('#mobile-about-us-menu')) {
-                    closeAllMobileDropdowns();
+            // Close dropdowns when clicking outside
+            window.addEventListener('click', (e) => {
+                if (aboutUsToggle && !aboutUsToggle.contains(e.target) && !aboutUsMenu.contains(e.target)) {
+                    aboutUsMenu.classList.add('hidden');
+                    dropdownIcon.classList.remove('rotate-180');
                 }
             });
         });
     </script>
-    {% block extra_js %}
-    {% endblock %}
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
