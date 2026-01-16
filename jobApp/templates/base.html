@@ -95,12 +95,32 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
-        .btn-primary:hover {
-            /* Darker Purple Hover */
+        .btn-primary:hover,
+        a.btn-primary:hover {
             background: linear-gradient(to right, #4C1D95, #6D28D9);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
             transform: translateY(-2px);
+            color: #FFFFFF !important; /* Forces text to stay white */
+            opacity: 1 !important;
+            isolation: isolate;
+        }
+        /* Global fix for any link intended to look like a button */
+        a.bg-purple-700:hover, 
+        a.bg-purple-800:hover, 
+        a.btn-pulse:hover,
+        a[class*="bg-purple-"]:hover {
+            color: #FFFFFF !important; /* Prevents the dark purple text fade */
+            text-decoration: none;
+        }
+
+        /* Ensures icons inside these buttons also stay white */
+        a.bg-purple-700:hover i, 
+        a.btn-pulse:hover i,
+        a.btn-primary:hover i {
+            color: #FFFFFF !important;
         }
         .btn-primary:active {
             /* Very Dark Purple Active */
