@@ -8,6 +8,9 @@
     <title>{% block title %}Remote Ready Jobs{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}We connect you with trusted job opportunities while giving you the tools to prepare, apply, and land your next role.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <link rel="icon" type="image/png" href="{% static 'img/RRJ1.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/RRJ1.png' %}">
+
     <meta name="google-adsense-account" content="ca-pub-9467498426364206">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9467498426364206"
      crossorigin="anonymous">
@@ -17,6 +20,11 @@
     <meta property="og:description" content="{% block og_description %}{% endblock %}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <meta property="og:image" content="https://readyremotejob.com/static/img/RRJ1.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -416,6 +424,17 @@
             margin: 1.5rem 0;
         }
     </style>
+
+    <script type="application/ld+json">
+        {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Remote Ready Jobs",
+        "url": "https://readyremotejob.com",
+        "logo": "https://readyremotejob.com/static/img/RRJ1.png"
+        }
+    </script>
+
 
     {% block extra_head %}
     {% endblock %}
