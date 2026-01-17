@@ -90,8 +90,6 @@ urlpatterns = [
     path('staff/moderators/manage/', views.manage_moderators, name='manage_moderators'),
     path('staff/moderators/manage/<int:user_id>/', views.manage_moderators, name='manage_moderators_edit_delete'),
    
-
-    
     # Blog Post Management
     path('blogs/', views.post_list_view, name='blog_list'),
     path('blogs/new_post', views.post_create_view, name='blog_create'),
@@ -152,4 +150,10 @@ urlpatterns = [
     
     # The AJAX endpoint used to fetch AI questions
     path('interview-prep/api/generate-check/<slug:slug>/', views.generate_knowledge_check, name='generate_knowledge_check'),
+
+    path('book-consultation/', views.book_consultation, name='book_consultation'),
+
+    path('consultation/confirmed/', views.consultation_thanks, name='consultation_thanks'),
+
+    path('webhooks/calendly/', views.calendly_webhook, name='calendly_webhook'),
 ]

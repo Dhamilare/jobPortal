@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Remote Ready Jobs{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Animations */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+    /* Glass Container for the Scheduler */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 25px 50px -12px rgba(109, 40, 217, 0.15);
+    }
+
+    /* Calendly Loading Spinner */
+    .loader {
+        border-top-color: #6D28D9; /* Your Purple */
+        animation: spinner 1.5s linear infinite;
+    }
+    @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+
+<div class="container mx-auto px-6 py-12 max-w-6xl">
+    <div class="text-center mb-12 animate-fade-in">
+        <span class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Expert Guidance</span>
+        <h1 class="text-4xl md:text-5xl font-black text-gray-900 mt-4 mb-4">
+            Book Your <span class="text-purple-700">Consultation</span>
+        </h1>
+        <p class="text-gray-600 max-w-xl mx-auto">
+            Schedule a session with our career experts to optimize your resume, prepare for interviews, or plan your remote career path.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div class="lg:col-span-1 space-y-6 animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="bg-white p-8 rounded-3xl shadow-lg border-l-8 border-purple-700">
+                <h3 class="font-bold text-xl text-purple-900 mb-4">How it works</h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-3">
+                        <div class="bg-purple-100 text-purple-700 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-1 text-xs font-bold">1</div>
+                        <p class="text-sm text-gray-600">Select a date and time that fits your schedule.</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="bg-purple-100 text-purple-700 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-1 text-xs font-bold">2</div>
+                        <p class="text-sm text-gray-600">Fill in your career details and specific questions.</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="bg-purple-100 text-purple-700 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-1 text-xs font-bold">3</div>
+                        <p class="text-sm text-gray-600">Receive an email confirmation with your meeting link.</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-purple-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                <i class="fas fa-quote-left absolute top-4 right-4 text-purple-800 text-5xl opacity-50"></i>
+                <p class="relative z-10 italic text-purple-100 mb-4">"The consultation gave me the clarity I needed to land my first USD-paying remote role."</p>
+                <p class="text-yellow-400 font-bold text-sm">— Sarah J., Applicant</p>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 relative animate-fade-in" style="animation-delay: 0.4s;">
+            <div id="calendly-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-3xl z-10 transition-opacity duration-500">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+                <p class="text-purple-700 font-medium animate-pulse">Loading Scheduler...</p>
+            </div>
+
+            <div class="glass-card rounded-3xl overflow-hidden min-h-[700px]">
+                <div class="calendly-inline-widget w-full h-[700px]" 
+                     data-url="{{ calendly_url }}?hide_landing_page_details=1&hide_gdpr_banner=1&primary_color=6d28d9&color_scheme=ffffff" 
+                     style="min-width:320px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+
+<script>
+    // Robust Loader Handling: Hide loader when the widget is ready
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('calendly-loader');
+        // Give Calendly a moment to render after the script loads
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+        }, 2000);
+    });
+</script>
+{% endblock %}

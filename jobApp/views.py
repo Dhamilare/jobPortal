@@ -2737,3 +2737,46 @@ def get_fallback_questions(category):
         "is_fallback": True,
         "source": "static"
     }
+
+
+def book_consultation(request):
+    # You can store the Calendly URL in your settings or database
+    calendly_url = "https://calendly.com/your-profile/30min" 
+    return render(request, 'consult/book.html', {
+        'calendly_url': calendly_url,
+        'page_title': 'Book a Professional Consultation'
+    })
+
+def consultation_thanks(request):
+    # Calendly appends parameters like invitee_name to the URL after redirect
+    invitee_name = request.GET.get('invitee_name', 'there')
+    return render(request, 'consult/thanks.html', {
+        'invitee_name': invitee_name,
+        'page_title': 'Booking Confirmed'
+    })
+
+
+@csrf_exempt
+def calendly_webhook(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        
+        if data.get('event') == 'invitee.created':
+            payload = data.get('payload', {})
+            invitee_email = payload.get('email')
+            invitee_name = payload.get('name')
+            
+            context = {
+                'name': invitee_name,
+                'event_time': payload.get('start_time'),
+            }
+            
+            send_templated_email(
+                template_name='emails/consultation_confirmed.html',
+                subject='Consultation Confirmed - Remote Ready Jobs',
+                recipient_list=[invitee_email],
+                context=context
+            )
+            
+        return HttpResponse(status=200)
+    return HttpResponse(status=405)

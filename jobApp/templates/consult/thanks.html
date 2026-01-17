@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    @keyframes checkmark {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-check { animation: checkmark 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+</style>
+
+<div class="container mx-auto px-6 py-20 max-w-2xl text-center">
+    <div class="mb-8 flex justify-center">
+        <div class="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center shadow-xl shadow-yellow-200 animate-check">
+            <i class="fas fa-check text-4xl text-purple-900"></i>
+        </div>
+    </div>
+
+    <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 animate-rise">
+        Booking <span class="text-purple-700">Confirmed!</span>
+    </h1>
+    <p class="text-xl text-gray-600 mb-10 animate-rise" style="animation-delay: 0.1s;">
+        Thanks for scheduling, <span class="font-bold text-purple-700">{{ invitee_name }}</span>. 
+        A calendar invitation has been sent to your inbox.
+    </p>
+
+    <div class="bg-white rounded-3xl p-8 shadow-2xl border-t-4 border-purple-700 animate-rise" style="animation-delay: 0.2s;">
+        <h3 class="font-bold text-gray-800 mb-6">What to do next?</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <a href="{% url 'interview_prep_home' %}" class="btn-secondary py-3 px-6 text-sm">
+                <i class="fas fa-brain mr-2"></i> Practice Interviews
+            </a>
+            <a href="{% url 'job_list' %}" class="btn-primary py-3 px-6 text-sm !w-auto">
+                <i class="fas fa-search mr-2"></i> Browse Jobs
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

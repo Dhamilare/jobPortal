@@ -211,7 +211,7 @@
                         Learn More <i class="fas fa-arrow-right ml-2"></i>
                     </div>
                 </a>
-                <a href="#" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-300 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
+                <a href="{% url 'book_consultation' %}" class="block bg-white p-8 rounded-2xl shadow-sm border border-purple-100 animate-on-scroll delay-300 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
                     <i class="fas fa-chalkboard-teacher text-4xl text-purple-600 mb-6 group-hover:scale-110 transition-transform"></i>
                     <h3 class="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-700">Career Counselling</h3>
                     <p class="text-gray-600 text-sm text-left">Personalized guidance for your unique remote career journey.</p>
@@ -392,7 +392,7 @@
                                 <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ post.description }}</p>
                             </div>
                             <div class="flex items-center text-xs text-gray-500 space-x-4 mb-4">
-                                <span><i class="fas fa-calendar-alt mr-1"></i> {{ post.created_at|date:"M d, Y" }}</span>
+                                <span><i class="fas fa-calendar-alt mr-1"></i>{{ post.publish_date|date:"M d, Y" }}</span>
                                 <span><i class="fas fa-user mr-1"></i> {{ post.author.username }}</span>
                             </div>
                             <a href="{% url 'blog_detail' post.slug %}" class="bg-purple-700 text-white px-6 py-2 w-full text-center font-semibold rounded-lg hover:bg-purple-800 transition-all">Read Post</a>

@@ -113,7 +113,7 @@
                             &bull;
                         </p>
                         <p>
-                            Published on {{ post.created_at|date:"F j, Y" }}
+                            Published on {{ post.publish_date|date:"M d, Y" }}
                         </p>
                         {% if post.category %}
                         <p class="hidden sm:inline-block">
